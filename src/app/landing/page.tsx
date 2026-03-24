@@ -1,17 +1,17 @@
 export default function LandingPage() {
   return (
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-      <div className="inline-flex items-center gap-2 bg-orange-50 border border-orange-100 px-3 py-1 rounded-full mb-6">
-        <span className="text-xs font-bold text-orange-600 uppercase tracking-wider">
+      <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 px-3 py-1 rounded-full mb-6">
+        <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
           New
         </span>
-        <p className="text-xs text-orange-700 font-medium">
+        <p className="text-xs text-blue-700 font-medium">
           Built for Cambodian University Students 🇰🇭
         </p>
       </div>
 
       <h1 className="text-4xl md:text-6xl font-extrabold text-slate-900 max-w-3xl leading-tight">
-        Master Your University <span className="text-orange-600">Journey</span>
+        Master Your University <span className="text-blue-600">Journey</span>
       </h1>
 
       <p className="mt-6 text-slate-600 max-w-xl text-lg">
@@ -20,8 +20,8 @@ export default function LandingPage() {
       </p>
 
       <div className="mt-10">
-        <button className="bg-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-orange-200">
-          Create Free Account
+        <button className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:scale-105 transition-transform shadow-xl shadow-blue-200">
+          Get Started
         </button>
       </div>
     </div>

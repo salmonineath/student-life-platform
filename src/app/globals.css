@@ -88,11 +88,11 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
+<<<<<<< HEAD body {
   font-family: var(--font-sans);
 }
 
-:root {
+=======>>>>>>>a5c8e55 (feat: initial commit) :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

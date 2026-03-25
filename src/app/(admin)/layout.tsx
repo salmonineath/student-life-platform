@@ -1,6 +1,11 @@
-import React from "react";
-import AdminSidebar from "./components/adminSidebar";
-import AdminHeader from "./components/adminHeader";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip"; // ← add this
+import { AdminAppSideBar } from "./components/AdminAppSideBar";
+// import AdminHeader from "./components/adminHeader";
 
 export default function AdminLayout({
   children,
@@ -8,22 +13,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="h-screen flex bg-gray-50 overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-64 h-full">
-        <AdminSidebar />
-      </div>
-
-      {/* Right Side */}
-      <div className="flex-1 flex flex-col h-full">
-        {/* Header (NOT fixed) */}
-        <div className="h-16 flex-shrink-0 bg-white border-b">
-          <AdminHeader />
-        </div>
-
-        {/* Content (starts BELOW header automatically) */}
-        <main className="flex-1 overflow-y-auto p-8 ">{children}</main>
-      </div>
-    </div>
+    <TooltipProvider>
+      {" "}
+      {/* ← wrap everything */}
+      <SidebarProvider>
+        <AdminAppSideBar />
+        <SidebarInset className="flex flex-col min-w-0 overflow-hidden">
+          <header className="h-16 flex-shrink-0 bg-white border-b flex items-center px-6">
+            <SidebarTrigger />
+            {/* <AdminHeader /> */}
+          </header>
+          <main className="flex-1 overflow-y-auto p-8 bg-gray-50">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

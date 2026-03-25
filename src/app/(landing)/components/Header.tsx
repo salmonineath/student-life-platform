@@ -50,13 +50,13 @@ const Header = () => {
       `}</style>
 
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4 overflow-hidden">
           {/* Logo */}
           <a href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="w-9 h-9 bg-blue-600 rounded-2xl flex items-center justify-center text-lg">
               🎓
             </div>
-            <span className="font-semibold text-xl text-slate-900 tracking-tight">
+            <span className="font-semibold text-lg sm:text-xl text-slate-900 tracking-tight truncate">
               Student Life
             </span>
           </a>
@@ -87,7 +87,7 @@ const Header = () => {
           {/* Mobile hamburger */}
           <button
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="md:hidden p-2 shrink-0 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
             aria-label="Toggle menu"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
@@ -105,7 +105,7 @@ const Header = () => {
           />
 
           {/* Slide-in drawer */}
-          <div className="mobile-drawer fixed top-0 right-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col md:hidden">
+          <div className="mobile-drawer fixed top-0 right-0 bottom-0 z-50 w-[80%] max-w-[280px] bg-white shadow-2xl flex flex-col md:hidden">
             {/* Drawer header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
               <a

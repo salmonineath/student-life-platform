@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import React from "react";
 import AdminSidebar from "./components/adminSidebar";
 import AdminHeader from "./components/adminHeader";
@@ -9,17 +8,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* 1. Left Sidebar (Fixed width) */}
-      <AdminSidebar />
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
+      {/* Sidebar */}
+      <div className="w-64 h-full">
+        <AdminSidebar />
+      </div>
 
-      {/* 2. Main Content Wrapper */}
-      <div className="flex-1 ml-64 flex flex-col">
-        {/* 3. Top Navigation Bar */}
-        <AdminHeader />
+      {/* Right Side */}
+      <div className="flex-1 flex flex-col h-full">
+        {/* Header (NOT fixed) */}
+        <div className="h-16 flex-shrink-0 bg-white border-b">
+          <AdminHeader />
+        </div>
 
-        {/* 4. Page Content (This changes based on the URL) */}
-        <main className="p-8">{children}</main>
+        {/* Content (starts BELOW header automatically) */}
+        <main className="flex-1 overflow-y-auto p-8 ">{children}</main>
       </div>
     </div>
   );

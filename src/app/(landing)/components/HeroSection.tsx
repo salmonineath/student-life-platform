@@ -77,9 +77,8 @@ export default function HeroSection() {
           data-aos-delay="200"
           className="mt-6 text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed"
         >
-          Stop jumping between Telegram, Facebook groups, and notebooks. Manage
-          your schedule, assignments, study groups, and AI-powered study tools —
-          all in one beautiful place.
+          No more jumping between apps and platforms. Student Life keeps your
+          schedule, assignments, study groups, and AI tools all in one place.
         </p>
 
         <div

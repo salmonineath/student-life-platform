@@ -1,8 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --font-sans: "Geist Sans", system-ui, sans-serif;
+  --font-mono: "Fira Code", monospace;
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -121,10 +127,10 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+}
+
+body {
+  background: var(--background);
+  font-family: var(--font-sans);
+  font-family: var(--font-sans);
 }

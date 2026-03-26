@@ -44,12 +44,11 @@ export default function Features() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16" data-aos="fade-up">
           <h2 className="text-4xl font-bold text-slate-900">
-            Everything you need,
-            <br />
-            nothing you don't
+            Manage Your Student Life in One Place
           </h2>
           <p className="mt-4 text-slate-600 text-lg">
-            Powerful tools designed specifically for Cambodian university life
+            Plan your schedule, track assignments, and study with friends
+            without stress.
           </p>
         </div>
 

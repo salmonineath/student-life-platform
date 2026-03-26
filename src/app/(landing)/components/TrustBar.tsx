@@ -6,7 +6,7 @@ export default function TrustBar() {
           Trusted by students at:
         </p>
         <div className="flex gap-10 text-slate-400 font-medium">
-          <div>NUM</div>
+          <div>CADT</div>
           <div>ITC</div>
           <div>RUPP</div>
           <div>UEC</div>

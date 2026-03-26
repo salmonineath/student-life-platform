@@ -52,8 +52,12 @@ export default function RegisterPage() {
         { withCredentials: true }
       );
 
+<<<<<<< HEAD
       // ✅ redirect to dashboard after register success
       router.push("/dashboard");
+=======
+      router.push("/");
+>>>>>>> 3150e63 (work on login and fetch api login)
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>;
       setError(
@@ -67,7 +71,12 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
+<<<<<<< HEAD
       {/* Header */}
+=======
+
+      {/* Header (same as login) */}
+>>>>>>> 3150e63 (work on login and fetch api login)
       <div className="p-10 text-center bg-[#0F172A] text-white">
         <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
           <GraduationCap className="w-10 h-10 text-white" />
@@ -90,6 +99,10 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleRegister} className="space-y-6">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3150e63 (work on login and fetch api login)
           {/* Fullname */}
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />

@@ -86,6 +86,7 @@ export default function LoginPage() {
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-600 transition-colors" />
 
+<<<<<<< HEAD
                 <input
                   required
                   name="Email or username"
@@ -94,6 +95,20 @@ export default function LoginPage() {
                   onChange={handleChange}
                   placeholder="name@university.edu.kh"
                   className="w-full pl-12 pr-4 py-4 
+=======
+    <input
+      required
+<<<<<<< HEAD
+      name="email_or_username"
+=======
+      name="Email or username"
+>>>>>>> 3150e63 (work on login and fetch api login)
+      type="text"
+      value={formData.email_or_username}
+      onChange={handleChange}
+      placeholder="name@university.edu.kh"
+      className="w-full pl-12 pr-4 py-4 
+>>>>>>> db354dd (work on login and fetch api login)
                  bg-white 
                  border border-slate-300 
                  text-slate-900

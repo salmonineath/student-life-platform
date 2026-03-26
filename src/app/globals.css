@@ -89,7 +89,13 @@
 }
 
   font-family: var(--font-sans);
+<<<<<<< HEAD
 } :root {
+=======
+}
+
+:root {
+>>>>>>> 091fcfe (idk a lot of warning)
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

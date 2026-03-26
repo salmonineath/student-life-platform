@@ -24,6 +24,8 @@ export default function LoginPage() {
     });
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   // 3. The Login Logic
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +33,9 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await axios.post(
-        "https://studentlifeapis.onrender.com/api/v1/auth/login",
-        formData,
-        {
-          withCredentials: true, // sends & receives HTTP-only cookies
-        },
-      );
+      await axios.post(`${API_URL}/api/v1/auth/login`, formData, {
+        withCredentials: true, // sends & receives HTTP-only cookies
+      });
 
       router.push("/dashboard");
     } catch (err) {
@@ -63,7 +61,7 @@ export default function LoginPage() {
             Student Life
           </h1>
           <p className="text-slate-400 mt-2 text-sm uppercase tracking-widest font-semibold">
-            Member Login
+            Welcome back!
           </p>
         </div>
 
@@ -80,7 +78,7 @@ export default function LoginPage() {
             {/* Email Field */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700 uppercase ml-1">
-                Email Address
+                Email or Username
               </label>
 
               <div className="relative group">

@@ -40,29 +40,25 @@ export default function RegisterPage() {
     }));
   };
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      await axios.post(
-        "https://studentlifeapis.onrender.com/api/v1/auth/register",
-        formData,
-        { withCredentials: true }
-      );
+      await axios.post(`${API_URL}/api/v1/auth/register`, formData, {
+        withCredentials: true,
+      });
 
-<<<<<<< HEAD
       // ✅ redirect to dashboard after register success
       router.push("/dashboard");
-=======
-      router.push("/");
->>>>>>> 3150e63 (work on login and fetch api login)
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>;
       setError(
         axiosErr.response?.data?.message ||
-          "Registration failed. Please try again."
+          "Registration failed. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -71,19 +67,12 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
-<<<<<<< HEAD
-      {/* Header */}
-=======
-
       {/* Header (same as login) */}
->>>>>>> 3150e63 (work on login and fetch api login)
       <div className="p-10 text-center bg-[#0F172A] text-white">
         <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
           <GraduationCap className="w-10 h-10 text-white" />
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">
-          Student Life
-        </h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">Student Life</h1>
         <p className="text-slate-400 mt-2 text-sm uppercase tracking-widest font-semibold">
           Member Register
         </p>
@@ -99,10 +88,6 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleRegister} className="space-y-6">
-<<<<<<< HEAD
-=======
-
->>>>>>> 3150e63 (work on login and fetch api login)
           {/* Fullname */}
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />

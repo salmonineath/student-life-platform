@@ -61,16 +61,11 @@ type NavItem = {
 
 const platformNav: NavItem[] = [
   {
-<<<<<<< HEAD
     title: "Study Groups",
-=======
-    title: "Playground",
->>>>>>> 8058b54 (add shadcn component)
     url: "#",
     icon: LayoutGrid,
     isActive: true,
     items: [
-<<<<<<< HEAD
       { title: "Group 1", url: "#" },
       { title: "Group 2", url: "#" },
       { title: "Group 3", url: "#" },
@@ -78,24 +73,11 @@ const platformNav: NavItem[] = [
   },
   {
     title: "AI Chat",
-=======
-      { title: "History", url: "#" },
-      { title: "Starred", url: "#" },
-      { title: "Settings", url: "#" },
-    ],
-  },
-  {
-    title: "Models",
->>>>>>> 8058b54 (add shadcn component)
     url: "#",
     icon: Bot,
   },
   {
-<<<<<<< HEAD
     title: "Notes",
-=======
-    title: "Documentation",
->>>>>>> 8058b54 (add shadcn component)
     url: "#",
     icon: BookOpen,
   },
@@ -133,15 +115,9 @@ export function AdminAppSideBar(props: React.ComponentProps<typeof Sidebar>) {
                   </div>
 
                   <div className="grid flex-1 text-left text-sm leading-tight">
-<<<<<<< HEAD
                     <span className="truncate font-semibold">Welcome</span>
                     <span className="truncate text-xs text-muted-foreground">
                       Admin Dashboard
-=======
-                    <span className="truncate font-semibold">Acme Inc</span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      Enterprise
->>>>>>> 8058b54 (add shadcn component)
                     </span>
                   </div>
 
@@ -243,7 +219,7 @@ export function AdminAppSideBar(props: React.ComponentProps<typeof Sidebar>) {
                 >
                   <Avatar className="size-8 rounded-lg">
                     <AvatarImage src="/avatars/shadcn.jpg" alt="shadcn" />
-                    <AvatarFallback className="rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 text-white text-xs font-bold">
+                    <AvatarFallback className="rounded-lg bg-linear-to-br from-violet-500 to-pink-500 text-white text-xs font-bold">
                       SC
                     </AvatarFallback>
                   </Avatar>

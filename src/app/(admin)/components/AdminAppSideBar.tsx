@@ -61,23 +61,23 @@ type NavItem = {
 
 const platformNav: NavItem[] = [
   {
-    title: "Playground",
+    title: "Study Groups",
     url: "#",
     icon: LayoutGrid,
     isActive: true,
     items: [
-      { title: "History", url: "#" },
-      { title: "Starred", url: "#" },
-      { title: "Settings", url: "#" },
+      { title: "Group 1", url: "#" },
+      { title: "Group 2", url: "#" },
+      { title: "Group 3", url: "#" },
     ],
   },
   {
-    title: "Models",
+    title: "AI Chat",
     url: "#",
     icon: Bot,
   },
   {
-    title: "Documentation",
+    title: "Notes",
     url: "#",
     icon: BookOpen,
   },
@@ -115,9 +115,9 @@ export function AdminAppSideBar(props: React.ComponentProps<typeof Sidebar>) {
                   </div>
 
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Acme Inc</span>
+                    <span className="truncate font-semibold">Welcome</span>
                     <span className="truncate text-xs text-muted-foreground">
-                      Enterprise
+                      Admin Dashboard
                     </span>
                   </div>
 

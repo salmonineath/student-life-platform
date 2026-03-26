@@ -85,7 +85,7 @@ export default function LoginPage() {
 
     <input
       required
-      name="Email or username"
+      name="email_or_username"
       type="text"
       value={formData.email_or_username}
       onChange={handleChange}

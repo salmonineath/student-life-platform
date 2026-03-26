@@ -52,7 +52,8 @@ export default function RegisterPage() {
         { withCredentials: true }
       );
 
-      router.push("/");
+      // ✅ redirect to dashboard after register success
+      router.push("/dashboard");
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>;
       setError(
@@ -66,8 +67,7 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
-
-      {/* Header (same as login) */}
+      {/* Header */}
       <div className="p-10 text-center bg-[#0F172A] text-white">
         <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
           <GraduationCap className="w-10 h-10 text-white" />
@@ -90,7 +90,6 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleRegister} className="space-y-6">
-
           {/* Fullname */}
           <div className="relative group">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />

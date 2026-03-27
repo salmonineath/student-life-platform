@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { usePathname, useRouter } from "next/navigation";
+
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard,
@@ -12,14 +12,10 @@ import {
   Settings,
   LogOut,
   GraduationCap,
-  Menu,
-  X,
 } from "lucide-react";
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   // Navigation items array for easy management
   const navItems = [
@@ -38,10 +34,6 @@ const Sidebar = () => {
     // router.push("/login");
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
   // Check if a nav item is active
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -52,33 +44,12 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Mobile Menu Button - Fixed on mobile screens */}
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg border border-slate-200 hover:bg-slate-50 transition-all"
-      >
-        {isMobileMenuOpen ? (
-          <X className="w-5 h-5 text-slate-600" />
-        ) : (
-          <Menu className="w-5 h-5 text-slate-600" />
-        )}
-      </button>
-
-      {/* Overlay for mobile */}
-      {isMobileMenuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
-          onClick={closeMobileMenu}
-        />
-      )}
-
       {/* Sidebar */}
       <aside
         className={`
           fixed top-0 left-0 h-screen bg-white border-r border-slate-200 text-slate-800 flex flex-col z-40
           transition-transform duration-300 ease-in-out
           w-72 lg:w-64
-          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
         {/* 1. Logo Section */}
@@ -102,7 +73,6 @@ const Sidebar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                onClick={closeMobileMenu}
                 className={`
                   flex items-center gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all duration-200 group
                   ${
@@ -153,11 +123,6 @@ const Sidebar = () => {
           </button>
         </div>
       </aside>
-
-      {/* Main content offset for desktop */}
-      <main className="lg:ml-64 min-h-screen">
-        {/* Your page content will go here */}
-      </main>
     </>
   );
 };

@@ -36,7 +36,7 @@ export default function WeeklySchedule() {
               Weekly Schedule
             </h1>
             <p className="text-slate-500 mt-2">
-              Set and manage your repeating weekly schedule.
+              Set and manage your weekly schedule.
             </p>
           </div>
           <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-sm">

@@ -1,22 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
-import {
-  GraduationCap,
-  User,
-  Lock,
-  Mail,
-  Phone,
-  BookOpen,
-  Loader2,
-  AlertCircle,
-} from "lucide-react";
-import axios, { AxiosError } from "axios";
 
-export default function RegisterPage() {
-  const router = useRouter();
-
+const RegisterPage = () => {
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
     username: "",
@@ -27,204 +17,232 @@ export default function RegisterPage() {
     major: "",
     academicYear: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const handleChange = (e: any) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const router = useRouter();
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_UL || "http://localhost:5000/api/v1";
+
+  const handleRegister = async () => {
     setLoading(true);
     setError("");
 
     try {
-      await axios.post(`${API_URL}/api/v1/auth/register`, formData, {
+      const res = await axios.post(`${API_URL}/auth/register`, formData, {
         withCredentials: true,
       });
 
-      // ✅ redirect to dashboard after register success
+      console.log("Registration successful:", res.data);
+
+      // after registration success redirect to dashboard
       router.push("/dashboard");
-    } catch (err) {
-      const axiosErr = err as AxiosError<{ message: string }>;
-      setError(
-        axiosErr.response?.data?.message ||
-          "Registration failed. Please try again.",
-      );
+    } catch (err: any) {
+      if (err.response) {
+        setError(err.response.data?.message || "Register failed");
+      } else if (err.request) {
+        setError("No response from server");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
-      {/* Header (same as login) */}
-      <div className="p-10 text-center bg-[#0F172A] text-white">
-        <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
-          <GraduationCap className="w-10 h-10 text-white" />
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        {/* LEFT */}
+        <div className="flex flex-col justify-center items-center bg-[#0F172A] text-white p-10">
+          <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
+            <GraduationCap className="w-10 h-10 text-white" />
+          </div>
+
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            Student Life
+          </h1>
+
+          <div className="mt-4 text-center text-slate-400 text-sm max-w-xs">
+            Manage your schedule, assignments, and study groups all in one
+            place.
+          </div>
         </div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Student Life</h1>
-        <p className="text-slate-400 mt-2 text-sm uppercase tracking-widest font-semibold">
-          Member Register
-        </p>
-      </div>
 
-      {/* Form */}
-      <div className="p-10">
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-center gap-3 rounded-r-xl">
-            <AlertCircle className="w-5 h-5 shrink-0" />
-            <p className="font-medium">{error}</p>
-          </div>
-        )}
+        {/* RIGHT */}
+        <div className="p-10 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-sky-600 mb-2">
+            Create your account
+          </h2>
 
-        <form onSubmit={handleRegister} className="space-y-6">
-          {/* Fullname */}
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="fullname"
-              type="text"
-              placeholder="Full Name"
-              value={formData.fullname}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">Fullname</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="fullname"
+                value={formData.fullname}
+                onChange={handleChange}
+                required
+                placeholder="John Doe"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* Username */}
-          <div className="relative group">
-            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="username"
-              type="text"
-              placeholder="Username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">Username</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+                placeholder="john_doe"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
           {/* Email */}
-          <div className="relative group">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="email"
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">Email</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <Mail className="w-4 h-4 text-gray-400 mr-2" />
+              <input
+                type="text"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="example@gmail.com"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
           {/* Password */}
-          <div className="relative group">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="password"
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-2">
+            <label className="text-sm text-gray-500 mb-1 block">Password</label>
+
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <Lock className="w-4 h-4 text-gray-400 mr-2" />
+
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                placeholder="••••••••"
+                className="w-full outline-none text-sm"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </div>
           </div>
 
-          {/* Phone */}
-          <div className="relative group">
-            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="phone"
-              type="text"
-              placeholder="Phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">
+              Phone Number
+            </label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="(optional)"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* University */}
-          <div className="relative group">
-            <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="university"
-              type="text"
-              placeholder="University"
-              value={formData.university}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">
+              University
+            </label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="university"
+                value={formData.university}
+                onChange={handleChange}
+                placeholder="(optional)"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* Major */}
-          <div className="relative group">
-            <BookOpen className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="major"
-              type="text"
-              placeholder="Major"
-              value={formData.major}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">Major</label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="major"
+                value={formData.major}
+                onChange={handleChange}
+                placeholder="(optional)"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* Academic Year */}
-          <div className="relative group">
-            <GraduationCap className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-600" />
-            <input
-              name="academicYear"
-              type="text"
-              placeholder="Academic Year (e.g. 1,2,3,4)"
-              value={formData.academicYear}
-              onChange={handleChange}
-              className="w-full pl-12 pr-4 py-4 bg-white border border-slate-300 rounded-2xl text-slate-900 placeholder:text-slate-500 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 outline-none"
-              required
-            />
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">
+              Academic Year
+            </label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <input
+                type="text"
+                name="academicYear"
+                value={formData.academicYear}
+                onChange={handleChange}
+                placeholder="(optional)"
+                className="w-full outline-none text-sm"
+              />
+            </div>
           </div>
 
-          {/* Button */}
+          {/* Error */}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+          {/* Login Button */}
           <button
-            type="submit"
+            onClick={handleRegister}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-4 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-3"
+            className="mt-6 bg-sky-500 hover:bg-sky-600 text-white py-2 rounded-lg font-semibold transition disabled:opacity-50"
           >
-            {loading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              "Create Account"
-            )}
+            {loading ? "Registering..." : "REGISTER"}
           </button>
-        </form>
 
-        {/* Login link */}
-        <p className="text-center mt-8 text-sm text-slate-500">
-          Already have an account?{" "}
-          <span
-            onClick={() => router.push("/")}
-            className="text-blue-600 font-bold hover:underline cursor-pointer"
-          >
-            Login
-          </span>
-        </p>
+          {/* Register */}
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Already have an account?{" "}
+            <span className="text-sky-500 cursor-pointer hover:underline">
+              Login
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default RegisterPage;

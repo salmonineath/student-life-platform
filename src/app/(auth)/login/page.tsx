@@ -1,181 +1,143 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
+import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Lock, Mail, Loader2, AlertCircle } from "lucide-react";
-import axios, { AxiosError } from "axios";
+import Link from "next/link";
+import axiosInstance from "@/lib/axios";
 
-export default function LoginPage() {
-  const router = useRouter();
-
-  // 1. State Management
-  const [formData, setFormData] = useState({
-    email_or_username: "",
-    password: "",
-  });
+const LoginPage = () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailOrUsername, setEmailOrUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 2. Handle Input Changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  // 3. The Login Logic
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     setLoading(true);
     setError("");
 
     try {
-      await axios.post(`${API_URL}/api/v1/auth/login`, formData, {
-        withCredentials: true, // sends & receives HTTP-only cookies
+      // Step 1: Login — backend sets accessToken + refreshToken in cookies
+      await axiosInstance.post("/auth/login", {
+        email_or_username: emailOrUsername,
+        password: password,
       });
 
+      // Step 2: Redirect — AuthContext in (student) layout will auto-fetch /me
       router.push("/dashboard");
-    } catch (err) {
-      const axiosErr = err as AxiosError<{ message: string }>;
-      const message =
-        axiosErr.response?.data?.message ||
-        "Invalid email/username or password. Please try again.";
-      setError(message);
+    } catch (err: any) {
+      if (err.response) {
+        setError(err.response.data?.message || "Login failed");
+      } else if (err.request) {
+        setError("No response from server");
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden transition-all">
-        {/* Header Section */}
-        <div className="p-10 text-center bg-[#0F172A] text-white">
-          <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-4 shadow-lg shadow-blue-500/30">
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        {/* LEFT */}
+        <div className="flex flex-col justify-center items-center bg-[#0F172A] text-white p-10">
+          <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
+
           <h1 className="text-3xl font-extrabold tracking-tight">
             Student Life
           </h1>
-          <p className="text-slate-400 mt-2 text-sm uppercase tracking-widest font-semibold">
-            Welcome back!
-          </p>
+
+          <div className="mt-4 text-center text-slate-400 text-sm max-w-xs">
+            Manage your schedule, assignments, and study groups all in one
+            place.
+          </div>
         </div>
 
-        {/* Form Section */}
-        <div className="p-10">
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm flex items-center gap-3 rounded-r-xl animate-in fade-in slide-in-from-top-2">
-              <AlertCircle className="w-5 h-5 shrink-0" />
-              <p className="font-medium">{error}</p>
+        {/* RIGHT */}
+        <div className="p-10 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-sky-600 mb-2">
+            Welcome Back!
+          </h2>
+
+          {/* Email */}
+          <div className="mb-4">
+            <label className="text-sm text-gray-500 mb-1 block">
+              Email or Username
+            </label>
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <Mail className="w-4 h-4 text-gray-400 mr-2" />
+              <input
+                type="text"
+                value={emailOrUsername}
+                onChange={(e) => setEmailOrUsername(e.target.value)}
+                placeholder="example@email.com"
+                className="w-full outline-none text-sm"
+              />
             </div>
-          )}
+          </div>
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            {/* Email Field */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700 uppercase ml-1">
-                Email or Username
-              </label>
+          {/* Password */}
+          <div className="mb-2">
+            <label className="text-sm text-gray-500 mb-1 block">Password</label>
 
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-600 transition-colors" />
+            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
+              <Lock className="w-4 h-4 text-gray-400 mr-2" />
 
-                <input
-                  required
-                  name="email_or_username"
-                  type="text"
-                  value={formData.email_or_username}
-                  onChange={handleChange}
-                  placeholder="name@university.edu.kh"
-                  className="w-full pl-12 pr-4 py-4 
-                 bg-white 
-                 border border-slate-300 
-                 text-slate-900
-                 rounded-2xl 
-                 outline-none 
-                 transition-all
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full outline-none text-sm"
+              />
 
-                 placeholder:text-slate-500
-
-                 hover:border-slate-400
-                 focus:border-blue-600 
-                 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
             </div>
+          </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-xs font-semibold text-slate-700 uppercase">
-                  Password
-                </label>
+          {/* Error */}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
 
-                <button
-                  type="button"
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                >
-                  Forgot?
-                </button>
-              </div>
+          {/* Login Button */}
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            className="mt-6 bg-sky-500 hover:bg-sky-600 text-white py-2 rounded-lg font-semibold transition disabled:opacity-50"
+          >
+            {loading ? "Logging in..." : "LOGIN"}
+          </button>
 
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-blue-600 transition-colors" />
-
-                <input
-                  required
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className="w-full pl-12 pr-4 py-4 
-                 bg-white 
-                 border border-slate-300 
-                 text-slate-900
-                 rounded-2xl 
-                 outline-none 
-                 transition-all
-
-                 placeholder:text-slate-500
-
-                 hover:border-slate-400
-                 focus:border-blue-600 
-                 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </div>
-            </div>
-
-            {/* Sign In Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-blue-500/20 flex items-center justify-center gap-3 group active:scale-[0.98]"
+          {/* Register */}
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Don't have account?{" "}
+            <Link
+              href="/register"
+              className="text-sky-500 cursor-pointer hover:underline"
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <span>Sign In</span>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center mt-10 text-sm text-slate-500 font-medium">
-            New student?
-            <button
-              onClick={() => router.push("/register")}
-              className="text-blue-600 font-bold hover:underline"
-            >
-              {" "}
-              Create an account
-            </button>
+              Register
+            </Link>
           </p>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;

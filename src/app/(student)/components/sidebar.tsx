@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   GraduationCap,
+  User,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -25,6 +26,7 @@ const Sidebar = () => {
     { name: "Study Group", icon: Users, href: "/groups" },
     { name: "Notes", icon: StickyNote, href: "/notes" },
     { name: "AI Chat", icon: BotMessageSquare, href: "/chat" },
+    { name: "Profile", icon: User, href: "/profile" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
 

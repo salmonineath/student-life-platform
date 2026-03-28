@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
-const UNIVERSITIES = ["NUM", "ITC", "RUPP", "UEC", "AUPP", "PUC"];
+const UNIVERSITIES = ["CADT", "ITC", "RUPP", "UEC", "AUPP", "PUC"];
 
 export default function BannerSection() {
   useEffect(() => {
@@ -15,9 +15,7 @@ export default function BannerSection() {
     <section id="for-students" className="py-24 px-6 bg-white">
       <div className="max-w-4xl mx-auto text-center">
         <h2 data-aos="fade-up" className="text-4xl font-bold text-slate-900">
-          Made for Cambodian university students,
-          <br />
-          by someone who understands the struggle
+          Built for University Students
         </h2>
 
         <p
@@ -25,8 +23,8 @@ export default function BannerSection() {
           data-aos-delay="100"
           className="mt-8 text-lg text-slate-600 leading-relaxed"
         >
-          We know how hard it is to keep everything organized when information
-          is spread across Telegram, Facebook, and paper notebooks.
+          Managing university life is difficult when information is scattered
+          across Telegram, Facebook groups, and notebooks.
         </p>
 
         <p
@@ -34,8 +32,8 @@ export default function BannerSection() {
           data-aos-delay="150"
           className="mt-4 text-slate-600"
         >
-          Student Life brings it all together in one clean, fast, and reliable
-          platform.
+          Student Life brings everything together into one simple, clean, and
+          reliable platform.
         </p>
 
         <div

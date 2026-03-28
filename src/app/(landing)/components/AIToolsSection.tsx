@@ -20,8 +20,7 @@ export default function AIToolSection() {
             Study smarter with AI
           </h2>
           <p className="mt-4 text-slate-600 text-lg max-w-xl mx-auto">
-            Use AI when you want help. Stay in full control — AI never touches
-            your personal notes.
+            Use AI when you need. Stay in full control over your learning.
           </p>
         </div>
 

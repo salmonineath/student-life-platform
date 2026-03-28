@@ -1,4 +1,3 @@
-
 export default function ProfilePage() {
   // Static user data for now
   const user = {
@@ -14,7 +13,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-slate-50 flex justify-center p-6 font-sans">
       <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-        
         {/* Header */}
         <div className="p-10 text-center bg-[#0F172A] text-white">
           <img
@@ -44,7 +42,9 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <h2 className="text-sm font-semibold text-slate-500">Academic Year</h2>
+            <h2 className="text-sm font-semibold text-slate-500">
+              Academic Year
+            </h2>
             <p className="text-slate-900">{user.academicYear}</p>
           </div>
 

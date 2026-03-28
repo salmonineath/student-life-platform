@@ -13,37 +13,25 @@ export default function LandingPage() {
       <Header />
 
       {/* Hero Section */}
-      <div>
-        <HeroSection />
-      </div>
+      <HeroSection />
 
       {/* Trust Bar */}
       {/* <div></div> */}
 
       {/* Features Section */}
-      <div>
-        <FeatureSection />
-      </div>
+      <FeatureSection />
 
       {/* AI Tools Section */}
-      <div>
-        <AIToolSection />
-      </div>
+      <AIToolSection />
 
       {/* For Cambodian Students */}
-      <div>
-        <BannerSection />
-      </div>
+      <BannerSection />
 
       {/* Final CTA */}
-      <div>
-        <CTASection />
-      </div>
+      <CTASection />
 
       {/* Footer */}
-      <div>
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 }

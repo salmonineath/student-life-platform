@@ -37,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const res = await axiosInstance.get("/me");
         setUser(res.data.data);
+        console.log(res);
       } catch (err) {
         // interceptor will handle refresh + redirect to login if needed
         setUser(null);

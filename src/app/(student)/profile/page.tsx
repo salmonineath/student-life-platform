@@ -29,7 +29,9 @@ export default function ProfilePage() {
           <h2 className="text-lg font-semibold text-slate-800">
             {user.fullname}
           </h2>
-          <p className="text-sm text-slate-500">@{user.username}</p>
+          {/* <p className="text-sm text-slate-500">{user.username}</p> */}
+          {/* <p className="text-sm text-slate-500">{user.university}</p> */}
+          <p className="text-sm text-slate-500">{user.academicYear}</p>
         </div>
       </div>
 
@@ -50,10 +52,10 @@ export default function ProfilePage() {
             <p className="font-medium">{user.fullname || "fullname"}</p>
           </div>
 
-          <div>
+          {/* <div>
             <p className="text-slate-400">Username</p>
             <p className="font-medium">{user.username || "username"}</p>
-          </div>
+          </div> */}
 
           <div>
             <p className="text-slate-400">Phone Number</p>

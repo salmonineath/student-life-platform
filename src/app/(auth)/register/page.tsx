@@ -27,7 +27,7 @@ const RegisterPage = () => {
   const router = useRouter();
 
   const API_URL =
-    process.env.NEXT_PUBLIC_API_UL || "http://localhost:5000/api/v1";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
   const handleRegister = async () => {
     setLoading(true);

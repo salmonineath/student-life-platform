@@ -23,8 +23,8 @@ export const middleware = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("accessToken")?.value;
-  const refreshToken = request.cookies.get("refreshToken")?.value;
-  const token = accessToken || refreshToken;
+  // const refreshToken = request.cookies.get("refreshToken")?.value;
+  const token = accessToken;
 
   const isPublicRoute = publicRoutes.includes(pathname);
   const isProtectedRoute = protectedRoutes.some((route) =>

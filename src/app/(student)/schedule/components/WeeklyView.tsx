@@ -1,5 +1,9 @@
 import { ScheduleItem } from "@/types/scheduleTypes";
-import { DAY_NAMES, getItemsForWeekday, isSameDay } from "@/lib/schdeulsUtils";
+import {
+  DAY_NAMES,
+  getItemsForWeekday,
+  isSameDay,
+} from "@/lib/utils/schdeulsUtils";
 import EventCard from "./EventCard";
 
 interface Props {

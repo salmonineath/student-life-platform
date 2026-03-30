@@ -5,7 +5,7 @@ import {
   MONTH_NAMES,
   getItemsForDate,
   isSameDay,
-} from "@/lib/schdeulsUtils";
+} from "@/lib/utils/schdeulsUtils";
 import EventCard from "./EventCard";
 
 interface Props {

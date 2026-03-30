@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Star } from "lucide-react";
 
 import { ScheduleItem, ViewMode } from "@/types/scheduleTypes";
-import { DAY_FULL, MONTH_NAMES, getWeekDates } from "@/lib/schdeulsUtils";
+import { DAY_FULL, MONTH_NAMES, getWeekDates } from "@/lib/utils/schdeulsUtils";
 
 import ViewSwitcher from "./components/ViewSwitcher";
 import NavControls from "./components/NavControls";

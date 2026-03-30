@@ -5,7 +5,7 @@ import {
   getItemsForDate,
   getMonthGrid,
   isSameDay,
-} from "@/lib/schdeulsUtils";
+} from "@/lib/utils/schdeulsUtils";
 
 interface Props {
   items: ScheduleItem[];

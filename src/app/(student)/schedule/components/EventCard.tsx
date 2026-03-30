@@ -1,6 +1,6 @@
 import { Clock, MapPin, Pencil, Star, Trash2 } from "lucide-react";
 import { ScheduleItem } from "@/types/scheduleTypes";
-import { getColor, getDisplayTime } from "@/lib/schdeulsUtils";
+import { getColor, getDisplayTime } from "@/lib/utils/schdeulsUtils";
 
 interface Props {
   item: ScheduleItem;

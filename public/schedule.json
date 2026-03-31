@@ -1,0 +1,233 @@
+{
+  "status": 200,
+  "success": true,
+  "message": "Retrieve schedule successfully.",
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "title": "Computer Networks",
+        "description": "Weekly lecture covering OSI model and TCP/IP protocols",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 1,
+        "recurringStartTime": "08:00:00",
+        "recurringEndTime": "09:30:00",
+        "location": "Lecture Hall B",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Data Structures & Algorithms",
+        "description": "Practice problems on trees and graphs",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 1,
+        "recurringStartTime": "13:00:00",
+        "recurringEndTime": "15:00:00",
+        "location": "Lab 03",
+        "isImportant": true,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Calculus III",
+        "description": "Multivariable calculus - integrals and vector fields",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 2,
+        "recurringStartTime": "09:00:00",
+        "recurringEndTime": "10:30:00",
+        "location": "Room 205",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Group Study — Midterm Prep",
+        "description": "Review chapters 4 and 5 for the midterm exam with study group",
+        "type": "ONE_TIME",
+        "startTime": "2026-03-31T14:00:00",
+        "endTime": "2026-03-31T17:00:00",
+        "dayOfWeek": 0,
+        "recurringStartTime": null,
+        "recurringEndTime": null,
+        "location": "Library, Room 108",
+        "isImportant": true,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Software Engineering",
+        "description": "Agile methodologies and sprint planning lecture",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 3,
+        "recurringStartTime": "10:00:00",
+        "recurringEndTime": "12:00:00",
+        "location": "Room 206",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 6,
+        "title": "Exercise & Gym",
+        "description": "Cardio and weight training routine",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 2,
+        "recurringStartTime": "16:00:00",
+        "recurringEndTime": "17:30:00",
+        "location": "Sports Complex",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 7,
+        "title": "Database Systems",
+        "description": "SQL advanced queries and normalization",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 4,
+        "recurringStartTime": "08:30:00",
+        "recurringEndTime": "10:00:00",
+        "location": "Lab 01",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Assignment Deadline — Networks Lab",
+        "description": "Submit the packet tracer simulation assignment on LMS",
+        "type": "ONE_TIME",
+        "startTime": "2026-04-04T23:59:00",
+        "endTime": "2026-04-04T23:59:00",
+        "dayOfWeek": 0,
+        "recurringStartTime": null,
+        "recurringEndTime": null,
+        "location": "Online — LMS Portal",
+        "isImportant": true,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 9,
+        "title": "English Communication",
+        "description": "Presentation skills and technical writing workshop",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 5,
+        "recurringStartTime": "13:00:00",
+        "recurringEndTime": "14:30:00",
+        "location": "Room F14",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 10,
+        "title": "Personal Study Block",
+        "description": "Self-directed review of lecture notes and problem sets",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 0,
+        "recurringStartTime": "19:00:00",
+        "recurringEndTime": "21:00:00",
+        "location": "Dorm Room",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 11,
+        "title": "Operating Systems",
+        "description": "Process scheduling and memory management",
+        "type": "RECURRING",
+        "startTime": null,
+        "endTime": null,
+        "dayOfWeek": 3,
+        "recurringStartTime": "14:00:00",
+        "recurringEndTime": "15:30:00",
+        "location": "Lecture Hall A",
+        "isImportant": false,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Advisor Meeting",
+        "description": "Discuss course registration and academic plan for next semester",
+        "type": "ONE_TIME",
+        "startTime": "2026-04-02T11:00:00",
+        "endTime": "2026-04-02T11:30:00",
+        "dayOfWeek": 0,
+        "recurringStartTime": null,
+        "recurringEndTime": null,
+        "location": "Faculty Office, Block C",
+        "isImportant": true,
+        "createdBy": {
+          "id": 3,
+          "fullname": "student 2",
+          "username": "student123"
+        }
+      }
+    ],
+    "pagination": {
+      "currentPage": 0,
+      "pageSize": 50,
+      "totalElements": 12,
+      "totalPages": 1,
+      "hasNext": false,
+      "hasPrevious": false
+    }
+  }
+}

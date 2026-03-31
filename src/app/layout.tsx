@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Landing page",
@@ -16,7 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("scroll-smooth", "font-sans", geist.variable)}>
+    <html
+      lang="en"
+      className={cn("scroll-smooth", "font-sans", geist.variable)}
+    >
       <body className={`${geist.variable} font-sans`}>{children}</body>
     </html>
   );

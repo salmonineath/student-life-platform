@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils/utils";
+import Providers from "./providers";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -20,7 +21,10 @@ export default function RootLayout({
       lang="en"
       className={cn("scroll-smooth", "font-sans", geist.variable)}
     >
-      <body className={`${geist.variable} font-sans`}>{children}</body>
+      <body className={`${geist.variable} font-sans`}>
+        {" "}
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

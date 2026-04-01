@@ -14,8 +14,17 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
+import { useAppDispatch } from "@/hook/useAuth";
+import { logoutUser } from "@/slices/authSlice";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const Sidebar = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const dispatch = useAppDispatch();
+  const router = useRouter();
   const pathname = usePathname();
 
   // Navigation items array for easy management
@@ -30,10 +39,28 @@ const Sidebar = () => {
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    console.log("Logging out...");
-    // router.push("/login");
+  const handleLogout = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      await dispatch(logoutUser());
+      console.log("Logging out...");
+      router.push("/login");
+    } catch (err: any) {
+      if (err.response) {
+        console.error(
+          "Logout failed:",
+          err.response.data?.message || err.message,
+        );
+      } else if (err.request) {
+        console.error("No response from server during logout");
+      } else {
+        console.error("Error during logout:", err.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Check if a nav item is active
@@ -109,19 +136,51 @@ const Sidebar = () => {
         </nav>
 
         {/* 3. Bottom Logout Button */}
+        {/* 3. Bottom Logout Button */}
         <div className="p-3 lg:p-4 border-t border-slate-200 mt-auto">
+          {/* Error */}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
           <button
             onClick={handleLogout}
-            className="group relative flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2.5 lg:py-3 rounded-xl font-semibold text-sm lg:text-base shadow-lg shadow-red-200 transition-all duration-300 active:scale-[0.97] overflow-hidden"
+            disabled={loading}
+            className={`group relative flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-red-600  hover:from-red-600 hover:to-red-700  text-white py-2.5 lg:py-3 rounded-xl font-semibold  text-sm lg:text-base shadow-lg shadow-red-200  transition-all duration-300 active:scale-[0.97]  overflow-hidden
+              ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
-            {/* Animated shine effect */}
-            <span className="absolute inset-0 -skew-x-12 -translate-x-full group-hover:translate-x-full bg-white/20 transition-transform duration-700 w-3/5" />
+            {/* Animated shine effect (hide when loading) */}
+            {!loading && (
+              <span className="absolute inset-0 -skew-x-12 -translate-x-full group-hover:translate-x-full bg-white/20 transition-transform duration-700 w-3/5" />
+            )}
 
-            {/* Icon with animation */}
-            <LogOut className="w-4 h-4 lg:w-5 lg:h-5 transition-transform duration-300 group-hover:translate-x-1 group-hover:rotate-6 relative z-10" />
+            {/* Loading Spinner */}
+            {loading ? (
+              <svg
+                className="animate-spin w-4 h-4 lg:w-5 lg:h-5 relative z-10"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="white"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="white"
+                  d="M4 12a8 8 0 018-8v8H4z"
+                />
+              </svg>
+            ) : (
+              <LogOut className="w-4 h-4 lg:w-5 lg:h-5 transition-transform duration-300 group-hover:translate-x-1 group-hover:rotate-6 relative z-10" />
+            )}
 
             {/* Text */}
-            <span className="relative z-10 font-medium">Logout</span>
+            <span className="relative z-10 font-medium">
+              {loading ? "Logging out..." : "Logout"}
+            </span>
           </button>
         </div>
       </aside>

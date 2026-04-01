@@ -1,10 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import { SquarePen } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAppDispatch, useAppSelector } from "@/hook/useAuth";
+import { fetchMe } from "@/slices/authSlice";
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const dispatch = useAppDispatch();
+  const { user, loading } = useAppSelector((state) => state.auth);
+
+  useEffect(() => {
+    // only fetch if user not already loaded
+    if (!user) {
+      dispatch(fetchMe());
+    }
+  }, [dispatch, user]);
 
   if (loading) {
     return <p className="p-6 text-slate-500">Loading profile...</p>;
@@ -16,10 +26,8 @@ export default function ProfilePage() {
 
   return (
     <>
-      {/* PAGE TITLE */}
       <h1 className="text-2xl font-semibold mb-4">My Profile</h1>
 
-      {/* PROFILE CARD */}
       <div className="bg-white rounded-xl p-6 shadow-sm mb-6 flex items-center gap-4">
         <div className="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center text-white font-bold text-lg">
           {user.fullname?.charAt(0).toUpperCase()}
@@ -29,13 +37,10 @@ export default function ProfilePage() {
           <h2 className="text-lg font-semibold text-slate-800">
             {user.fullname}
           </h2>
-          {/* <p className="text-sm text-slate-500">{user.username}</p> */}
-          {/* <p className="text-sm text-slate-500">{user.university}</p> */}
           <p className="text-sm text-slate-500">{user.academicYear}</p>
         </div>
       </div>
 
-      {/* PERSONAL INFO */}
       <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="font-semibold text-slate-700">Personal Information</h2>
@@ -49,34 +54,27 @@ export default function ProfilePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
           <div>
             <p className="text-slate-400">Fullname</p>
-            <p className="font-medium">{user.fullname || "fullname"}</p>
+            <p className="font-medium">{user.fullname}</p>
           </div>
-
-          {/* <div>
-            <p className="text-slate-400">Username</p>
-            <p className="font-medium">{user.username || "username"}</p>
-          </div> */}
 
           <div>
             <p className="text-slate-400">Phone Number</p>
-            <p className="font-medium">{user.phone || "phone number"}</p>
+            <p className="font-medium">{user.phone || "-"}</p>
           </div>
 
           <div>
             <p className="text-slate-400">University</p>
-            <p className="font-medium">{user.university || "university"}</p>
+            <p className="font-medium">{user.university || "-"}</p>
           </div>
 
           <div>
             <p className="text-slate-400">Major</p>
-            <p className="font-medium">{user.major || "major"}</p>
+            <p className="font-medium">{user.major || "-"}</p>
           </div>
 
           <div>
             <p className="text-slate-400">Academic Year</p>
-            <p className="font-medium">
-              {user.academicYear || "academic year"}
-            </p>
+            <p className="font-medium">{user.academicYear || "-"}</p>
           </div>
         </div>
       </div>

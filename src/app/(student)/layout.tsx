@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "./components/sidebar";
 import TopNav from "./components/topnav";
-import { AuthProvider } from "@/context/AuthContext";
+import ClientAuthWrapper from "@/app/(student)/ClientAuthWrapper";
 
 export default function StudentLayout({
   children,
@@ -9,7 +9,7 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   return (
-    <AuthProvider>
+    <ClientAuthWrapper>
       <div className="min-h-screen bg-gray-100 flex">
         {/* 1. Left Sidebar (Fixed width) */}
         <Sidebar />
@@ -23,6 +23,6 @@ export default function StudentLayout({
           <main className="p-6">{children}</main>
         </div>
       </div>
-    </AuthProvider>
+    </ClientAuthWrapper>
   );
 }

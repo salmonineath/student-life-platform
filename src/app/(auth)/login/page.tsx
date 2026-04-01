@@ -5,6 +5,8 @@ import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axiosInstance from "@/lib/axios";
+import { useAppDispatch } from "@/hook/useAuth";
+import { fetchMe } from "@/slices/authSlice";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +16,7 @@ const LoginPage = () => {
   const [error, setError] = useState("");
 
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -25,6 +28,8 @@ const LoginPage = () => {
         email_or_username: emailOrUsername,
         password: password,
       });
+
+      await dispatch(fetchMe());
 
       // Step 2: Redirect — AuthContext in (student) layout will auto-fetch /me
       router.push("/dashboard");

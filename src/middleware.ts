@@ -23,21 +23,22 @@ export const middleware = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
   const accessToken = request.cookies.get("accessToken")?.value;
-  // const refreshToken = request.cookies.get("refreshToken")?.value;
-  const hasToken = accessToken;
+  const refreshToken = request.cookies.get("refreshToken")?.value;
+
+  const hasAnyToken = accessToken || refreshToken;
 
   const isPublicRoute = publicRoutes.includes(pathname);
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   );
 
-  // Logged in + visiting public route → redirect to dashboard
-  if (hasToken && isPublicRoute) {
+  // Logged in (has any token) + visiting public route
+  if (hasAnyToken && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // No token at all → redirect to login
-  if (!hasToken && isProtectedRoute) {
+  if (!hasAnyToken && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
@@ -45,14 +46,5 @@ export const middleware = (request: NextRequest) => {
 };
 
 export const config = {
-  matcher: [
-    /*
-     * Match all routes except:
-     * - _next/static (stzzzzzzzzzatic files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - public files (e.g. images)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

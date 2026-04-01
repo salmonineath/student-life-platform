@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Plus, Star } from "lucide-react";
 
+import { AppDispatch, RootState } from "@/store/store";
+import { fetchMySchedule, deleteSchedule } from "@/slices/scheduleSlice";
 import { ScheduleItem, ViewMode } from "@/types/scheduleTypes";
 import { DAY_FULL, MONTH_NAMES, getWeekDates } from "@/lib/utils/schdeulsUtils";
 
@@ -11,34 +14,78 @@ import NavControls from "./components/NavControls";
 import WeeklyView from "./components/WeeklyView";
 import DailyView from "./components/DailyView";
 import MonthlyView from "./components/MonthlyView";
+import ScheduleModal from "./modal/ScheduleModal";
+import DeleteConfirmModal from "./modal/DeleteConfirmModal";
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+
+/** Format a Date to "YYYY-MM-DD" for the API */
+function toApiDate(date: Date): string {
+  return date.toISOString().split("T")[0];
+}
+
+function getWeekRange(anchor: Date): { startDate: string; endDate: string } {
+  const dates = getWeekDates(anchor);
+  return { startDate: toApiDate(dates[0]), endDate: toApiDate(dates[6]) };
+}
+
+function getDayRange(anchor: Date): { startDate: string; endDate: string } {
+  const d = toApiDate(anchor);
+  return { startDate: d, endDate: d };
+}
+
+function getMonthRange(
+  year: number,
+  month: number,
+): { startDate: string; endDate: string } {
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  return { startDate: toApiDate(first), endDate: toApiDate(last) };
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SchedulePage() {
   const today = new Date();
+  const dispatch = useDispatch<AppDispatch>();
 
+  const { items, loading } = useSelector((state: RootState) => state.schedule);
+
+  // ── View state ─────────────────────────────────────────────────────────────
   const [view, setView] = useState<ViewMode>("weekly");
-  const [items, setItems] = useState<ScheduleItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [anchorDate, setAnchorDate] = useState(today); // used by weekly & daily
+  const [anchorDate, setAnchorDate] = useState(today);
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
 
-  // ── Load mock data ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch("/schedule.json");
-        const json = await res.json();
-        setItems(json.data.items);
-      } catch (e) {
-        console.error("Failed to load schedule:", e);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  // ── Modal state ────────────────────────────────────────────────────────────
+  const [scheduleModal, setScheduleModal] = useState<{
+    open: boolean;
+    item: ScheduleItem | null;
+  }>({ open: false, item: null });
 
-  // ── Navigation ──────────────────────────────────────────────────────────────
+  const [deleteModal, setDeleteModal] = useState<{
+    open: boolean;
+    item: ScheduleItem | null;
+  }>({ open: false, item: null });
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // ── Fetch on view/date change ──────────────────────────────────────────────
+  const fetchForCurrentView = useCallback(() => {
+    let range: { startDate: string; endDate: string };
+
+    if (view === "weekly") range = getWeekRange(anchorDate);
+    else if (view === "daily") range = getDayRange(anchorDate);
+    else range = getMonthRange(calYear, calMonth);
+
+    dispatch(fetchMySchedule(range));
+  }, [view, anchorDate, calYear, calMonth, dispatch]);
+
+  useEffect(() => {
+    fetchForCurrentView();
+  }, [fetchForCurrentView]);
+
+  // ── Navigation ─────────────────────────────────────────────────────────────
   function goBack() {
     if (view === "weekly") {
       const d = new Date(anchorDate);
@@ -52,7 +99,9 @@ export default function SchedulePage() {
       if (calMonth === 0) {
         setCalYear((y) => y - 1);
         setCalMonth(11);
-      } else setCalMonth((m) => m - 1);
+      } else {
+        setCalMonth((m) => m - 1);
+      }
     }
   }
 
@@ -69,7 +118,9 @@ export default function SchedulePage() {
       if (calMonth === 11) {
         setCalYear((y) => y + 1);
         setCalMonth(0);
-      } else setCalMonth((m) => m + 1);
+      } else {
+        setCalMonth((m) => m + 1);
+      }
     }
   }
 
@@ -79,13 +130,12 @@ export default function SchedulePage() {
     setCalMonth(today.getMonth());
   }
 
-  // Clicking a day in weekly/monthly jumps to that day in daily view
   function handleDayClick(date: Date) {
     setAnchorDate(date);
     setView("daily");
   }
 
-  // ── Period label shown in the nav bar ───────────────────────────────────────
+  // ── Period label ───────────────────────────────────────────────────────────
   function getPeriodLabel(): string {
     if (view === "weekly") {
       const dates = getWeekDates(anchorDate);
@@ -102,24 +152,46 @@ export default function SchedulePage() {
     return `${MONTH_NAMES[calMonth]} ${calYear}`;
   }
 
-  // ── Summary counts ──────────────────────────────────────────────────────────
-  const totalImportant = items.filter((i) => i.isImportant).length;
+  // ── CRUD handlers ──────────────────────────────────────────────────────────
+  function handleEdit(item: ScheduleItem) {
+    setScheduleModal({ open: true, item });
+  }
+
+  function handleDeleteRequest(item: ScheduleItem) {
+    setDeleteModal({ open: true, item });
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteModal.item) return;
+    setIsDeleting(true);
+    try {
+      await dispatch(deleteSchedule(deleteModal.item.id)).unwrap();
+      setDeleteModal({ open: false, item: null });
+    } catch {
+      // error handled by slice; keep modal open
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  // ── Summary counts ─────────────────────────────────────────────────────────
+  const totalImportant = items.filter((i) => i.important).length;
   const totalRecurring = items.filter((i) => i.type === "RECURRING").length;
   const totalOneTime = items.filter((i) => i.type === "ONE_TIME").length;
 
-  // ── Loading state ───────────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto" />
-          <p className="mt-4 text-slate-400 text-sm">Loading your schedule…</p>
-        </div>
-      </div>
-    );
-  }
+  // ── Loading ────────────────────────────────────────────────────────────────
+  // if (loading && items.length === 0) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-slate-50">
+  //       <div className="text-center">
+  //         <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto" />
+  //         <p className="mt-4 text-slate-400 text-sm">Loading your schedule…</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
       <div className="space-y-6">
@@ -131,7 +203,10 @@ export default function SchedulePage() {
               Manage and view your personal study schedule
             </p>
           </div>
-          <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all shadow-sm hover:shadow-md">
+          <button
+            onClick={() => setScheduleModal({ open: true, item: null })}
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-all shadow-sm hover:shadow-md"
+          >
             <Plus className="w-4 h-4" />
             Add Schedule
           </button>
@@ -182,7 +257,7 @@ export default function SchedulePage() {
           />
         </div>
 
-        {/* Important events banner (weekly only) */}
+        {/* Important banner */}
         {view === "weekly" && totalImportant > 0 && (
           <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
             <Star className="w-4 h-4 text-amber-500 fill-amber-400 shrink-0" />
@@ -193,14 +268,22 @@ export default function SchedulePage() {
           </div>
         )}
 
+        {/* Refetch indicator (navigating while data loads) */}
+        {loading && items.length > 0 && (
+          <div className="flex items-center gap-2 text-slate-400 text-sm">
+            <div className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+            Updating…
+          </div>
+        )}
+
         {/* View content */}
         {view === "weekly" && (
           <WeeklyView
             items={items}
             weekDates={getWeekDates(anchorDate)}
             today={today}
-            onEdit={(item) => console.log("edit", item)}
-            onDelete={(id) => console.log("delete", id)}
+            onEdit={handleEdit}
+            onDelete={(item: any) => handleDeleteRequest(item)}
             onDayClick={handleDayClick}
           />
         )}
@@ -210,8 +293,8 @@ export default function SchedulePage() {
             items={items}
             date={anchorDate}
             today={today}
-            onEdit={(item) => console.log("edit", item)}
-            onDelete={(id) => console.log("delete", id)}
+            onEdit={handleEdit}
+            onDelete={(item: any) => handleDeleteRequest(item)}
           />
         )}
 
@@ -225,6 +308,25 @@ export default function SchedulePage() {
           />
         )}
       </div>
+
+      {/* Add / Edit modal */}
+      {scheduleModal.open && (
+        <ScheduleModal
+          item={scheduleModal.item}
+          onClose={() => setScheduleModal({ open: false, item: null })}
+          onSuccess={fetchForCurrentView}
+        />
+      )}
+
+      {/* Delete confirm modal */}
+      {deleteModal.open && deleteModal.item && (
+        <DeleteConfirmModal
+          title={deleteModal.item.title}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteModal({ open: false, item: null })}
+          isDeleting={isDeleting}
+        />
+      )}
     </>
   );
 }

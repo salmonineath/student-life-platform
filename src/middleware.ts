@@ -24,21 +24,20 @@ export const middleware = (request: NextRequest) => {
 
   const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
-
-  const hasAnyToken = accessToken || refreshToken;
+  const hasSession = accessToken || refreshToken;
 
   const isPublicRoute = publicRoutes.includes(pathname);
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   );
 
-  // Logged in (has any token) + visiting public route
-  if (hasAnyToken && isPublicRoute) {
+  // Has a session and tries to visit a public page → go to dashboard
+  if (hasSession && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // No token at all → redirect to login
-  if (!hasAnyToken && isProtectedRoute) {
+  // No session at all and tries to visit a protected page → go to login
+  if (!hasSession && isProtectedRoute) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

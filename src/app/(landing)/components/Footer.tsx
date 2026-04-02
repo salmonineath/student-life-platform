@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const FOOTER_LINKS = {
   Product: [
     { label: "Features", href: "#features" },
@@ -47,54 +49,33 @@ const SOCIALS = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-950 text-slate-400">
-      <div className="max-w-6xl mx-auto px-6 py-16">
-        {/* Top grid */}
+    <footer className="bg-navy">
+      <div className="max-w-6xl mx-auto px-6 py-14">
         <div className="grid grid-cols-2 gap-10 sm:grid-cols-2 md:grid-cols-4">
-          {/* Brand column — full width on smallest screens */}
           <div className="col-span-2 sm:col-span-2 md:col-span-1">
-            <a href="/" className="inline-flex items-center gap-3 text-white">
-              <div className="w-9 h-9 bg-blue-600 rounded-2xl flex items-center justify-center text-xl shrink-0">
-                🎓
-              </div>
-              <span className="font-semibold text-xl tracking-tight">
-                Student Life
-              </span>
-            </a>
-            <p className="mt-4 text-sm leading-relaxed max-w-xs">
+            <Link to="/" className="inline-flex items-center gap-2.5 text-white">
+              <div className="w-9 h-9 bg-primary rounded-2xl flex items-center justify-center text-xl shrink-0">🎓</div>
+              <span className="font-bold text-xl tracking-tight">Student Life</span>
+            </Link>
+            <p className="mt-4 text-sm leading-relaxed max-w-xs text-white/60">
               Your all-in-one academic companion for Cambodian universities.
             </p>
-
-            {/* Socials */}
-            <div className="mt-6 flex items-center gap-3">
+            <div className="mt-5 flex items-center gap-3">
               {SOCIALS.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  aria-label={s.label}
-                  className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
-                >
+                <a key={s.label} href={s.href} aria-label={s.label} className="w-8 h-8 rounded-lg bg-white/10 hover:bg-primary/30 text-white/60 hover:text-white flex items-center justify-center transition-colors">
                   {s.icon}
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Link columns */}
           {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
             <div key={heading}>
-              <h4 className="font-semibold text-white text-sm mb-4 tracking-wide uppercase">
-                {heading}
-              </h4>
-              <ul className="space-y-3">
+              <h4 className="font-semibold text-white text-sm mb-4 tracking-wide uppercase">{heading}</h4>
+              <ul className="space-y-2.5">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm hover:text-white transition-colors"
-                    >
-                      {link.label}
-                    </a>
+                    <a href={link.href} className="text-sm text-white/60 hover:text-white transition-colors">{link.label}</a>
                   </li>
                 ))}
               </ul>
@@ -102,19 +83,11 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-16 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
           <p>© 2026 Student Life. Made with ❤️ for Cambodian students.</p>
           <div className="flex items-center gap-4">
-            <a
-              href="#privacy"
-              className="hover:text-slate-300 transition-colors"
-            >
-              Privacy
-            </a>
-            <a href="#terms" className="hover:text-slate-300 transition-colors">
-              Terms
-            </a>
+            <a href="#privacy" className="hover:text-white transition-colors">Privacy</a>
+            <a href="#terms" className="hover:text-white transition-colors">Terms</a>
           </div>
         </div>
       </div>

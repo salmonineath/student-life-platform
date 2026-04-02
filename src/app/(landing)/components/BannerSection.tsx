@@ -1,80 +1,60 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 const UNIVERSITIES = ["CADT", "ITC", "RUPP", "UEC", "AUPP", "PUC"];
 
-function FadeUp({
-  children,
-  delay = "",
-}: {
-  children: React.ReactNode;
-  delay?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.15 },
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      className={`transition-all duration-700 ${delay} ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
-    >
-      {children}
-    </div>
-  );
-}
-
 export default function BannerSection() {
   return (
-    <section id="for-students" className="py-24 px-6 bg-white">
+    <section id="for-students" className="py-20 md:py-28 px-6 bg-background">
       <div className="max-w-4xl mx-auto text-center">
-        <FadeUp>
-          <h2 className="text-4xl font-bold text-slate-900">
-            Built for University Students
-          </h2>
-        </FadeUp>
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-3xl md:text-4xl font-bold text-foreground"
+        >
+          Built for University Students
+        </motion.h2>
 
-        <FadeUp delay="delay-[100ms]">
-          <p className="mt-8 text-lg text-slate-600 leading-relaxed">
-            Managing university life is difficult when information is scattered
-            across Telegram, Facebook groups, and notebooks.
-          </p>
-        </FadeUp>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="mt-6 text-lg text-foreground/60 leading-relaxed"
+        >
+          Managing university life is difficult when information is scattered
+          across Telegram, Facebook groups, and notebooks.
+        </motion.p>
 
-        <FadeUp delay="delay-[150ms]">
-          <p className="mt-4 text-slate-600">
-            Student Life brings everything together into one simple, clean, and
-            reliable platform.
-          </p>
-        </FadeUp>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+          className="mt-3 text-foreground/70 font-medium"
+        >
+          Student Life brings everything together into one simple, clean, and
+          reliable platform.
+        </motion.p>
 
-        <FadeUp delay="delay-[200ms]">
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {UNIVERSITIES.map((uni, i) => (
-              <span
-                key={uni}
-                className="px-4 py-1.5 rounded-full border border-slate-200 text-sm font-medium text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 hover:scale-105 transition-all duration-200 cursor-default"
-                style={{ transitionDelay: `${i * 40}ms` }}
-              >
-                {uni}
-              </span>
-            ))}
-          </div>
-        </FadeUp>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mt-8 flex flex-wrap justify-center gap-3"
+        >
+          {UNIVERSITIES.map((uni) => (
+            <motion.span
+              key={uni}
+              whileHover={{ scale: 1.05 }}
+              className="px-5 py-2 rounded-full border-2 border-border text-sm font-semibold text-foreground/80 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all cursor-default"
+            >
+              {uni}
+            </motion.span>
+          ))}
+        </motion.div>
       </div>
     </section>
   );

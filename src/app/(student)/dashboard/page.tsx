@@ -1,4 +1,4 @@
-import React from "react";
+"use client";
 
 // This function MUST have 'export default' for Next.js to recognize it as a page
 export default function DashboardPage() {

@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "./components/sidebar";
 import TopNav from "./components/topnav";
-import ClientAuthWrapper from "@/app/(student)/ClientAuthWrapper";
+import ClientAuthWrapper from "@/app/ClientAuthWrapper";
 
 export default function StudentLayout({
   children,

@@ -5,7 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Plus, Star } from "lucide-react";
 
 import { AppDispatch, RootState } from "@/store/store";
-import { fetchMySchedule, deleteSchedule } from "@/slices/scheduleSlice";
+import {
+  fetchMySchedule,
+  deleteSchedule,
+} from "@/features/schedule/scheduleSlice";
 import { ScheduleItem, ViewMode } from "@/types/scheduleTypes";
 import { DAY_FULL, MONTH_NAMES, getWeekDates } from "@/lib/utils/schdeulsUtils";
 
@@ -178,18 +181,6 @@ export default function SchedulePage() {
   const totalImportant = items.filter((i) => i.important).length;
   const totalRecurring = items.filter((i) => i.type === "RECURRING").length;
   const totalOneTime = items.filter((i) => i.type === "ONE_TIME").length;
-
-  // ── Loading ────────────────────────────────────────────────────────────────
-  // if (loading && items.length === 0) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center bg-slate-50">
-  //       <div className="text-center">
-  //         <div className="w-10 h-10 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto" />
-  //         <p className="mt-4 text-slate-400 text-sm">Loading your schedule…</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (

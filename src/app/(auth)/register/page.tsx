@@ -1,11 +1,95 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import axios from "axios";
-import { useRouter } from "next/navigation";
+import {
+  GraduationCap,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User,
+  Phone,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+} from "lucide-react";
+import Link from "next/link";
+import { useAppDispatch } from "@/hooks/redux";
+import { registerUser } from "@/features/auth/authSlice";
+
+// ─────────────────────────────────────────────
+// Reusable Input Field
+// ─────────────────────────────────────────────
+
+const InputField = ({
+  label,
+  icon: Icon,
+  optional,
+  children,
+}: {
+  label: string;
+  icon?: any;
+  optional?: boolean;
+  children: React.ReactNode;
+}) => (
+  <div>
+    <label className="text-sm font-medium text-gray-600 mb-1.5 flex items-center gap-1.5">
+      {label}
+      {optional && (
+        <span className="text-xs text-gray-400 font-normal">(optional)</span>
+      )}
+    </label>
+    <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent hover:border-sky-300 transition-all duration-200 bg-gray-50 focus-within:bg-white">
+      {Icon && <Icon className="w-4 h-4 text-gray-400 mr-2 shrink-0" />}
+      {children}
+    </div>
+  </div>
+);
+
+// ─────────────────────────────────────────────
+// Step Indicator
+// ─────────────────────────────────────────────
+
+const StepIndicator = ({
+  current,
+  total,
+}: {
+  current: number;
+  total: number;
+}) => (
+  <div className="flex items-center gap-2 mb-6">
+    {Array.from({ length: total }).map((_, i) => (
+      <div key={i} className="flex items-center gap-2">
+        <div
+          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300
+          ${i < current ? "bg-sky-500 text-white" : i === current ? "bg-sky-500 text-white ring-4 ring-sky-100" : "bg-gray-100 text-gray-400"}`}
+        >
+          {i < current ? <Check className="w-3.5 h-3.5" /> : i + 1}
+        </div>
+        {i < total - 1 && (
+          <div
+            className={`h-px w-8 transition-all duration-500 ${i < current ? "bg-sky-400" : "bg-gray-200"}`}
+          />
+        )}
+      </div>
+    ))}
+    <span className="ml-1 text-xs text-gray-400">
+      Step {current + 1} of {total}
+    </span>
+  </div>
+);
+
+// ─────────────────────────────────────────────
+// Register Page
+// ─────────────────────────────────────────────
+
+const TOTAL_STEPS = 2;
 
 const RegisterPage = () => {
+  const [step, setStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -20,224 +104,273 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e: any) => {
+  const dispatch = useAppDispatch();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const router = useRouter();
-
-  const API_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+  // Basic validation before moving to next step
+  const handleNext = () => {
+    if (!formData.fullname.trim()) return setError("Full name is required");
+    if (!formData.username.trim()) return setError("Username is required");
+    if (!formData.email.trim()) return setError("Email is required");
+    if (!formData.password.trim()) return setError("Password is required");
+    setError("");
+    setStep(1);
+  };
 
   const handleRegister = async () => {
     setLoading(true);
     setError("");
-
     try {
-      const res = await axios.post(`${API_URL}/auth/register`, formData, {
-        withCredentials: true,
-      });
-
-      console.log("Registration successful:", res.data);
-
-      // after registration success redirect to dashboard
-      router.push("/dashboard");
+      await dispatch(registerUser(formData)).unwrap();
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      if (err.response) {
-        setError(err.response.data?.message || "Register failed");
-      } else if (err.request) {
-        setError("No response from server");
-      } else {
-        setError(err.message);
-      }
+      setError(err || "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass =
+    "w-full outline-none text-sm bg-transparent text-gray-700 placeholder-gray-400";
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        {/* LEFT */}
-        <div className="flex flex-col justify-center items-center bg-[#0F172A] text-white p-10">
-          <div className="inline-flex bg-blue-600 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/30">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-slate-100 to-sky-50">
+      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+        {/* ── LEFT PANEL ── */}
+        <div className="relative flex flex-col justify-center items-center bg-[#0F172A] text-white p-8 sm:p-10 overflow-hidden">
+          <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl" />
+
+          <div className="relative inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 hover:scale-105 transition-transform duration-300">
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight">
+          <h1 className="relative text-3xl font-extrabold tracking-tight">
             Student Life
           </h1>
 
-          <div className="mt-4 text-center text-slate-400 text-sm max-w-xs">
+          <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
             Manage your schedule, assignments, and study groups all in one
             place.
+          </p>
+
+          <div className="relative mt-8 flex flex-wrap justify-center gap-2">
+            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map((f) => (
+              <span
+                key={f}
+                className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10"
+              >
+                {f}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="p-10 flex flex-col justify-center">
-          <h2 className="text-3xl font-bold text-sky-600 mb-2">
-            Create your account
+        {/* ── RIGHT PANEL ── */}
+        <div className="p-8 sm:p-10 flex flex-col justify-center">
+          {/* Back button */}
+          {step === 0 ? (
+            <Link
+              href="/student-life"
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </Link>
+          ) : (
+            <button
+              onClick={() => {
+                setStep(0);
+                setError("");
+              }}
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
+            >
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+          )}
+
+          <h2 className="text-3xl font-bold text-slate-800 mb-1">
+            Create Account
           </h2>
+          <p className="text-sm text-gray-400 mb-6">
+            {step === 0
+              ? "Start with your basic info"
+              : "Almost done — a few more details"}
+          </p>
 
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">Fullname</label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="fullname"
-                value={formData.fullname}
-                onChange={handleChange}
-                required
-                placeholder="John Doe"
-                className="w-full outline-none text-sm"
-              />
+          <StepIndicator current={step} total={TOTAL_STEPS} />
+
+          {/* ── STEP 1: Required fields ── */}
+          {step === 0 && (
+            <div className="flex flex-col gap-4">
+              <InputField label="Full Name" icon={User}>
+                <input
+                  type="text"
+                  name="fullname"
+                  value={formData.fullname}
+                  onChange={handleChange}
+                  placeholder="John Doe"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="Username" icon={User}>
+                <input
+                  type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  placeholder="john_doe"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="Email" icon={Mail}>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="example@gmail.com"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="Password" icon={Lock}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </InputField>
             </div>
-          </div>
+          )}
 
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">Username</label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                required
-                placeholder="john_doe"
-                className="w-full outline-none text-sm"
-              />
+          {/* ── STEP 2: Optional fields ── */}
+          {step === 1 && (
+            <div className="flex flex-col gap-4">
+              <InputField label="Phone Number" icon={Phone} optional>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="012 345 6789"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="University" icon={Building2} optional>
+                <input
+                  type="text"
+                  name="university"
+                  value={formData.university}
+                  onChange={handleChange}
+                  placeholder="Your university name"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="Major" icon={BookOpen} optional>
+                <input
+                  type="text"
+                  name="major"
+                  value={formData.major}
+                  onChange={handleChange}
+                  placeholder="e.g. Computer Science"
+                  className={inputClass}
+                />
+              </InputField>
+
+              <InputField label="Academic Year" icon={CalendarDays} optional>
+                <input
+                  type="text"
+                  name="academicYear"
+                  value={formData.academicYear}
+                  onChange={handleChange}
+                  placeholder="e.g. Year 2"
+                  className={inputClass}
+                />
+              </InputField>
             </div>
-          </div>
-
-          {/* Email */}
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">Email</label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <Mail className="w-4 h-4 text-gray-400 mr-2" />
-              <input
-                type="text"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                placeholder="example@gmail.com"
-                className="w-full outline-none text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="mb-2">
-            <label className="text-sm text-gray-500 mb-1 block">Password</label>
-
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <Lock className="w-4 h-4 text-gray-400 mr-2" />
-
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                placeholder="••••••••"
-                className="w-full outline-none text-sm"
-              />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="ml-2 text-gray-400 hover:text-gray-600"
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">
-              Phone Number
-            </label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="(optional)"
-                className="w-full outline-none text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">
-              University
-            </label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="university"
-                value={formData.university}
-                onChange={handleChange}
-                placeholder="(optional)"
-                className="w-full outline-none text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">Major</label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="major"
-                value={formData.major}
-                onChange={handleChange}
-                placeholder="(optional)"
-                className="w-full outline-none text-sm"
-              />
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <label className="text-sm text-gray-500 mb-1 block">
-              Academic Year
-            </label>
-            <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-sky-400">
-              <input
-                type="text"
-                name="academicYear"
-                value={formData.academicYear}
-                onChange={handleChange}
-                placeholder="(optional)"
-                className="w-full outline-none text-sm"
-              />
-            </div>
-          </div>
+          )}
 
           {/* Error */}
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+          {error && (
+            <div className="mt-4 flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+              {error}
+            </div>
+          )}
 
-          {/* Login Button */}
-          <button
-            onClick={handleRegister}
-            disabled={loading}
-            className="mt-6 bg-sky-500 hover:bg-sky-600 text-white py-2 rounded-lg font-semibold transition disabled:opacity-50"
-          >
-            {loading ? "Registering..." : "REGISTER"}
-          </button>
+          {/* Action Button */}
+          {step === 0 ? (
+            <button
+              onClick={handleNext}
+              className="mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300"
+            >
+              Next <ArrowRight className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              onClick={handleRegister}
+              disabled={loading}
+              className="mt-6 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="animate-spin w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8z"
+                    />
+                  </svg>
+                  Registering...
+                </span>
+              ) : (
+                "REGISTER"
+              )}
+            </button>
+          )}
 
-          {/* Register */}
           <p className="text-center text-xs text-gray-400 mt-6">
             Already have an account?{" "}
-            <span className="text-sky-500 cursor-pointer hover:underline">
+            <Link
+              href="/login"
+              className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors"
+            >
               Login
-            </span>
+            </Link>
           </p>
         </div>
       </div>

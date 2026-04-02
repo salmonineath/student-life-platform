@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils/utils";
+import { cn } from "@/lib/utils";
 import Providers from "./providers";
+import { Toaster } from "sonner";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -23,7 +24,9 @@ export default function RootLayout({
     >
       <body className={`${geist.variable} font-sans`}>
         {" "}
-        <Providers>{children}</Providers>
+        <Providers>
+          {children} <Toaster position="top-right" richColors />
+        </Providers>
       </body>
     </html>
   );

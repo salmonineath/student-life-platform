@@ -2,12 +2,12 @@
 
 import { useEffect } from "react";
 import { SquarePen } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "@/hook/useAuth";
-import { fetchMe } from "@/slices/authSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
+import { fetchMe } from "@/features/auth/authSlice";
 
 export default function ProfilePage() {
   const dispatch = useAppDispatch();
-  const { user, loading } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     // only fetch if user not already loaded
@@ -15,10 +15,6 @@ export default function ProfilePage() {
       dispatch(fetchMe());
     }
   }, [dispatch, user]);
-
-  if (loading) {
-    return <p className="p-6 text-slate-500">Loading profile...</p>;
-  }
 
   if (!user) {
     return <p className="p-6 text-red-500">Failed to load user.</p>;

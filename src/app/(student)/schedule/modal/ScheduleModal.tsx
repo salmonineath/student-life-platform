@@ -8,7 +8,7 @@ import {
   createOneTimeSchedule,
   createRecurringSchedule,
   updateSchedule,
-} from "@/slices/scheduleSlice";
+} from "@/features/schedule/scheduleSlice";
 import {
   ScheduleItem,
   ScheduleType,
@@ -241,7 +241,7 @@ export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
                       : "text-slate-500 hover:text-slate-700"
                   }`}
                 >
-                  {tab === "ONE_TIME" ? "One-time" : "Recurring"}
+                  {tab === "ONE_TIME" ? "Single Event" : "Repeats Weekly"}
                 </button>
               ))}
             </div>

@@ -14,8 +14,8 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
-import { useAppDispatch } from "@/hook/useAuth";
-import { logoutUser } from "@/slices/authSlice";
+import { useAppDispatch } from "@/hooks/redux";
+import { logoutUser } from "@/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -45,8 +45,8 @@ const Sidebar = () => {
 
     try {
       await dispatch(logoutUser());
-      console.log("Logging out...");
-      router.push("/login");
+      // Full reload so cookies are fully cleared before middleware checks them
+      window.location.href = "/login";
     } catch (err: any) {
       if (err.response) {
         console.error(

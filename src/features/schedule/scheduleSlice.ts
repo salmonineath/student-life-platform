@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { scheduleService } from "@/lib/services/scheduleService";
+import { scheduleService } from "./scheduleAPI";
 import {
   ScheduleItem,
   ScheduleState,

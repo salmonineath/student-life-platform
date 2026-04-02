@@ -178,7 +178,7 @@ export default function SchedulePage() {
   }
 
   // ── Summary counts ─────────────────────────────────────────────────────────
-  const totalImportant = items.filter((i) => i.important).length;
+  const totalImportant = items.filter((i) => i.isImportant).length;
   const totalRecurring = items.filter((i) => i.type === "RECURRING").length;
   const totalOneTime = items.filter((i) => i.type === "ONE_TIME").length;
 

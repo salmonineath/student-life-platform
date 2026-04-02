@@ -107,7 +107,7 @@ export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
       startTime,
       endTime,
       location: item?.location ?? "",
-      isImportant: item?.important ?? false,
+      isImportant: item?.isImportant ?? false,
     };
   });
 
@@ -119,7 +119,7 @@ export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
     recurringStartTime: toHHmm(item?.recurringStartTime ?? null),
     recurringEndTime: toHHmm(item?.recurringEndTime ?? null),
     location: item?.location ?? "",
-    isImportant: item?.important ?? false,
+    isImportant: item?.isImportant ?? false,
   }));
 
   // Lock tab when editing

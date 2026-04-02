@@ -24,7 +24,7 @@ export interface ScheduleItem {
   recurringStartTime: string | null; // "HH:mm:ss"
   recurringEndTime: string | null;
   location: string;
-  important: boolean; // API returns "important" (not "isImportant")
+  isImportant: boolean; // API returns "important" (not "isImportant")
   createdBy: ScheduleCreatedBy;
 }
 

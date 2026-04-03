@@ -3,12 +3,9 @@
 export default function TrustBar() {
   const items = [
     "CADT",
-    "ITC",
-    "RUPP",
-    "UEC",
-    "AUPP",
-    "PUC",
-    "NPIC",
+    "EHT",
+    "IMSE",
+    "PSE-WMAD",
     "Trusted by Cambodian Students",
   ];
 

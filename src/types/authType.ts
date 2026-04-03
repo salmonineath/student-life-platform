@@ -10,10 +10,6 @@ export interface RegisterData {
   username: string;
   email: string;
   password: string;
-  phone?: string;
-  university?: string;
-  major?: string;
-  academicYear?: string;
 }
 
 export interface AuthState {

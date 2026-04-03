@@ -8,13 +8,7 @@ import {
   Eye,
   EyeOff,
   User,
-  Phone,
-  BookOpen,
-  Building2,
-  CalendarDays,
   ArrowLeft,
-  ArrowRight,
-  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { useAppDispatch } from "@/hooks/redux";
@@ -50,46 +44,10 @@ const InputField = ({
 );
 
 // ─────────────────────────────────────────────
-// Step Indicator
-// ─────────────────────────────────────────────
-
-const StepIndicator = ({
-  current,
-  total,
-}: {
-  current: number;
-  total: number;
-}) => (
-  <div className="flex items-center gap-2 mb-6">
-    {Array.from({ length: total }).map((_, i) => (
-      <div key={i} className="flex items-center gap-2">
-        <div
-          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-300
-          ${i < current ? "bg-sky-500 text-white" : i === current ? "bg-sky-500 text-white ring-4 ring-sky-100" : "bg-gray-100 text-gray-400"}`}
-        >
-          {i < current ? <Check className="w-3.5 h-3.5" /> : i + 1}
-        </div>
-        {i < total - 1 && (
-          <div
-            className={`h-px w-8 transition-all duration-500 ${i < current ? "bg-sky-400" : "bg-gray-200"}`}
-          />
-        )}
-      </div>
-    ))}
-    <span className="ml-1 text-xs text-gray-400">
-      Step {current + 1} of {total}
-    </span>
-  </div>
-);
-
-// ─────────────────────────────────────────────
 // Register Page
 // ─────────────────────────────────────────────
 
-const TOTAL_STEPS = 2;
-
 const RegisterPage = () => {
-  const [step, setStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullname: "",
@@ -108,17 +66,17 @@ const RegisterPage = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    validateRequiredFields();
     setError("");
   };
 
   // Basic validation before moving to next step
-  const handleNext = () => {
+  const validateRequiredFields = () => {
     if (!formData.fullname.trim()) return setError("Full name is required");
     if (!formData.username.trim()) return setError("Username is required");
     if (!formData.email.trim()) return setError("Email is required");
     if (!formData.password.trim()) return setError("Password is required");
     setError("");
-    setStep(1);
   };
 
   const handleRegister = async () => {
@@ -173,144 +131,74 @@ const RegisterPage = () => {
         {/* ── RIGHT PANEL ── */}
         <div className="p-8 sm:p-10 flex flex-col justify-center">
           {/* Back button */}
-          {step === 0 ? (
-            <Link
-              href="/student-life"
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </Link>
-          ) : (
-            <button
-              onClick={() => {
-                setStep(0);
-                setError("");
-              }}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
-            >
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-          )}
+          <Link
+            href="/student-life"
+            className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </Link>
 
           <h2 className="text-3xl font-bold text-slate-800 mb-1">
             Create Account
           </h2>
-          <p className="text-sm text-gray-400 mb-6">
-            {step === 0
-              ? "Start with your basic info"
-              : "Almost done — a few more details"}
-          </p>
 
-          <StepIndicator current={step} total={TOTAL_STEPS} />
+          {/* ── Required fields ── */}
+          <div className="flex flex-col gap-4">
+            <InputField label="Full Name" icon={User}>
+              <input
+                type="text"
+                name="fullname"
+                value={formData.fullname}
+                onChange={handleChange}
+                placeholder="John Doe"
+                className={inputClass}
+              />
+            </InputField>
 
-          {/* ── STEP 1: Required fields ── */}
-          {step === 0 && (
-            <div className="flex flex-col gap-4">
-              <InputField label="Full Name" icon={User}>
-                <input
-                  type="text"
-                  name="fullname"
-                  value={formData.fullname}
-                  onChange={handleChange}
-                  placeholder="John Doe"
-                  className={inputClass}
-                />
-              </InputField>
+            <InputField label="Username" icon={User}>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="john_doe"
+                className={inputClass}
+              />
+            </InputField>
 
-              <InputField label="Username" icon={User}>
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder="john_doe"
-                  className={inputClass}
-                />
-              </InputField>
+            <InputField label="Email" icon={Mail}>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="example@gmail.com"
+                className={inputClass}
+              />
+            </InputField>
 
-              <InputField label="Email" icon={Mail}>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="example@gmail.com"
-                  className={inputClass}
-                />
-              </InputField>
-
-              <InputField label="Password" icon={Lock}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className={inputClass}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </InputField>
-            </div>
-          )}
-
-          {/* ── STEP 2: Optional fields ── */}
-          {step === 1 && (
-            <div className="flex flex-col gap-4">
-              <InputField label="Phone Number" icon={Phone} optional>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="012 345 6789"
-                  className={inputClass}
-                />
-              </InputField>
-
-              <InputField label="University" icon={Building2} optional>
-                <input
-                  type="text"
-                  name="university"
-                  value={formData.university}
-                  onChange={handleChange}
-                  placeholder="Your university name"
-                  className={inputClass}
-                />
-              </InputField>
-
-              <InputField label="Major" icon={BookOpen} optional>
-                <input
-                  type="text"
-                  name="major"
-                  value={formData.major}
-                  onChange={handleChange}
-                  placeholder="e.g. Computer Science"
-                  className={inputClass}
-                />
-              </InputField>
-
-              <InputField label="Academic Year" icon={CalendarDays} optional>
-                <input
-                  type="text"
-                  name="academicYear"
-                  value={formData.academicYear}
-                  onChange={handleChange}
-                  placeholder="e.g. Year 2"
-                  className={inputClass}
-                />
-              </InputField>
-            </div>
-          )}
+            <InputField label="Password" icon={Lock}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className={inputClass}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            </InputField>
+          </div>
 
           {/* Error */}
           {error && (
@@ -321,47 +209,39 @@ const RegisterPage = () => {
           )}
 
           {/* Action Button */}
-          {step === 0 ? (
-            <button
-              onClick={handleNext}
-              className="mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300"
-            >
-              Next <ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={handleRegister}
-              disabled={loading}
-              className="mt-6 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="animate-spin w-4 h-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Registering...
-                </span>
-              ) : (
-                "REGISTER"
-              )}
-            </button>
-          )}
+
+          <button
+            onClick={handleRegister}
+            disabled={loading}
+            className="mt-6 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+          >
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg
+                  className="animate-spin w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                Registering...
+              </span>
+            ) : (
+              "REGISTER"
+            )}
+          </button>
 
           <p className="text-center text-xs text-gray-400 mt-6">
             Already have an account?{" "}

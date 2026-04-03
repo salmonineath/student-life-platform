@@ -46,7 +46,7 @@ const Sidebar = () => {
     try {
       await dispatch(logoutUser());
       // Full reload so cookies are fully cleared before middleware checks them
-      window.location.href = "/login";
+      window.location.href = "/student-life";
     } catch (err: any) {
       if (err.response) {
         console.error(

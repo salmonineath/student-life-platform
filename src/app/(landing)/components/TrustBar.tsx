@@ -1,18 +1,38 @@
+"use client";
+
 export default function TrustBar() {
+  const items = [
+    "CADT",
+    "ITC",
+    "RUPP",
+    "UEC",
+    "AUPP",
+    "PUC",
+    "NPIC",
+    "Trusted by Cambodian Students",
+  ];
+
   return (
-    <div className="py-8 border-b border-slate-100 bg-white">
-      <div className="max-w-5xl mx-auto px-6 flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-75">
-        <p className="text-sm font-medium text-slate-500">
-          Trusted by students at:
-        </p>
-        <div className="flex gap-10 text-slate-400 font-medium">
-          <div>CADT</div>
-          <div>ITC</div>
-          <div>RUPP</div>
-          <div>UEC</div>
-          <div>NPIC</div>
+    <>
+      <style>{`
+        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        .marquee-track { animation: marquee 20s linear infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
+      `}</style>
+
+      <div className="bg-[#080C14] py-4 overflow-hidden flex">
+        <div className="marquee-track flex gap-12 whitespace-nowrap min-w-max">
+          {[...items, ...items].map((item, i) => (
+            <span
+              key={i}
+              className="flex items-center gap-12 text-[13px] font-bold tracking-[2px] uppercase text-white"
+            >
+              {item}
+              <span className="w-1 h-1 rounded-full bg-white/15 inline-block" />
+            </span>
+          ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }

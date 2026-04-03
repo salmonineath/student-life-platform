@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const UNIVERSITIES = ["CADT", "ITC", "RUPP", "UEC", "AUPP", "PUC"];
-
-function FadeUp({
+function Reveal({
   children,
-  delay = "",
+  direction = "up",
+  delay = 0,
 }: {
   children: React.ReactNode;
-  delay?: string;
+  direction?: "up" | "left" | "right";
+  delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -22,60 +22,107 @@ function FadeUp({
           observer.disconnect();
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
 
+  const base = "transition-all duration-700";
+  const hidden: Record<string, string> = {
+    up: "opacity-0 translate-y-10",
+    left: "opacity-0 -translate-x-10",
+    right: "opacity-0 translate-x-10",
+  };
+  const shown = "opacity-100 translate-y-0 translate-x-0";
+
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${delay} ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`${base} ${visible ? shown : hidden[direction]}`}
     >
       {children}
     </div>
   );
 }
 
+const UNIVERSITIES = ["CADT", "ITC", "RUPP", "UEC", "AUPP", "PUC"];
+
 export default function BannerSection() {
   return (
-    <section id="for-students" className="py-24 px-6 bg-white">
-      <div className="max-w-4xl mx-auto text-center">
-        <FadeUp>
-          <h2 className="text-4xl font-bold text-slate-900">
-            Built for University Students
-          </h2>
-        </FadeUp>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
+        .uni-card:hover {
+          border-color: #BFDBFE;
+          background: #EFF6FF;
+          color: #2563EB;
+          transform: translateY(-3px);
+          box-shadow: 0 8px 24px rgba(37,99,235,0.12);
+        }
+        .uni-card { transition: all 0.25s cubic-bezier(.16,1,.3,1); }
+      `}</style>
 
-        <FadeUp delay="delay-[100ms]">
-          <p className="mt-8 text-lg text-slate-600 leading-relaxed">
-            Managing university life is difficult when information is scattered
-            across Telegram, Facebook groups, and notebooks.
-          </p>
-        </FadeUp>
+      <section
+        id="for-students"
+        className="py-24 md:py-32 px-6 relative overflow-hidden"
+        style={{ background: "#F4F7FF" }}
+      >
+        {/* Decorative glow */}
+        <div
+          className="absolute right-[-200px] top-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(circle, rgba(37,99,235,0.07) 0%, transparent 70%)",
+          }}
+        />
 
-        <FadeUp delay="delay-[150ms]">
-          <p className="mt-4 text-slate-600">
-            Student Life brings everything together into one simple, clean, and
-            reliable platform.
-          </p>
-        </FadeUp>
+        <div className="max-w-[1160px] mx-auto relative z-10 grid md:grid-cols-2 gap-16 md:gap-24 items-center">
+          {/* Left text */}
+          <Reveal direction="left">
+            <span className="block text-[12px] font-bold uppercase tracking-[2px] text-[#2563EB] mb-4">
+              For Students
+            </span>
+            <h2
+              style={{
+                fontFamily: "'Sora', sans-serif",
+                letterSpacing: "-2px",
+              }}
+              className="text-[clamp(32px,4vw,52px)] font-extrabold text-[#080C14] leading-[1.1] mb-6"
+            >
+              Built for
+              <br />
+              university life
+              <br />
+              in Cambodia.
+            </h2>
+            <p className="text-[17px] text-slate-500 leading-[1.75]">
+              Managing university is hard when everything is scattered across
+              Telegram, Facebook groups, and notebooks. Student Life brings it
+              all into one clean, reliable platform — built with Cambodian
+              students in mind.
+            </p>
+          </Reveal>
 
-        <FadeUp delay="delay-[200ms]">
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            {UNIVERSITIES.map((uni, i) => (
-              <span
-                key={uni}
-                className="px-4 py-1.5 rounded-full border border-slate-200 text-sm font-medium text-slate-600 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 hover:scale-105 transition-all duration-200 cursor-default"
-                style={{ transitionDelay: `${i * 40}ms` }}
-              >
-                {uni}
-              </span>
-            ))}
-          </div>
-        </FadeUp>
-      </div>
-    </section>
+          {/* Right university grid */}
+          <Reveal direction="right">
+            <div className="grid grid-cols-3 gap-3">
+              {UNIVERSITIES.map((uni) => (
+                <div
+                  key={uni}
+                  className="uni-card bg-white border-[1.5px] border-black/8 rounded-2xl py-5 flex items-center justify-center cursor-default"
+                  style={{ fontFamily: "'Sora', sans-serif" }}
+                >
+                  <span className="text-[18px] font-bold text-[#080C14]">
+                    {uni}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </>
   );
 }

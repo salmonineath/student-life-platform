@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-function FadeUp({
+function Reveal({
   children,
-  delay = "",
+  delay = 0,
 }: {
   children: React.ReactNode;
-  delay?: string;
+  delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -20,7 +20,7 @@ function FadeUp({
           observer.disconnect();
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -29,65 +29,169 @@ function FadeUp({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${delay} ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(32px)",
+      }}
+      className="transition-all duration-700"
     >
       {children}
     </div>
   );
 }
 
-export default function AIToolSection() {
+export default function AIToolsSection() {
   return (
-    <section id="ai" className="py-24 px-6 bg-slate-50">
-      <div className="max-w-6xl mx-auto">
-        <FadeUp>
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-1 rounded-full text-sm font-medium mb-4">
-              ✨ Optional AI Features
-            </div>
-            <h2 className="text-4xl font-bold text-slate-900">
-              Study smarter with AI
-            </h2>
-            <p className="mt-4 text-slate-600 text-lg max-w-xl mx-auto">
-              Use AI when you need. Stay in full control over your learning.
-            </p>
-          </div>
-        </FadeUp>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
+        .ai-card-glow::after {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(96,165,250,0.5), transparent);
+          opacity: 0; transition: opacity 0.3s;
+        }
+        .ai-card-glow:hover::after { opacity: 1; }
+        .ai-card-glow:hover { background: rgba(255,255,255,0.06) !important; border-color: rgba(96,165,250,0.3) !important; transform: translateY(-4px); }
+        .ai-card-glow { transition: all 0.35s cubic-bezier(.16,1,.3,1); }
+      `}</style>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <FadeUp delay="delay-[0ms]">
-            <div className="bg-white rounded-3xl p-10 border border-slate-100 hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full">
-              <h3 className="text-2xl font-semibold">
-                AI Study Plan Generator
-              </h3>
-              <p className="mt-4 text-slate-600">
-                Create an assignment → click "Generate Study Plan". Get a
-                personalized breakdown of what to study and when.
-              </p>
-              <ul className="mt-6 space-y-3 text-sm text-slate-600">
-                <li>✅ Accept, edit, or ignore the plan</li>
-                <li>✅ Works with your real deadlines</li>
-              </ul>
-            </div>
-          </FadeUp>
+      <section
+        id="ai"
+        className="py-24 md:py-32 px-6 relative overflow-hidden"
+        style={{ background: "#080C14" }}
+      >
+        {/* Dot-grid texture */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
 
-          <FadeUp delay="delay-[100ms]">
-            <div className="bg-white rounded-3xl p-10 border border-slate-100 hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 h-full">
-              <h3 className="text-2xl font-semibold">
-                AI Chat Tutor + Summarizer
-              </h3>
-              <p className="mt-4 text-slate-600">
-                Upload notes, ask questions, get step-by-step solutions, or ask
-                the AI to summarize your lecture.
+        <div className="max-w-[1160px] mx-auto relative z-10">
+          {/* Header */}
+          <Reveal>
+            <div className="max-w-[600px] mb-16">
+              <span className="block text-[12px] font-bold uppercase tracking-[2px] text-[#60A5FA] mb-4">
+                ✦ AI Features
+              </span>
+              <h2
+                style={{
+                  fontFamily: "'Sora', sans-serif",
+                  letterSpacing: "-2px",
+                }}
+                className="text-[clamp(32px,4vw,52px)] font-extrabold text-white leading-[1.1] mb-5"
+              >
+                Study smarter,
+                <br />
+                not harder.
+              </h2>
+              <p className="text-[17px] text-slate-500 leading-[1.75]">
+                Powerful AI tools built right in — always optional, never
+                overwhelming.
               </p>
-              <div className="mt-8 p-6 bg-slate-50 rounded-2xl text-sm border border-slate-200 text-slate-500 italic">
-                "Explain Newton's second law with examples from daily life in
-                Cambodia"
+            </div>
+          </Reveal>
+
+          {/* Cards */}
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Card 1 */}
+            <Reveal delay={0}>
+              <div
+                className="ai-card-glow relative rounded-3xl p-10 overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <span
+                  className="block text-[64px] font-extrabold leading-none mb-2 select-none"
+                  style={{
+                    fontFamily: "'Sora', sans-serif",
+                    color: "rgba(255,255,255,0.04)",
+                  }}
+                >
+                  01
+                </span>
+                <h3
+                  style={{ fontFamily: "'Sora', sans-serif" }}
+                  className="text-[22px] font-bold text-white mb-4"
+                >
+                  AI Study Plan Generator
+                </h3>
+                <p className="text-[15px] text-slate-500 leading-[1.7] mb-6">
+                  Create an assignment, click "Generate Plan". Get a
+                  personalized daily breakdown of what to study and when — built
+                  around your actual deadlines.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Accept or edit freely",
+                    "Works with deadlines",
+                    "Adjusts automatically",
+                  ].map((chip) => (
+                    <span
+                      key={chip}
+                      className="text-[12px] font-semibold px-3 py-1.5 rounded-full"
+                      style={{
+                        background: "rgba(96,165,250,0.1)",
+                        color: "#60A5FA",
+                        border: "1px solid rgba(96,165,250,0.2)",
+                      }}
+                    >
+                      {chip}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </FadeUp>
+            </Reveal>
+
+            {/* Card 2 */}
+            <Reveal delay={100}>
+              <div
+                className="ai-card-glow relative rounded-3xl p-10 overflow-hidden"
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <span
+                  className="block text-[64px] font-extrabold leading-none mb-2 select-none"
+                  style={{
+                    fontFamily: "'Sora', sans-serif",
+                    color: "rgba(255,255,255,0.04)",
+                  }}
+                >
+                  02
+                </span>
+                <h3
+                  style={{ fontFamily: "'Sora', sans-serif" }}
+                  className="text-[22px] font-bold text-white mb-4"
+                >
+                  AI Chat Tutor & Summarizer
+                </h3>
+                <p className="text-[15px] text-slate-500 leading-[1.7] mb-6">
+                  Upload your notes, ask questions, get step-by-step solutions,
+                  or have the AI summarize your entire lecture in seconds.
+                </p>
+                <div
+                  className="rounded-xl px-5 py-4 text-[14px] italic leading-relaxed"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    borderLeft: "3px solid #2563EB",
+                    color: "#64748B",
+                  }}
+                >
+                  "Explain Newton's second law with real examples from Cambodia"
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 }

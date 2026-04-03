@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-function FadeUp({
+function Reveal({
   children,
-  delay = "",
+  delay = 0,
 }: {
   children: React.ReactNode;
-  delay?: string;
+  delay?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -21,7 +21,7 @@ function FadeUp({
           observer.disconnect();
         }
       },
-      { threshold: 0.15 },
+      { threshold: 0.12 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -30,7 +30,12 @@ function FadeUp({
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${delay} ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}
+      style={{
+        transitionDelay: `${delay}ms`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(28px)",
+      }}
+      className="transition-all duration-700"
     >
       {children}
     </div>
@@ -41,36 +46,82 @@ export default function CTASection() {
   const router = useRouter();
 
   return (
-    <section className="py-28 px-6 bg-slate-900 text-white">
-      <div className="max-w-2xl mx-auto text-center">
-        <FadeUp>
-          <h2 className="text-5xl font-bold tracking-tight">
-            Ready to take control of your university life?
-          </h2>
-        </FadeUp>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
+        @keyframes spinSlow { to { transform: translate(-50%,-50%) rotate(360deg); } }
+        .cta-spin {
+          animation: spinSlow 22s linear infinite;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(37,99,235,0.09) 60deg,
+            transparent 120deg,
+            rgba(99,102,241,0.09) 180deg,
+            transparent 240deg,
+            rgba(37,99,235,0.05) 300deg,
+            transparent 360deg
+          );
+        }
+        .btn-cta-white:hover {
+          background: #EFF6FF;
+          color: #2563EB;
+          transform: translateY(-3px);
+          box-shadow: 0 0 60px rgba(255,255,255,0.1);
+        }
+        .btn-cta-white { transition: all 0.25s; }
+      `}</style>
 
-        <FadeUp delay="delay-[100ms]">
-          <p className="mt-6 text-xl text-slate-400">
-            Join thousands of Cambodian students already organizing their
-            academic life better.
-          </p>
-        </FadeUp>
+      <section
+        className="py-32 md:py-40 px-6 text-center relative overflow-hidden"
+        style={{ background: "#080C14" }}
+      >
+        {/* Spinning conic glow */}
+        <div
+          className="cta-spin absolute w-[800px] h-[800px] rounded-full pointer-events-none"
+          style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}
+        />
 
-        <FadeUp delay="delay-[200ms]">
-          <button
-            onClick={() => router.push("/register")}
-            className="mt-10 bg-white text-slate-900 hover:bg-blue-50 hover:scale-[1.03] px-12 py-5 rounded-3xl font-semibold text-xl transition-all duration-200 active:scale-95 shadow-lg"
-          >
-            Create Your Free Account
-          </button>
-        </FadeUp>
+        <div className="relative z-10 max-w-[720px] mx-auto">
+          <Reveal>
+            <h2
+              style={{
+                fontFamily: "'Sora', sans-serif",
+                letterSpacing: "-2.5px",
+              }}
+              className="text-[clamp(36px,5vw,64px)] font-extrabold text-white leading-[1.05] mb-6"
+            >
+              Ready to actually
+              <br />
+              organize your life?
+            </h2>
+          </Reveal>
 
-        <FadeUp delay="delay-[250ms]">
-          <p className="mt-6 text-sm text-slate-500">
-            Takes less than 30 seconds • No credit card needed
-          </p>
-        </FadeUp>
-      </div>
-    </section>
+          <Reveal delay={100}>
+            <p className="text-[18px] text-slate-500 mb-14">
+              Join thousands of Cambodian students who already have their
+              academic life under control.
+            </p>
+          </Reveal>
+
+          <Reveal delay={200}>
+            <button
+              onClick={() => router.push("/register")}
+              className="btn-cta-white inline-flex items-center gap-3 bg-white text-[#080C14] px-12 py-5 rounded-2xl font-bold text-[17px]"
+              style={{ fontFamily: "'Sora', sans-serif" }}
+            >
+              Create Your Free Account
+              <span>→</span>
+            </button>
+          </Reveal>
+
+          <Reveal delay={300}>
+            <p className="mt-5 text-[13px] text-slate-700">
+              Takes less than 30 seconds · No credit card needed
+            </p>
+          </Reveal>
+        </div>
+      </section>
+    </>
   );
 }

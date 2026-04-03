@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
+<<<<<<< HEAD
 function Reveal({
+=======
+const UNIVERSITIES = ["CADT", "EHT", "IMSE", "PSE-WMAD"];
+
+function FadeUp({
+>>>>>>> b28a4b4 (update trustbar)
   children,
   direction = "up",
   delay = 0,

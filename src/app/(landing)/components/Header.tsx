@@ -1,7 +1,9 @@
+"use client";
+
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_LINKS = [
   { label: "Features", href: "#features" },
@@ -12,7 +14,7 @@ const NAV_LINKS = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -29,145 +31,152 @@ export default function Header() {
 
   const scrollToSection = (href: string) => {
     setOpen(false);
-    const el = document.querySelector(href);
-    el?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+        .mobile-drawer  { animation: slideInRight 0.32s cubic-bezier(0.32,0.72,0,1) forwards; }
+        .mobile-overlay { animation: fadeInOverlay 0.25s ease forwards; }
+        .nav-link-underline::after {
+          content: ''; display: block;
+          height: 2px; width: 0;
+          background: #2563EB;
+          border-radius: 99px;
+          transition: width 0.25s ease;
+        }
+        .nav-link-underline:hover::after { width: 100%; }
+      `}</style>
+
+      <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-white/95 backdrop-blur-xl shadow-soft border-b border-border"
-            : "bg-transparent"
+            ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-black/5"
+            : "bg-white/70 backdrop-blur-sm"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-primary rounded-2xl flex items-center justify-center text-lg">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="w-9 h-9 bg-[#080C14] rounded-[10px] flex items-center justify-center text-lg">
               🎓
             </div>
-            <span className="font-bold text-lg text-foreground tracking-tight">
+            <span
+              style={{ fontFamily: "'Sora', sans-serif" }}
+              className="font-bold text-base text-[#080C14] tracking-tight"
+            >
               Student Life
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8 text-sm font-semibold text-foreground/70">
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-9">
             {NAV_LINKS.map((link) => (
               <button
                 key={link.href}
                 onClick={() => scrollToSection(link.href)}
-                className="hover:text-primary transition-colors relative group"
+                className="nav-link-underline text-sm font-medium text-slate-500 hover:text-[#080C14] transition-colors"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full group-hover:w-full transition-all duration-300" />
               </button>
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop CTA */}
+          <div className="hidden md:flex items-center gap-2">
             <button
-              onClick={() => navigate("/login")}
-              className="text-foreground/70 hover:text-foreground font-semibold px-4 py-2 transition-colors"
+              onClick={() => router.push("/login")}
+              className="text-sm font-medium text-slate-500 hover:text-[#080C14] px-4 py-2 rounded-lg hover:bg-slate-100 transition-all"
             >
               Login
             </button>
             <button
-              onClick={() => navigate("/register")}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-2xl font-semibold text-sm transition-all active:scale-95 shadow-glow"
+              onClick={() => router.push("/register")}
+              className="text-sm font-semibold text-white bg-[#080C14] hover:bg-[#2563EB] px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-blue-500/20"
             >
               Get Started Free
             </button>
           </div>
 
+          {/* Hamburger */}
           <button
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden p-2 rounded-xl text-foreground hover:bg-muted transition-colors"
+            className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
             aria-label="Toggle menu"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
-      </motion.nav>
+      </nav>
 
-      <AnimatePresence>
-        {open && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden"
-              onClick={() => setOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 z-50 w-[80%] max-w-[300px] bg-white shadow-2xl flex flex-col md:hidden"
-            >
-              <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                <Link
-                  to="/"
-                  className="flex items-center gap-2.5"
-                  onClick={() => setOpen(false)}
-                >
-                  <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-base">
-                    🎓
-                  </div>
-                  <span className="font-semibold text-foreground tracking-tight">
-                    Student Life
-                  </span>
-                </Link>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="p-2 rounded-xl text-foreground hover:bg-muted transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+      {/* Mobile menu */}
+      {open && (
+        <>
+          <div
+            className="mobile-overlay fixed inset-0 z-40 bg-black/25 backdrop-blur-sm md:hidden"
+            onClick={() => setOpen(false)}
+          />
+          <div className="mobile-drawer fixed top-0 right-0 bottom-0 z-50 w-[80%] max-w-[300px] bg-white shadow-2xl flex flex-col md:hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
+              <Link
+                href="/"
+                className="flex items-center gap-2.5"
+                onClick={() => setOpen(false)}
+              >
+                <div className="w-8 h-8 bg-[#080C14] rounded-[10px] flex items-center justify-center text-base">
+                  🎓
+                </div>
+                <span className="font-bold text-[#080C14]">Student Life</span>
+              </Link>
+              <button
+                onClick={() => setOpen(false)}
+                className="p-2 rounded-xl hover:bg-slate-100 transition-colors"
+              >
+                <X size={20} className="text-slate-500" />
+              </button>
+            </div>
 
-              <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
-                  <button
-                    key={link.href}
-                    onClick={() => scrollToSection(link.href)}
-                    className="py-3 px-3 rounded-xl text-sm font-semibold text-foreground hover:bg-muted transition-colors text-left"
-                  >
-                    {link.label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex-1 px-4 py-4 flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
+                <button
+                  key={link.href}
+                  onClick={() => scrollToSection(link.href)}
+                  className="py-3 px-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-[#080C14] transition-colors text-left"
+                >
+                  {link.label}
+                </button>
+              ))}
+            </div>
 
-              <div className="px-4 pb-6 pt-3 border-t border-border flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    navigate("/login");
-                  }}
-                  className="w-full py-2.5 rounded-2xl text-sm font-semibold text-foreground hover:bg-muted transition-colors"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    navigate("/register");
-                  }}
-                  className="w-full bg-primary text-primary-foreground py-3 rounded-2xl font-semibold text-sm transition-all active:scale-95"
-                >
-                  Get Started Free
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            <div className="px-4 pb-6 pt-3 border-t border-black/5 flex flex-col gap-2">
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/login");
+                }}
+                className="w-full py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                Login
+              </button>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/register");
+                }}
+                className="w-full bg-[#080C14] hover:bg-[#2563EB] text-white py-3 rounded-xl font-semibold text-sm transition-all duration-200"
+              >
+                Get Started Free
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

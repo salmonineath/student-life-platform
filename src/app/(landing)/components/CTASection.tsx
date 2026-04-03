@@ -1,60 +1,127 @@
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+"use client";
 
-export default function CTASection() {
-  const navigate = useNavigate();
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+
+function Reveal({
+  children,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="py-24 md:py-32 px-6 bg-gradient-cta relative overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+    <div
+      ref={ref}
+      style={{
+        transitionDelay: `${delay}ms`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(28px)",
+      }}
+      className="transition-all duration-700"
+    >
+      {children}
+    </div>
+  );
+}
 
-      <div className="max-w-2xl mx-auto text-center relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight"
-        >
-          Ready to take control of your university life?
-        </motion.h2>
+export default function CTASection() {
+  const router = useRouter();
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-5 text-lg md:text-xl text-white/80"
-        >
-          Join thousands of Cambodian students already organizing their academic
-          life better.
-        </motion.p>
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
+        @keyframes spinSlow { to { transform: translate(-50%,-50%) rotate(360deg); } }
+        .cta-spin {
+          animation: spinSlow 22s linear infinite;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0deg,
+            rgba(37,99,235,0.09) 60deg,
+            transparent 120deg,
+            rgba(99,102,241,0.09) 180deg,
+            transparent 240deg,
+            rgba(37,99,235,0.05) 300deg,
+            transparent 360deg
+          );
+        }
+        .btn-cta-white:hover {
+          background: #EFF6FF;
+          color: #2563EB;
+          transform: translateY(-3px);
+          box-shadow: 0 0 60px rgba(255,255,255,0.1);
+        }
+        .btn-cta-white { transition: all 0.25s; }
+      `}</style>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <button
-            onClick={() => navigate("/register")}
-            className="mt-10 bg-white text-foreground hover:bg-white/95 hover:scale-[1.03] px-10 py-4 rounded-2xl font-bold text-lg transition-all active:scale-95 shadow-lg"
-          >
-            Create Your Free Account
-          </button>
-        </motion.div>
+      <section
+        className="py-32 md:py-40 px-6 text-center relative overflow-hidden"
+        style={{ background: "#080C14" }}
+      >
+        {/* Spinning conic glow */}
+        <div
+          className="cta-spin absolute w-[800px] h-[800px] rounded-full pointer-events-none"
+          style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}
+        />
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-5 text-sm text-white/60"
-        >
-          Takes less than 30 seconds • No credit card needed
-        </motion.p>
-      </div>
-    </section>
+        <div className="relative z-10 max-w-[720px] mx-auto">
+          <Reveal>
+            <h2
+              style={{
+                fontFamily: "'Sora', sans-serif",
+                letterSpacing: "-2.5px",
+              }}
+              className="text-[clamp(36px,5vw,64px)] font-extrabold text-white leading-[1.05] mb-6"
+            >
+              Ready to actually
+              <br />
+              organize your life?
+            </h2>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <p className="text-[18px] text-slate-500 mb-14">
+              Join thousands of Cambodian students who already have their
+              academic life under control.
+            </p>
+          </Reveal>
+
+          <Reveal delay={200}>
+            <button
+              onClick={() => router.push("/register")}
+              className="btn-cta-white inline-flex items-center gap-3 bg-white text-[#080C14] px-12 py-5 rounded-2xl font-bold text-[17px]"
+              style={{ fontFamily: "'Sora', sans-serif" }}
+            >
+              Create Your Free Account
+              <span>→</span>
+            </button>
+          </Reveal>
+
+          <Reveal delay={300}>
+            <p className="mt-5 text-[13px] text-slate-700">
+              Takes less than 30 seconds · No credit card needed
+            </p>
+          </Reveal>
+        </div>
+      </section>
+    </>
   );
 }

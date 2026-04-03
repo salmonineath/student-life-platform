@@ -5,6 +5,7 @@ import AIToolSection from "../components/AIToolsSection";
 import CTASection from "../components/CTASection";
 import Header from "../components/Header";
 import BannerSection from "../components/BannerSection";
+import TrustBar from "../components/TrustBar";
 
 export default function LandingPage() {
   return (
@@ -16,7 +17,7 @@ export default function LandingPage() {
       <HeroSection />
 
       {/* Trust Bar */}
-      {/* <div></div> */}
+      <TrustBar />
 
       {/* Features Section */}
       <FeatureSection />

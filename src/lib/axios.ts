@@ -107,6 +107,10 @@ axiosInstance.interceptors.response.use(
         processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        // if the token session is expired redirect back to landing page;
+        // processQueue(refreshError);
+        // window.location.href = "/login";
+
         // Refresh failed — the isRefreshRequest block above will handle redirect
         return Promise.reject(refreshError);
       } finally {

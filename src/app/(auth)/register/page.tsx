@@ -70,7 +70,7 @@ const RegisterPage = () => {
     setError("");
   };
 
-  // Basic validation before moving to next step
+  // validation for required fields
   const validateRequiredFields = () => {
     if (!formData.fullname.trim()) return setError("Full name is required");
     if (!formData.username.trim()) return setError("Username is required");

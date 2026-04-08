@@ -7,7 +7,7 @@ export default function DashboardPage() {
       {/* Header section of the inner page */}
       <div>
         <h2 className="text-3xl font-bold text-slate-900">
-          Welcome back, Sal Monineath!
+          Welcome back!
         </h2>
         <p className="text-slate-500">
           Here is what's happening with your studies today.

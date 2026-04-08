@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { loginAction } from "../core/action";
+import { clearError } from "../core/reducer";
+import { useRouter } from "next/navigation";
 import {
-  GraduationCap,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  ArrowLeft,
+  GraduationCap, Mail, Lock, Eye, EyeOff, ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -18,6 +18,8 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const dispatch = useDispatch<AppDispatch>();
+
   const handleLogin = async () => {
     setError("");
 
@@ -25,13 +27,17 @@ const LoginPage = () => {
       setError("Please fill in all fields.");
       return;
     }
-
     setLoading(true);
 
     try {
-      // TODO: add your API logic here
-      // e.g. await dispatch(loginUser({ email_or_username: emailOrUsername, password })).unwrap();
-      // e.g. window.location.href = "/dashboard";
+      const result = await dispatch(
+        loginAction({ email_or_username: emailOrUsername, password})
+      );
+
+      if ((loginAction.fulfilled.match(result))) {
+        window.location.href = "/dashboard"; 
+      }
+      
     } catch (err: any) {
       setError(err?.message || "Login failed");
     } finally {

@@ -14,7 +14,6 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
-import { useAppDispatch } from "@/hooks/redux";
 import { logoutUser } from "@/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,8 +22,6 @@ const Sidebar = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const dispatch = useAppDispatch();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Navigation items array for easy management
@@ -44,7 +41,7 @@ const Sidebar = () => {
     setError("");
 
     try {
-      await dispatch(logoutUser());
+      // await dispatch(logoutUser());
       // Full reload so cookies are fully cleared before middleware checks them
       window.location.href = "/student-life";
     } catch (err: any) {

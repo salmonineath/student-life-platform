@@ -6,39 +6,25 @@ const API_URL =
 // ─────────────────────────────────────────────
 // Axios Instance
 // ─────────────────────────────────────────────
-
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // always send cookies with every request
+  withCredentials: true, // Send cookies (refresh token) with every request
 });
 
 // ─────────────────────────────────────────────
-// State
+// State (module-level to share across requests)
 // ─────────────────────────────────────────────
-
-// Prevents multiple refresh token requests from firing at the same time
 let isRefreshing = false;
-
-// When a refresh is in progress, other failed requests wait here
-// Once refresh is done, they all retry at once
-let failedQueue: {
-  resolve: (value: any) => void;
-  reject: (reason?: any) => void;
-}[] = [];
-
-// Set to true during logout so the interceptor skips refresh and redirects immediately
+let failedQueue: { resolve: (value: any) => void; reject: (reason?: any) => void }[] = [];
 let isLoggingOut = false;
 
 // ─────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────
-
-// Call this before logout so the interceptor knows not to attempt a refresh
 export const setLoggingOut = (value: boolean) => {
   isLoggingOut = value;
 };
 
-// Resolve or reject all queued requests depending on whether refresh succeeded
 const processQueue = (error: any) => {
   failedQueue.forEach((request) => {
     if (error) request.reject(error);
@@ -47,43 +33,41 @@ const processQueue = (error: any) => {
   failedQueue = [];
 };
 
-const redirectToLogin = () => {
-  window.location.href = "/login";
+const redirectToLanding = () => {
+  // Change this to your actual landing page if it's not /login
+  window.location.href = "/"; // or "/login" or "/landing"
+  // Optional: clear any local state/cookies here if needed
 };
 
 // ─────────────────────────────────────────────
 // Response Interceptor
 // ─────────────────────────────────────────────
-
 axiosInstance.interceptors.response.use(
-  // Successful response — just pass it through
   (response) => response,
 
   async (error) => {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest?.url?.includes(
-      "/auth/refresh-token",
-    );
-    const isUnauthorized = error.response?.status === 401;
 
-    // User is logging out — skip refresh and redirect immediately
     if (isLoggingOut) {
-      redirectToLogin();
+      redirectToLanding();
       return Promise.reject(error);
     }
 
-    // The refresh token request itself got a 401 — session is completely dead
+    const isUnauthorized = error.response?.status === 401;
+    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh-token");
+
+    // 1. Refresh token request itself failed (401) → refresh token is invalid/expired
     if (isRefreshRequest && isUnauthorized) {
       isRefreshing = false;
       processQueue(error);
-      redirectToLogin();
+      redirectToLanding();
       return Promise.reject(error);
     }
 
-    // Any other 401 — access token is expired, try to refresh it
+    // 2. Any other 401 → try to refresh access token (only once per request)
     if (isUnauthorized && !originalRequest._retry) {
-      // Another refresh is already running — queue this request and wait for it to finish
       if (isRefreshing) {
+        // Queue the request while refresh is in progress
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -91,31 +75,33 @@ axiosInstance.interceptors.response.use(
           .catch((err) => Promise.reject(err));
       }
 
-      // Mark this request so it doesn't get retried more than once
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        // Ask the backend for a new access token using the refresh token cookie
+        // Call refresh endpoint (uses httpOnly refresh token cookie)
         await axios.post(
           `${API_URL}/auth/refresh-token`,
           {},
-          { withCredentials: true },
+          { withCredentials: true }
         );
 
-        // Refresh succeeded — retry all queued requests with the new access token
+        // Refresh succeeded → process queued requests and retry original
         processQueue(null);
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Refresh failed — the isRefreshRequest block above will handle redirect
+      } catch (refreshError: any) {
+        // Refresh failed → this will be caught by the "isRefreshRequest" block above
+        // which will redirect to landing page
+        processQueue(refreshError);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
 
+    // Other errors (non-401) just reject normally
     return Promise.reject(error);
-  },
+  }
 );
 
 export default axiosInstance;

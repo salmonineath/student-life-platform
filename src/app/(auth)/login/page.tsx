@@ -9,11 +9,7 @@ import {
   EyeOff,
   ArrowLeft,
 } from "lucide-react";
-// import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAppDispatch } from "@/hooks/redux";
-import { fetchMe } from "@/features/auth/authSlice";
-import { loginUser } from "@/features/auth/authSlice";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,39 +18,22 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // const router = useRouter();
-  const dispatch = useAppDispatch();
-
   const handleLogin = async () => {
-    setLoading(true);
     setError("");
 
+    if (!emailOrUsername || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      await dispatch(
-        loginUser({ email_or_username: emailOrUsername, password }),
-      ).unwrap();
-
-      await dispatch(fetchMe());
-
-      // Small wait to let the browser commit the HTTP-only cookies
-      // before middleware checks them on the next request
-      // await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // router.push("/dashboard");
-
-      // Step 2: Redirect — AuthContext in (student) layout will auto-fetch /me
-      // Use window.location.href instead of router.push
-      // This forces a full page reload so the browser fully commits
-      // the HTTP-only cookies before the next request hits middleware
-      window.location.href = "/dashboard";
+      // TODO: add your API logic here
+      // e.g. await dispatch(loginUser({ email_or_username: emailOrUsername, password })).unwrap();
+      // e.g. window.location.href = "/dashboard";
     } catch (err: any) {
-      if (err.response) {
-        setError(err.response.data?.message || "Login failed");
-      } else if (err.request) {
-        setError("No response from server");
-      } else {
-        setError(err.message);
-      }
+      setError(err?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -65,11 +44,9 @@ const LoginPage = () => {
       <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 transition-all duration-500">
         {/* LEFT */}
         <div className="relative flex flex-col justify-center items-center bg-[#0F172A] text-white p-10 overflow-hidden">
-          {/* Background decorative circles */}
           <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl" />
           <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl" />
 
-          {/* Icon */}
           <div className="relative inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 hover:scale-105 transition-transform duration-300">
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
@@ -79,11 +56,9 @@ const LoginPage = () => {
           </h1>
 
           <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
-            Manage your schedule, assignments, and study groups all in one
-            place.
+            Manage your schedule, assignments, and study groups all in one place.
           </p>
 
-          {/* Bottom feature pills */}
           <div className="relative mt-8 flex flex-wrap justify-center gap-2">
             {["Schedule", "Assignments", "Study Groups", "AI Chat"].map(
               (feature) => (
@@ -100,7 +75,6 @@ const LoginPage = () => {
 
         {/* RIGHT */}
         <div className="p-10 flex flex-col justify-center">
-          {/* Back button */}
           <Link
             href="/student-life"
             className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
@@ -185,24 +159,9 @@ const LoginPage = () => {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8z"
-                  />
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
                 Logging in...
               </span>

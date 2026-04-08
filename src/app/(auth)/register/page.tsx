@@ -11,8 +11,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { useAppDispatch } from "@/hooks/redux";
-import { registerUser } from "@/features/auth/authSlice";
 
 // ─────────────────────────────────────────────
 // Reusable Input Field
@@ -62,29 +60,30 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const dispatch = useAppDispatch();
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    validateRequiredFields();
     setError("");
   };
 
-  // Basic validation before moving to next step
-  const validateRequiredFields = () => {
-    if (!formData.fullname.trim()) return setError("Full name is required");
-    if (!formData.username.trim()) return setError("Username is required");
-    if (!formData.email.trim()) return setError("Email is required");
-    if (!formData.password.trim()) return setError("Password is required");
-    setError("");
+  const validateRequiredFields = (): boolean => {
+    if (!formData.fullname.trim()) { setError("Full name is required"); return false; }
+    if (!formData.username.trim()) { setError("Username is required"); return false; }
+    if (!formData.email.trim()) { setError("Email is required"); return false; }
+    if (!formData.password.trim()) { setError("Password is required"); return false; }
+    return true;
   };
 
   const handleRegister = async () => {
-    setLoading(true);
     setError("");
+
+    if (!validateRequiredFields()) return;
+
+    setLoading(true);
+
     try {
-      await dispatch(registerUser(formData)).unwrap();
-      window.location.href = "/dashboard";
+      // TODO: add your API logic here
+      // e.g. await dispatch(registerUser(formData)).unwrap();
+      // e.g. window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err || "Registration failed");
     } finally {
@@ -112,8 +111,7 @@ const RegisterPage = () => {
           </h1>
 
           <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
-            Manage your schedule, assignments, and study groups all in one
-            place.
+            Manage your schedule, assignments, and study groups all in one place.
           </p>
 
           <div className="relative mt-8 flex flex-wrap justify-center gap-2">
@@ -130,7 +128,6 @@ const RegisterPage = () => {
 
         {/* ── RIGHT PANEL ── */}
         <div className="p-8 sm:p-10 flex flex-col justify-center">
-          {/* Back button */}
           <Link
             href="/student-life"
             className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
@@ -138,11 +135,10 @@ const RegisterPage = () => {
             <ArrowLeft className="w-4 h-4" /> Back
           </Link>
 
-          <h2 className="text-3xl font-bold text-slate-800 mb-1">
+          <h2 className="text-3xl font-bold text-slate-800 mb-4">
             Create Account
           </h2>
 
-          {/* ── Required fields ── */}
           <div className="flex flex-col gap-4">
             <InputField label="Full Name" icon={User}>
               <input
@@ -200,15 +196,12 @@ const RegisterPage = () => {
             </InputField>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="mt-4 flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
               {error}
             </div>
           )}
-
-          {/* Action Button */}
 
           <button
             onClick={handleRegister}
@@ -217,24 +210,9 @@ const RegisterPage = () => {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8z"
-                  />
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
                 Registering...
               </span>

@@ -66,10 +66,22 @@ const RegisterPage = () => {
   };
 
   const validateRequiredFields = (): boolean => {
-    if (!formData.fullname.trim()) { setError("Full name is required"); return false; }
-    if (!formData.username.trim()) { setError("Username is required"); return false; }
-    if (!formData.email.trim()) { setError("Email is required"); return false; }
-    if (!formData.password.trim()) { setError("Password is required"); return false; }
+    if (!formData.fullname.trim()) {
+      setError("Full name is required");
+      return false;
+    }
+    if (!formData.username.trim()) {
+      setError("Username is required");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!formData.password.trim()) {
+      setError("Password is required");
+      return false;
+    }
     return true;
   };
 

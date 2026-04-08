@@ -44,9 +44,10 @@ export const setLoggingOut = (value: boolean) => {
 };
   failedQueue = [];
 
-const redirectToLogin = () => {
-  localStorage.removeItem("token");
-  window.location.href = "/login";
+const redirectToLanding = () => {
+  // Change this to your actual landing page if it's not /login
+  window.location.href = "/"; // or "/login" or "/landing"
+  // Optional: clear any local state/cookies here if needed
 };
 
 // ─────────────────────────────────────────────
@@ -57,21 +58,21 @@ axiosInstance.interceptors.response.use(
 
   async (error) => {
     const originalRequest = error.config;
-    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh-token");
-    const isUnauthorized = error.response?.status === 401;
 
     if (isLoggingOut) {
       redirectToLanding();
       return Promise.reject(error);
     }
-    const isUnauthorized = error.response?.status === 401;
-    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh-token");
+
+    // Refresh token request itself failed → session dead
+    if (isRefreshRequest && isUnauthorized) {
       isRefreshing = false;
+      processQueue(error);
       redirectToLanding();
       return Promise.reject(error);
     }
 
-    // Normal 401 → try to refresh token
+    // 2. Any other 401 → try to refresh access token (only once per request)
     if (isUnauthorized && !originalRequest._retry) {
       if (isRefreshing) {
         // Queue the request while refresh is in progress
@@ -86,19 +87,20 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Call refresh token endpoint
+        // Call refresh endpoint (uses httpOnly refresh token cookie)
         await axios.post(
           `${API_URL}/auth/refresh-token`,
           {},
           { withCredentials: true }
         );
 
-        // Refresh successful → retry original request
+        // Refresh succeeded → process queued requests and retry original
         processQueue(null);
         return axiosInstance(originalRequest);
-      } catch (refreshError) {
+      } catch (refreshError: any) {
+        // Refresh failed → this will be caught by the "isRefreshRequest" block above
+        // which will redirect to landing page
         processQueue(refreshError);
-        redirectToLogin();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

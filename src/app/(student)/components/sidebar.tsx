@@ -14,6 +14,8 @@ import {
   GraduationCap,
   User,
 } from "lucide-react";
+import { logoutUser } from "@/features/auth/authSlice";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const Sidebar = () => {

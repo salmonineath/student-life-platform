@@ -26,6 +26,8 @@ export interface ScheduleItem {
   location: string;
   isImportant: boolean; // API returns "important" (not "isImportant")
   createdBy: ScheduleCreatedBy;
+
+  assignmentId: number | null;
 }
 
 // ─── API response wrapper ─────────────────────────────────────────────────────

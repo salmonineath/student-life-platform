@@ -115,6 +115,7 @@ export default function FeatureSection() {
         .feat-card:hover .feat-icon { transform: scale(1.1) rotate(-3deg); }
         .feat-icon { transition: transform 0.3s; }
       `}</style>
+      
 
       <section id="features" className="py-24 md:py-32 px-6 bg-white">
         <div className="max-w-[1160px] mx-auto">

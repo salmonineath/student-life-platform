@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 // ─────────────────────────────────────────────
 // Axios Instance
@@ -8,10 +9,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1
 const axiosInstance = axios.create({
   baseURL: API_URL,
   withCredentials: true, // Send cookies (refresh token) with every request
-    headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 60000,
 });
 
 // ─────────────────────────────────────────────
@@ -27,7 +24,14 @@ let isLoggingOut = false;
 export const setLoggingOut = (value: boolean) => {
   isLoggingOut = value;
 };
+
+const processQueue = (error: any) => {
+  failedQueue.forEach((request) => {
+    if (error) request.reject(error);
+    else request.resolve(null);
+  });
   failedQueue = [];
+};
 
 const redirectToLanding = () => {
   // Change this to your actual landing page if it's not /login
@@ -36,7 +40,7 @@ const redirectToLanding = () => {
 };
 
 // ─────────────────────────────────────────────
-// Response Interceptor (Improved)
+// Response Interceptor
 // ─────────────────────────────────────────────
 axiosInstance.interceptors.response.use(
   (response) => response,

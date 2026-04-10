@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Star } from "lucide-react";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/store/store";
+import { AppDispatch } from "@/redux/store";
 import {
   createOneTimeSchedule,
   createRecurringSchedule,

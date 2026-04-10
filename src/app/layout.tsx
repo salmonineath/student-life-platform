@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="en" data-scroll-behavior="smooth"
       className={cn("scroll-smooth", "font-sans", geist.variable)}
     >
       <body className={`${geist.variable} font-sans`}>

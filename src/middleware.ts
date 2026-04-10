@@ -35,9 +35,9 @@ export const middleware = (request: NextRequest) => {
   }
 
   // No session at all and tries to visit a protected page → go to login
-  if (!hasSession && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // if (!hasSession && isProtectedRoute) {
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
 
   return NextResponse.next();
 };

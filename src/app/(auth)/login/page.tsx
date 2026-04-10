@@ -1,15 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
 import { loginAction } from "../core/action";
-import { clearError } from "../core/reducer";
-import { useRouter } from "next/navigation";
-import {
-  GraduationCap, Mail, Lock, Eye, EyeOff, ArrowLeft,
-} from "lucide-react";
+import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { motion, type Variants } from "framer-motion";
+
+const CARD_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" as const } },
+};
+
+const ERROR_VARIANTS: Variants = {
+  hidden: { opacity: 0, height: 0, marginTop: 0 },
+  visible: { opacity: 1, height: "auto", marginTop: 12, transition: { duration: 0.2 } },
+};
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,25 +28,23 @@ const LoginPage = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const handleLogin = async () => {
-    setError("");
-
     if (!emailOrUsername || !password) {
       setError("Please fill in all fields.");
       return;
     }
+    setError("");
     setLoading(true);
-
     try {
       const result = await dispatch(
-        loginAction({ email_or_username: emailOrUsername, password})
+        loginAction({ email_or_username: emailOrUsername, password })
       );
-
-      if ((loginAction.fulfilled.match(result))) {
-        window.location.href = "/dashboard"; 
+      if (loginAction.fulfilled.match(result)) {
+        window.location.href = "/dashboard";
+      } else {
+        setError("Login failed. Please check your credentials.");
       }
-      
-    } catch (err: any) {
-      setError(err?.message || "Login failed");
+    } catch {
+      setError("Login failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -47,39 +52,40 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-100 to-sky-50">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 transition-all duration-500">
-        {/* LEFT */}
+      <motion.div
+        variants={CARD_VARIANTS}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2"
+      >
+        {/* LEFT PANEL */}
         <div className="relative flex flex-col justify-center items-center bg-[#0F172A] text-white p-10 overflow-hidden">
-          <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl" />
+          <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
 
-          <div className="relative inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 hover:scale-105 transition-transform duration-300">
+          <div className="relative inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 transition-transform duration-200 hover:scale-105 hover:rotate-6">
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
 
-          <h1 className="relative text-3xl font-extrabold tracking-tight">
-            Student Life
-          </h1>
+          <h1 className="relative text-3xl font-extrabold tracking-tight">Student Life</h1>
 
           <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
             Manage your schedule, assignments, and study groups all in one place.
           </p>
 
           <div className="relative mt-8 flex flex-wrap justify-center gap-2">
-            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map(
-              (feature) => (
-                <span
-                  key={feature}
-                  className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10"
-                >
-                  {feature}
-                </span>
-              ),
-            )}
+            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map((feature) => (
+              <span
+                key={feature}
+                className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10 transition-transform duration-150 hover:scale-105 cursor-default"
+              >
+                {feature}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT PANEL */}
         <div className="p-10 flex flex-col justify-center">
           <Link
             href="/student-life"
@@ -89,25 +95,23 @@ const LoginPage = () => {
             Back
           </Link>
 
-          <h2 className="text-3xl font-bold text-slate-800 mb-1">
-            Welcome Back!
-          </h2>
-          <p className="text-sm text-gray-400 mb-8">
-            Sign in to continue your journey
-          </p>
+          <h2 className="text-3xl font-bold text-slate-800 mb-1">Welcome Back!</h2>
+          <p className="text-sm text-gray-400 mb-8">Sign in to continue your journey</p>
 
-          {/* Email */}
+          {/* Email / Username */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-600 mb-1.5 block">
               Email or Username
             </label>
-            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent hover:border-sky-300 transition-all duration-200 bg-gray-50 focus-within:bg-white">
-              <Mail className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent focus-within:bg-white hover:border-sky-300 transition-all duration-200 group">
+              <Mail className="w-4 h-4 text-gray-400 mr-2 shrink-0 group-focus-within:text-sky-500 transition-colors duration-200" />
               <input
                 type="text"
                 value={emailOrUsername}
-                onChange={(e) => setEmailOrUsername(e.target.value)}
-                placeholder="example@email.com"
+                onChange={(e) => { setError(""); setEmailOrUsername(e.target.value); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="example@email.com or username"
+                autoComplete="username"
                 className="w-full outline-none text-sm bg-transparent text-gray-700 placeholder-gray-400"
               />
             </div>
@@ -116,9 +120,7 @@ const LoginPage = () => {
           {/* Password */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-600">
-                Password
-              </label>
+              <label className="text-sm font-medium text-gray-600">Password</label>
               <Link
                 href="/forget-password"
                 className="text-xs text-sky-500 hover:text-sky-600 hover:underline transition-colors"
@@ -126,42 +128,46 @@ const LoginPage = () => {
                 Forgot password?
               </Link>
             </div>
-            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent hover:border-sky-300 transition-all duration-200 bg-gray-50 focus-within:bg-white">
-              <Lock className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
+            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent focus-within:bg-white hover:border-sky-300 transition-all duration-200 group">
+              <Lock className="w-4 h-4 text-gray-400 mr-2 shrink-0 group-focus-within:text-sky-500 transition-colors duration-200" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setError(""); setPassword(e.target.value); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 placeholder="••••••••"
+                autoComplete="current-password"
                 className="w-full outline-none text-sm bg-transparent text-gray-700 placeholder-gray-400"
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword((v) => !v)}
                 className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Error */}
-          {error && (
-            <div className="mt-3 flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+          <motion.div
+            variants={ERROR_VARIANTS}
+            initial="hidden"
+            animate={error ? "visible" : "hidden"}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
               {error}
             </div>
-          )}
+          </motion.div>
 
           {/* Login Button */}
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="mt-6 relative bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 active:scale-[0.98] text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+            className="mt-6 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 hover:-translate-y-px active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:translate-y-0"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
@@ -171,23 +177,17 @@ const LoginPage = () => {
                 </svg>
                 Logging in...
               </span>
-            ) : (
-              "LOGIN"
-            )}
+            ) : "Login"}
           </button>
 
-          {/* Register */}
           <p className="text-center text-xs text-gray-400 mt-6">
             Don't have an account?{" "}
-            <Link
-              href="/register"
-              className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors"
-            >
+            <Link href="/register" className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors">
               Register
             </Link>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

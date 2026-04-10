@@ -15,6 +15,9 @@ import {
   User,
 } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { logoutAction } from "@/app/(auth)/core/action";
+import type { AppDispatch } from "@/redux/store";
 
 const Sidebar = () => {
   const [loading, setLoading] = useState(false);
@@ -34,12 +37,14 @@ const Sidebar = () => {
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
 
+  const dispatch = useDispatch<AppDispatch>();
+
   const handleLogout = async () => {
     setLoading(true);
     setError("");
 
     try {
-      // await dispatch(logoutUser());
+      await dispatch(logoutAction());
       // Full reload so cookies are fully cleared before middleware checks them
       window.location.href = "/student-life";
     } catch (err: any) {

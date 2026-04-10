@@ -36,9 +36,31 @@ export interface RegisterPayload {
   password: string;
 }
 
+export interface RegisterResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    user: AuthUser
+  }
+}
+
 export interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
   loading: boolean;
   error: string | null;
+}
+
+export interface LogoutResponse {
+  state: number;
+  success: boolean;
+  message: string;
+}
+
+export interface MeResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: AuthUser;
 }

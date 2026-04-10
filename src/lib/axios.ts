@@ -1,44 +1,29 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://studentlifeapis.onrender.com/api/v1";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 // ─────────────────────────────────────────────
 // Axios Instance
 // ─────────────────────────────────────────────
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: true,           // Keep this for refresh token cookie
-  headers: {
+  withCredentials: true, // Send cookies (refresh token) with every request
+    headers: {
     "Content-Type": "application/json",
   },
   timeout: 60000,
 });
 
 // ─────────────────────────────────────────────
-// Request Interceptor - Attach Access Token if available
+// State (module-level to share across requests)
 // ─────────────────────────────────────────────
-
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");   // Change key if you use different name
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// ─────────────────────────────────────────────
-// State for Refresh Logic
-// ─────────────────────────────────────────────
-
 let isRefreshing = false;
 let failedQueue: { resolve: (value: any) => void; reject: (reason?: any) => void }[] = [];
 let isLoggingOut = false;
 
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
 export const setLoggingOut = (value: boolean) => {
   isLoggingOut = value;
 };
@@ -64,7 +49,10 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Refresh token request itself failed → session dead
+    const isUnauthorized = error.response?.status === 401;
+    const isRefreshRequest = originalRequest?.url?.includes("/auth/refresh-token");
+
+    // 1. Refresh token request itself failed (401) → refresh token is invalid/expired
     if (isRefreshRequest && isUnauthorized) {
       isRefreshing = false;
       processQueue(error);

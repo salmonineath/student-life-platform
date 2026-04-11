@@ -5,12 +5,12 @@
  *
  * Key behaviours:
  *  - Fetches schedules for the displayed week from the API (via Redux action).
- *  - Prev/Next chevrons navigate week by week.
- *  - The date picker lets the user jump to any week.
- *  - Clicking on a day label calls `onDayClick(date)` → parent switches to Daily view.
+ *  - Clicking a day label → calls onDayClick(date) → parent switches to Daily view.
+ *  - Clicking the pencil icon on an event → calls onEditSchedule(schedule) → parent opens modal.
  *
  * Props:
- *  onDayClick(date) — called when user clicks a day; parent handles tab switch.
+ *  onDayClick(date)        — user clicked a day; parent switches tab to Daily.
+ *  onEditSchedule(schedule)— user clicked edit on an event; parent opens edit modal.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -21,6 +21,7 @@ import {
   Clock,
   MapPin,
   Star,
+  Pencil,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getMyScheduleAction } from "../core/action";
@@ -42,19 +43,11 @@ import {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-/**
- * Convert JS getDay() (0 = Sunday) to API format (1 = Monday … 7 = Sunday).
- */
 function apiDayOfWeek(date: Date): number {
   const d = date.getDay();
   return d === 0 ? 7 : d;
 }
 
-/**
- * Return all schedules that fall on a given date.
- * ONE_TIME  → match by calendar date
- * RECURRING → match by day-of-week number
- */
 function getSchedulesForDay(schedules: Schedule[], date: Date): Schedule[] {
   return schedules.filter((s) => {
     if (s.type === "ONE_TIME") {
@@ -64,9 +57,6 @@ function getSchedulesForDay(schedules: Schedule[], date: Date): Schedule[] {
   });
 }
 
-/**
- * Format an ISO time string (or datetime string) → "7:00 AM" style.
- */
 function formatTime(time: string): string {
   const t = time.includes("T") ? time.split("T")[1] : time;
   const [h, m] = t.split(":");
@@ -79,10 +69,16 @@ function formatTime(time: string): string {
 // ── Event Card ─────────────────────────────────────────────────────────────────
 
 /**
- * A single schedule item shown inside a day row.
- * Color-coded: green = one-time, purple = recurring.
+ * A single event shown inside a day row.
+ * Hovering reveals an edit button (pencil icon).
  */
-function EventCard({ schedule }: { schedule: Schedule }) {
+function EventCard({
+  schedule,
+  onEdit,
+}: {
+  schedule: Schedule;
+  onEdit: (s: Schedule) => void;
+}) {
   const isOneTime = schedule.type === "ONE_TIME";
   const s = schedule as OneTimeSchedule;
   const r = schedule as RecurringSchedule;
@@ -94,22 +90,19 @@ function EventCard({ schedule }: { schedule: Schedule }) {
   return (
     <div
       className={`
-        flex items-center gap-3 px-4 py-3 rounded-xl border
-        transition-all duration-150 hover:shadow-sm cursor-default
+        group flex items-center gap-3 px-4 py-3 rounded-xl border
+        transition-all duration-150 hover:shadow-sm
         ${isOneTime ? "bg-green-50 border-green-100" : "bg-purple-50 border-purple-100"}
       `}
     >
-      {/* Colour dot */}
       <span
         className={`w-2 h-2 rounded-full shrink-0 ${isOneTime ? "bg-green-500" : "bg-purple-500"}`}
       />
 
-      {/* Title */}
       <span className="font-semibold text-slate-800 text-sm">
         {schedule.title}
       </span>
 
-      {/* Type badge */}
       <span
         className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
           isOneTime
@@ -120,26 +113,35 @@ function EventCard({ schedule }: { schedule: Schedule }) {
         {isOneTime ? "One-time" : "Weekly"}
       </span>
 
-      {/* Important star */}
       {schedule.important && (
         <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0" />
       )}
 
       <div className="flex-1" />
 
-      {/* Time */}
       <span className="flex items-center gap-1 text-xs text-slate-500">
         <Clock className="w-3.5 h-3.5 text-slate-400" />
         {timeRange}
       </span>
 
-      {/* Location */}
       {schedule.location && (
         <span className="flex items-center gap-1 text-xs text-slate-500">
           <MapPin className="w-3.5 h-3.5 text-slate-400" />
           {schedule.location}
         </span>
       )}
+
+      {/* Edit button — appears on hover */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // don't trigger day click
+          onEdit(schedule);
+        }}
+        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/60 text-slate-400 hover:text-slate-600 transition-all duration-150"
+        title="Edit schedule"
+      >
+        <Pencil className="w-3.5 h-3.5" />
+      </button>
     </div>
   );
 }
@@ -147,27 +149,30 @@ function EventCard({ schedule }: { schedule: Schedule }) {
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 interface WeeklyViewProps {
-  /** Called when user clicks a day label — parent switches to Daily view for that date. */
   onDayClick: (date: Date) => void;
+  onEditSchedule: (schedule: Schedule) => void;
+  // initialDate?: Date;
 }
 
 // ── Weekly View ────────────────────────────────────────────────────────────────
 
-export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
+export default function WeeklyView({
+  onDayClick,
+  onEditSchedule,
+}: WeeklyViewProps) {
   const dispatch = useAppDispatch();
+  // const [currentDate, setCurrentDate] = useState<Date>(
+  //   initialDate ?? new Date(),
+  // );
   const { schedules, loading } = useAppSelector((s) => s.schedule);
 
-  // Track the Monday of whichever week is displayed
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
 
   const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-
-  // All 7 days of the current week (Mon–Sun)
   const days = eachDayOfInterval({ start: currentWeekStart, end: weekEnd });
 
-  // Fetch schedules whenever the displayed week changes
   useEffect(() => {
     dispatch(
       getMyScheduleAction({
@@ -177,13 +182,11 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
     );
   }, [currentWeekStart]);
 
-  // Navigation handlers
   const goToPrevWeek = () => setCurrentWeekStart((d) => subWeeks(d, 1));
   const goToNextWeek = () => setCurrentWeekStart((d) => addWeeks(d, 1));
   const goToToday = () =>
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
-  // Hide "Today" button when we're already on the current week
   const isCurrentWeek = useMemo(() => {
     const todayWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
     return (
@@ -194,9 +197,8 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
 
   return (
     <div className="space-y-4">
-      {/* ── Date Navigation ────────────────────────────────────────── */}
+      {/* ── Date Navigation ──────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-2">
-        {/* Only show "Today" when not on the current week */}
         {!isCurrentWeek && (
           <button
             onClick={goToToday}
@@ -213,7 +215,6 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Clickable date range that opens a native date picker */}
         <label className="relative cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
           <CalendarDays className="w-4 h-4 text-slate-400" />
           <span className="text-sm font-medium text-slate-700">
@@ -243,7 +244,7 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
         </button>
       </div>
 
-      {/* ── Day Rows ───────────────────────────────────────────────── */}
+      {/* ── Day Rows ─────────────────────────────────────────────────── */}
       {loading ? (
         <WeeklyViewSkeleton />
       ) : (
@@ -257,10 +258,7 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
                 key={i}
                 className="flex gap-5 bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm"
               >
-                {/*
-                  Day label — clicking this triggers the jump to Daily view.
-                  The button appearance subtly indicates it's interactive.
-                */}
+                {/* Day label — clicking switches to Daily view for this day */}
                 <button
                   onClick={() => onDayClick(day)}
                   className="w-12 shrink-0 flex flex-col text-left hover:opacity-60 transition-opacity"
@@ -287,7 +285,7 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
                   )}
                 </button>
 
-                {/* Event cards for this day */}
+                {/* Event cards */}
                 <div className="flex-1 flex flex-col gap-2 justify-center min-h-[48px]">
                   {daySchedules.length === 0 ? (
                     <span className="text-sm text-slate-300 italic">
@@ -295,7 +293,11 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
                     </span>
                   ) : (
                     daySchedules.map((s) => (
-                      <EventCard key={s.id} schedule={s} />
+                      <EventCard
+                        key={s.id}
+                        schedule={s}
+                        onEdit={onEditSchedule}
+                      />
                     ))
                   )}
                 </div>
@@ -308,7 +310,7 @@ export default function WeeklyView({ onDayClick }: WeeklyViewProps) {
   );
 }
 
-// ── Loading Skeleton ───────────────────────────────────────────────────────────
+// ── Skeleton ───────────────────────────────────────────────────────────────────
 
 function WeeklyViewSkeleton() {
   return (

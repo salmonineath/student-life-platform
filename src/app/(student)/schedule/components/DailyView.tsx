@@ -4,15 +4,13 @@
  * DailyView — shows all schedules for a single day, sorted by start time.
  *
  * Key behaviours:
- *  - Accepts an optional `initialDate` prop so Weekly/Monthly can pass in
- *    the day the user clicked — the view opens on that exact date.
- *  - Syncs if `initialDate` changes while this view is already mounted.
+ *  - Accepts `initialDate` so Weekly/Monthly can pass the clicked day.
+ *  - Clicking the pencil icon on a row → calls onEditSchedule → parent opens modal.
  *  - Fetches schedules for the displayed date from the API (via Redux action).
- *  - Prev/Next chevrons navigate day by day.
- *  - The date picker lets the user jump to any day.
  *
  * Props:
- *  initialDate? — which day to show first (defaults to today).
+ *  initialDate?            — which day to show first (defaults to today).
+ *  onEditSchedule(schedule)— user clicked edit; parent opens edit modal.
  */
 
 import { useEffect, useState, useMemo } from "react";
@@ -23,6 +21,7 @@ import {
   Clock,
   MapPin,
   Star,
+  Pencil,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getMyScheduleAction } from "../core/action";
@@ -58,7 +57,6 @@ function formatTime(time: string): string {
   return `${display}:${m} ${ampm}`;
 }
 
-/** Returns the start time in minutes (for chronological sorting). */
 function getStartMinutes(schedule: Schedule): number {
   const isOneTime = schedule.type === "ONE_TIME";
   const timeStr = isOneTime
@@ -72,10 +70,16 @@ function getStartMinutes(schedule: Schedule): number {
 // ── Schedule Row ───────────────────────────────────────────────────────────────
 
 /**
- * A single schedule item shown in a detailed card layout.
- * More information than EventCard (WeeklyView) — includes description + creator.
+ * Detailed card for one schedule in the daily view.
+ * Edit button appears on hover.
  */
-function ScheduleRow({ schedule }: { schedule: Schedule }) {
+function ScheduleRow({
+  schedule,
+  onEdit,
+}: {
+  schedule: Schedule;
+  onEdit: (s: Schedule) => void;
+}) {
   const isOneTime = schedule.type === "ONE_TIME";
   const s = schedule as OneTimeSchedule;
   const r = schedule as RecurringSchedule;
@@ -89,8 +93,8 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
   return (
     <div
       className={`
-      flex items-start gap-4 p-4 rounded-2xl border
-      transition-all duration-150 hover:shadow-md cursor-default
+      group flex items-start gap-4 p-4 rounded-2xl border
+      transition-all duration-150 hover:shadow-md
       ${isOneTime ? "bg-green-50 border-green-100" : "bg-purple-50 border-purple-100"}
     `}
     >
@@ -114,7 +118,6 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
 
       {/* Main content */}
       <div className="flex-1 min-w-0">
-        {/* Badges row */}
         <div className="flex items-center gap-2 mb-1 flex-wrap">
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide ${
@@ -125,7 +128,6 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
           >
             {isOneTime ? "One-time" : "Weekly"}
           </span>
-
           {schedule.important && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide bg-amber-100 text-amber-700">
               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
@@ -150,15 +152,27 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
         )}
       </div>
 
-      {/* Created-by info (hidden on small screens) */}
-      <div className="hidden sm:flex flex-col items-end gap-1 shrink-0">
-        <span className="text-[10px] text-slate-400">by</span>
-        <span className="text-xs font-medium text-slate-600">
-          {schedule.createdBy.fullname}
-        </span>
-        <span className="text-[10px] text-slate-400">
-          {schedule.createdBy.username}
-        </span>
+      {/* Right side: creator info + edit button */}
+      <div className="flex flex-col items-end gap-2 shrink-0">
+        {/* Creator info — hidden on mobile */}
+        <div className="hidden sm:flex flex-col items-end gap-0.5">
+          <span className="text-[10px] text-slate-400">by</span>
+          <span className="text-xs font-medium text-slate-600">
+            {schedule.createdBy.fullname}
+          </span>
+          <span className="text-[10px] text-slate-400">
+            {schedule.createdBy.username}
+          </span>
+        </div>
+
+        {/* Edit button — appears on hover */}
+        <button
+          onClick={() => onEdit(schedule)}
+          className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/60 text-slate-400 hover:text-slate-600 transition-all duration-150"
+          title="Edit schedule"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
       </div>
     </div>
   );
@@ -167,13 +181,16 @@ function ScheduleRow({ schedule }: { schedule: Schedule }) {
 // ── Props ──────────────────────────────────────────────────────────────────────
 
 interface DailyViewProps {
-  /** Which day to show first. Passed in by page when user clicks a day in Weekly/Monthly. */
   initialDate?: Date;
+  onEditSchedule: (schedule: Schedule) => void;
 }
 
 // ── Daily View ─────────────────────────────────────────────────────────────────
 
-export default function DailyView({ initialDate }: DailyViewProps) {
+export default function DailyView({
+  initialDate,
+  onEditSchedule,
+}: DailyViewProps) {
   const dispatch = useAppDispatch();
   const { schedules, loading } = useAppSelector((s) => s.schedule);
 
@@ -181,25 +198,22 @@ export default function DailyView({ initialDate }: DailyViewProps) {
     initialDate ?? new Date(),
   );
 
-  // Sync if parent passes a new initialDate (e.g. user clicked a different day in Weekly)
+  // Sync if parent sends a new date (e.g. user clicks different day in Weekly)
   useEffect(() => {
     if (initialDate) setCurrentDate(initialDate);
   }, [initialDate]);
 
-  // Fetch whenever the displayed date changes
   useEffect(() => {
     const dateStr = format(currentDate, "yyyy-MM-dd");
     dispatch(getMyScheduleAction({ startDate: dateStr, endDate: dateStr }));
   }, [currentDate]);
 
-  // Navigation
   const goToPrevDay = () => setCurrentDate((d) => subDays(d, 1));
   const goToNextDay = () => setCurrentDate((d) => addDays(d, 1));
   const goToToday = () => setCurrentDate(new Date());
 
   const isCurrentDay = isToday(currentDate);
 
-  // Get only today's schedules, sorted by start time
   const daySchedules = useMemo(
     () =>
       getSchedulesForDay(schedules, currentDate).sort(
@@ -210,7 +224,7 @@ export default function DailyView({ initialDate }: DailyViewProps) {
 
   return (
     <div className="space-y-4">
-      {/* ── Day header ─────────────────────────────────────────────── */}
+      {/* ── Day header card ─────────────────────────────────────────── */}
       <div className="bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm">
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
           {format(currentDate, "EEEE")}
@@ -237,7 +251,7 @@ export default function DailyView({ initialDate }: DailyViewProps) {
         </p>
       </div>
 
-      {/* ── Date Navigation ────────────────────────────────────────── */}
+      {/* ── Date Navigation ─────────────────────────────────────────── */}
       <div className="flex items-center justify-end gap-2">
         {!isCurrentDay && (
           <button
@@ -255,7 +269,6 @@ export default function DailyView({ initialDate }: DailyViewProps) {
           <ChevronLeft className="w-4 h-4" />
         </button>
 
-        {/* Clickable date label that opens native date picker */}
         <label className="relative cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
           <CalendarDays className="w-4 h-4 text-slate-400" />
           <span className="text-sm font-medium text-slate-700">
@@ -280,11 +293,10 @@ export default function DailyView({ initialDate }: DailyViewProps) {
         </button>
       </div>
 
-      {/* ── Schedule list ───────────────────────────────────────────── */}
+      {/* ── Schedule list ────────────────────────────────────────────── */}
       {loading ? (
         <DailyViewSkeleton />
       ) : daySchedules.length === 0 ? (
-        // Empty state
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
             <CalendarDays className="w-6 h-6 text-slate-300" />
@@ -299,7 +311,7 @@ export default function DailyView({ initialDate }: DailyViewProps) {
       ) : (
         <div className="flex flex-col gap-3">
           {daySchedules.map((s) => (
-            <ScheduleRow key={s.id} schedule={s} />
+            <ScheduleRow key={s.id} schedule={s} onEdit={onEditSchedule} />
           ))}
         </div>
       )}
@@ -307,7 +319,7 @@ export default function DailyView({ initialDate }: DailyViewProps) {
   );
 }
 
-// ── Loading Skeleton ───────────────────────────────────────────────────────────
+// ── Skeleton ───────────────────────────────────────────────────────────────────
 
 function DailyViewSkeleton() {
   return (

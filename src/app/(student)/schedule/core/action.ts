@@ -1,29 +1,97 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getMyScheduleRequest } from "./request";
-import { ScheduleParams } from "@/types/scheduleTypes";
+import {
+  getMyScheduleRequest,
+  createOneTimeScheduleRequest,
+  createRecurringScheduleRequest,
+  updateScheduleRequest,
+  deleteScheduleRequest,
+} from "./request";
+import {
+  ScheduleParams,
+  OneTimeScheduleRequest,
+  RecurringScheduleRequest,
+  ScheduleUpdateRequest,
+} from "@/types/scheduleTypes";
 
-/**
- * Fetch schedules with optional date range.
- *
- * Usage:
- *   dispatch(getMyScheduleAction())                                     // all schedules
- *   dispatch(getMyScheduleAction({ startDate: "2026-03-24", endDate: "2026-03-30" }))  // weekly
- *   dispatch(getMyScheduleAction({ startDate: "2026-03-30", endDate: "2026-03-30" }))  // daily
- *   dispatch(getMyScheduleAction({ startDate: "2026-03-01", endDate: "2026-03-31" }))  // monthly
- */
+// ── GET ────────────────────────────────────────────────────────────────────────
+
 export const getMyScheduleAction = createAsyncThunk(
-  "/schedule/my-schedule",
+  "schedule/getMySchedule",
   async (
     params: ScheduleParams | undefined = undefined,
     { rejectWithValue },
   ) => {
     try {
       const res = await getMyScheduleRequest(params);
-      return res.data;
+      return res.data; // ScheduleListResponse → .data is Schedule[]
     } catch (error: any) {
-      const message =
-        error?.response?.data?.message || "Failed to fetch schedules.";
-      return rejectWithValue(message);
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to fetch schedules.",
+      );
+    }
+  },
+);
+
+// ── CREATE ONE-TIME ────────────────────────────────────────────────────────────
+
+export const createOneTimeScheduleAction = createAsyncThunk(
+  "schedule/createOneTime",
+  async (body: OneTimeScheduleRequest, { rejectWithValue }) => {
+    try {
+      return await createOneTimeScheduleRequest(body); // SingleScheduleResponse directly
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to create schedule.",
+      );
+    }
+  },
+);
+
+// ── CREATE RECURRING ───────────────────────────────────────────────────────────
+
+export const createRecurringScheduleAction = createAsyncThunk(
+  "schedule/createRecurring",
+  async (body: RecurringScheduleRequest, { rejectWithValue }) => {
+    try {
+      return await createRecurringScheduleRequest(body); // SingleScheduleResponse directly
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to create schedule.",
+      );
+    }
+  },
+);
+
+// ── UPDATE ─────────────────────────────────────────────────────────────────────
+
+export const updateScheduleAction = createAsyncThunk(
+  "schedule/update",
+  async (
+    { id, body }: { id: number; body: ScheduleUpdateRequest },
+    { rejectWithValue },
+  ) => {
+    try {
+      return await updateScheduleRequest(id, body); // SingleScheduleResponse directly
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to update schedule.",
+      );
+    }
+  },
+);
+
+// ── DELETE ─────────────────────────────────────────────────────────────────────
+
+export const deleteScheduleAction = createAsyncThunk(
+  "schedule/delete",
+  async (id: number, { rejectWithValue }) => {
+    try {
+      await deleteScheduleRequest(id);
+      return id;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to delete schedule.",
+      );
     }
   },
 );

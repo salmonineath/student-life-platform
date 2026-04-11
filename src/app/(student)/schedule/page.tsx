@@ -1,43 +1,106 @@
 "use client";
 
 /**
- * Schedule Page — the top-level controller for the schedule feature.
+ * Schedule Page — top-level controller for the schedule feature.
  *
  * Responsibilities:
- *  1. Track which view is active: "weekly" | "daily" | "monthly"
- *  2. Track the "selected date" so clicking a day in Weekly/Monthly
- *     can jump to Daily view for that exact date.
- *  3. Render the shared header (tabs + stats + date nav) and the
- *     correct view component based on activeView.
+ *  1. Track active view: "weekly" | "daily" | "monthly"
+ *  2. Track selected date so clicking a day in Weekly/Monthly
+ *     jumps to Daily view for that exact date.
+ *  3. Control the ScheduleModal — open for create OR edit.
+ *  4. After any successful create/edit/delete, re-fetch the
+ *     current view's schedules so the list stays fresh.
  *
- * Data flow (props-down pattern):
- *  page → WeeklyView  : onDayClick(date) → switches tab + sets selectedDate
- *  page → MonthlyView : onDayClick(date) → same
- *  page → DailyView   : initialDate      → which day to show first
+ * Modal state:
+ *  modalOpen      — whether the modal is visible
+ *  scheduleToEdit — null = create mode, Schedule = edit mode
  */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Plus } from "lucide-react";
+import { useAppDispatch } from "@/redux/hook";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+} from "date-fns";
+import { getMyScheduleAction } from "./core/action";
+import { Schedule } from "@/types/scheduleTypes";
 
 import WeeklyView from "./components/WeeklyView";
 import DailyView from "./components/DailyView";
 import MonthlyView from "./components/MonthlyView";
 import ScheduleStats from "./components/ScheduleStats";
+import ScheduleModal from "./modal/ScheduleModal";
 
-// The three possible views the user can switch between
 type ViewType = "weekly" | "daily" | "monthly";
 
 export default function SchedulePage() {
-  // Which tab is currently showing
-  const [activeView, setActiveView] = useState<ViewType>("weekly");
+  const dispatch = useAppDispatch();
 
-  // When user clicks a day in Weekly or Monthly, we store it here
-  // and switch to Daily view to show that day's schedule
+  // ── View & date state ────────────────────────────────────────────────────────
+  const [activeView, setActiveView] = useState<ViewType>("weekly");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
+  // ── Modal state ──────────────────────────────────────────────────────────────
+  const [modalOpen, setModalOpen] = useState(false);
+  const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
+
+  /** Open modal in create mode */
+  function openCreateModal() {
+    setScheduleToEdit(null);
+    setModalOpen(true);
+  }
+
+  /** Open modal in edit mode with a pre-filled schedule */
+  function openEditModal(schedule: Schedule) {
+    setScheduleToEdit(schedule);
+    setModalOpen(true);
+  }
+
+  /** Close modal and reset edit target */
+  function closeModal() {
+    setModalOpen(false);
+    setScheduleToEdit(null);
+  }
+
   /**
-   * Called by WeeklyView and MonthlyView when the user clicks on a day.
-   * Switches the active tab to "daily" and passes the clicked date down.
+   * Called after a successful create / edit / delete.
+   * Re-fetches the schedules for whichever view is currently active
+   * so the list reflects the latest data from the server.
+   */
+  const handleSuccess = useCallback(() => {
+    const now = selectedDate;
+
+    if (activeView === "weekly") {
+      const start = startOfWeek(now, { weekStartsOn: 1 });
+      const end = endOfWeek(now, { weekStartsOn: 1 });
+      dispatch(
+        getMyScheduleAction({
+          startDate: format(start, "yyyy-MM-dd"),
+          endDate: format(end, "yyyy-MM-dd"),
+        }),
+      );
+    } else if (activeView === "daily") {
+      const dateStr = format(now, "yyyy-MM-dd");
+      dispatch(getMyScheduleAction({ startDate: dateStr, endDate: dateStr }));
+    } else {
+      const start = startOfMonth(now);
+      const end = endOfMonth(now);
+      dispatch(
+        getMyScheduleAction({
+          startDate: format(start, "yyyy-MM-dd"),
+          endDate: format(end, "yyyy-MM-dd"),
+        }),
+      );
+    }
+  }, [activeView, selectedDate, dispatch]);
+
+  /**
+   * Called when user clicks a day in Weekly or Monthly view.
+   * Switches to Daily and shows that day's schedule.
    */
   function handleDayClick(date: Date) {
     setSelectedDate(date);
@@ -47,10 +110,10 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-[#F5F6FA]">
       <div className="space-y-6">
-        {/* ── Page Header ─────────────────────────────────────────── */}
+        {/* ── Page Header ────────────────────────────────────────────── */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
               My Schedule
             </h1>
             <p className="text-sm text-slate-400 mt-0.5">
@@ -58,36 +121,36 @@ export default function SchedulePage() {
             </p>
           </div>
 
-          {/* Add Schedule button — modal wired up later */}
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold shadow-sm transition-all duration-150">
+          {/* Opens the modal in create mode */}
+          <button
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold shadow-sm transition-all duration-150"
+          >
             <Plus className="w-4 h-4" />
             Add Schedule
           </button>
         </div>
 
-        {/* ── Stats Bar (total / weekly / one-time counts) ─────────── */}
-        {/*
-          ScheduleStats pulls data from Redux itself.
-          We render it here so it's always visible regardless of active view.
-        */}
+        {/* ── Stats + Important Banner ────────────────────────────────── */}
         <ScheduleStats />
 
-        {/* ── Tab Switcher ─────────────────────────────────────────── */}
+        {/* ── Tab Switcher ────────────────────────────────────────────── */}
         <ViewTabs activeView={activeView} onChange={setActiveView} />
 
-        {/* ── Active View ──────────────────────────────────────────── */}
+        {/* ── Active View ─────────────────────────────────────────────── */}
         <div>
           {activeView === "weekly" && (
-            <WeeklyView onDayClick={handleDayClick} />
+            <WeeklyView
+              onDayClick={handleDayClick}
+              onEditSchedule={openEditModal}
+            />
           )}
 
           {activeView === "daily" && (
-            /*
-              Pass selectedDate so Daily view knows which day to show.
-              If user switched to Daily without clicking a specific day
-              (e.g. clicked the tab directly), selectedDate defaults to today.
-            */
-            <DailyView initialDate={selectedDate} />
+            <DailyView
+              initialDate={selectedDate}
+              onEditSchedule={openEditModal}
+            />
           )}
 
           {activeView === "monthly" && (
@@ -95,16 +158,25 @@ export default function SchedulePage() {
           )}
         </div>
       </div>
+
+      {/* ── Schedule Modal ──────────────────────────────────────────────── */}
+      {/*
+        Rendered outside the content div so it sits above everything.
+        Only mounted when open so form state resets cleanly each time.
+      */}
+      {modalOpen && (
+        <ScheduleModal
+          scheduleToEdit={scheduleToEdit}
+          onClose={closeModal}
+          onSuccess={handleSuccess}
+        />
+      )}
     </div>
   );
 }
 
-// ── Tab Switcher Component ─────────────────────────────────────────────────────
+// ── Tab Switcher ───────────────────────────────────────────────────────────────
 
-/**
- * The three tabs: Weekly / Daily / Monthly.
- * Receives the current view and a setter so clicking a tab updates the page.
- */
 interface ViewTabsProps {
   activeView: ViewType;
   onChange: (view: ViewType) => void;

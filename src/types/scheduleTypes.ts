@@ -1,9 +1,4 @@
-// ─── Enums / Literals ────────────────────────────────────────────────────────
-
-export type ScheduleType = "RECURRING" | "ONE_TIME";
-export type ViewMode = "weekly" | "daily" | "monthly";
-
-// ─── Core entity ─────────────────────────────────────────────────────────────
+export type ScheduleType = "ONE_TIME" | "RECURRING";
 
 export interface ScheduleCreatedBy {
   id: number;
@@ -11,74 +6,58 @@ export interface ScheduleCreatedBy {
   username: string;
 }
 
-export interface ScheduleItem {
+export interface OneTimeSchedule {
   id: number;
   title: string;
   description: string;
-  type: ScheduleType;
-  // ONE_TIME
-  startTime: string | null; // "2026-04-10T09:00:00"
-  endTime: string | null;
-  // RECURRING
-  dayOfWeek: number | null; // 0=Sun … 6=Sat
-  recurringStartTime: string | null; // "HH:mm:ss"
-  recurringEndTime: string | null;
+  type: "ONE_TIME";
+  startTime: string;       // ISO datetime e.g. "2026-03-25T09:00:00"
+  endTime: string;         // ISO datetime e.g. "2026-03-25T11:30:00"
+  dayOfWeek: null;
+  recurringStartTime: null;
+  recurringEndTime: null;
   location: string;
-  isImportant: boolean; // API returns "important" (not "isImportant")
   createdBy: ScheduleCreatedBy;
-
-  assignmentId: number | null;
+  important: boolean;
 }
 
-// ─── API response wrapper ─────────────────────────────────────────────────────
+export interface RecurringSchedule {
+  id: number;
+  title: string;
+  description: string;
+  type: "RECURRING";
+  startTime: null;
+  endTime: null;
+  dayOfWeek: number;       // 1 = Monday ... 7 = Sunday
+  recurringStartTime: string; // "HH:mm:ss"
+  recurringEndTime: string;   // "HH:mm:ss"
+  location: string;
+  createdBy: ScheduleCreatedBy;
+  important: boolean;
+}
 
-export interface ScheduleApiResponse {
+export type Schedule = OneTimeSchedule | RecurringSchedule;
+
+// ── Query params ───────────────────────────────────────────────────────────────
+
+export interface ScheduleParams {
+  startDate?: string; // "YYYY-MM-DD"
+  endDate?: string;   // "YYYY-MM-DD"
+}
+
+// ── API response ───────────────────────────────────────────────────────────────
+
+export interface ScheduleResponse {
   status: number;
   success: boolean;
   message: string;
-  data: ScheduleItem[];
+  data: Schedule[];
 }
 
-// ─── Request payloads (mirror backend DTOs exactly) ───────────────────────────
-
-export interface OneTimeScheduleRequest {
-  title: string;
-  description?: string;
-  startTime: string; // "YYYY-MM-DDTHH:mm:ss"
-  endTime: string;
-  location?: string;
-  isImportant?: boolean;
-}
-
-export interface RecurringScheduleRequest {
-  title: string;
-  description?: string;
-  dayOfWeek: number; // 0=Sun … 6=Sat
-  recurringStartTime: string; // "HH:mm:ss"
-  recurringEndTime: string;
-  location?: string;
-  isImportant?: boolean;
-}
-
-// All fields optional — only non-null fields applied by backend
-export interface ScheduleUpdateRequest {
-  title?: string;
-  description?: string;
-  location?: string;
-  isImportant?: boolean;
-  // ONE_TIME
-  startTime?: string;
-  endTime?: string;
-  // RECURRING
-  dayOfWeek?: number;
-  recurringStartTime?: string;
-  recurringEndTime?: string;
-}
-
-// ─── Redux state ──────────────────────────────────────────────────────────────
+// ── Redux state ────────────────────────────────────────────────────────────────
 
 export interface ScheduleState {
-  items: ScheduleItem[];
+  schedules: Schedule[];
   loading: boolean;
   error: string | null;
 }

@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { loginAction, registerAction, getMeAction, logoutAction } from "./action";
+import {
+  loginAction,
+  registerAction,
+  getMeAction,
+  logoutAction,
+} from "./action";
 import { AuthUser, AuthState } from "@/types/authType";
 
 const initialState: AuthState = {
@@ -25,11 +30,17 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(loginAction.fulfilled, (state, action: PayloadAction<{ user: AuthUser; accessToken: string }>) => {
-        state.loading = false;
-        state.user = action.payload.user;
-        state.accessToken = action.payload.accessToken;
-      })
+      .addCase(
+        loginAction.fulfilled,
+        (
+          state,
+          action: PayloadAction<{ user: AuthUser; accessToken: string }>,
+        ) => {
+          state.loading = false;
+          state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
+        },
+      )
       .addCase(loginAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
@@ -40,19 +51,25 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerAction.fulfilled, (state, action: PayloadAction<{ user: AuthUser; }>) => {
-        state.loading = false;
-        state.user = action.payload.user;
-      })
+      .addCase(
+        registerAction.fulfilled,
+        (state, action: PayloadAction<{ user: AuthUser }>) => {
+          state.loading = false;
+          state.user = action.payload.user;
+        },
+      )
       .addCase(registerAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
 
       // ── Get Me ─────────────────────────────────────────
-      .addCase(getMeAction.fulfilled, (state, action: PayloadAction<AuthUser>) => {
-        state.user = action.payload; // overwrite with freshest data from server
-      })
+      .addCase(
+        getMeAction.fulfilled,
+        (state, action: PayloadAction<AuthUser>) => {
+          state.user = action.payload; // overwrite with freshest data from server
+        },
+      )
 
       // ── Logout ─────────────────────────────────────────
       .addCase(logoutAction.fulfilled, (state) => {

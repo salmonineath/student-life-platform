@@ -1,73 +1,63 @@
 "use client";
 
+/**
+ * ScheduleModal — handles Create, Edit, and Delete for schedules.
+ *
+ * Modes:
+ *  - Create : `scheduleToEdit` is null  → shows type tabs (One-time / Recurring)
+ *  - Edit   : `scheduleToEdit` is set   → tab is locked to the schedule's type
+ *
+ * Delete:
+ *  - Edit mode shows a "Delete" button that triggers the inline DeleteConfirmModal.
+ *
+ * Props:
+ *  scheduleToEdit  — the schedule to pre-fill when editing; null for create mode
+ *  onClose         — called when modal should close (backdrop click, cancel, X)
+ *  onSuccess       — called after any successful create / edit / delete
+ *                    (parent should re-fetch or the reducer already updated state)
+ */
+
 import { useEffect, useState } from "react";
-import { X, Star } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "@/redux/store";
+import { X, Star, Trash2 } from "lucide-react";
+import { useAppDispatch } from "@/redux/hook";
 import {
-  createOneTimeSchedule,
-  createRecurringSchedule,
-  updateSchedule,
-} from "@/features/schedule/scheduleSlice";
+  createOneTimeScheduleAction,
+  createRecurringScheduleAction,
+  updateScheduleAction,
+  deleteScheduleAction,
+} from "../core/action";
 import {
-  ScheduleItem,
-  ScheduleType,
+  Schedule,
+  OneTimeSchedule,
+  RecurringSchedule,
   OneTimeScheduleRequest,
   RecurringScheduleRequest,
   ScheduleUpdateRequest,
 } from "@/types/scheduleTypes";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
+// Day options for the recurring schedule day picker
+// API uses 1 = Monday … 7 = Sunday (ISO week day)
 const DAY_OPTIONS = [
-  { label: "Sunday", value: 0 },
   { label: "Monday", value: 1 },
   { label: "Tuesday", value: 2 },
   { label: "Wednesday", value: 3 },
   { label: "Thursday", value: 4 },
   { label: "Friday", value: 5 },
   { label: "Saturday", value: 6 },
+  { label: "Sunday", value: 7 },
 ];
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-/** "2026-04-10T09:00:00" → "2026-04-10" and "09:00" */
-function splitIsoDatetime(iso: string | null): { date: string; time: string } {
-  if (!iso) return { date: "", time: "" };
-  const [date, timeFull] = iso.split("T");
-  return { date, time: timeFull.slice(0, 5) }; // "HH:mm"
-}
-
-/** "HH:mm:ss" → "HH:mm" */
-function toHHmm(t: string | null): string {
-  if (!t) return "";
-  return t.slice(0, 5);
-}
-
-/** "YYYY-MM-DD" + "HH:mm" → "YYYY-MM-DDTHH:mm:ss" */
-function toIsoDatetime(date: string, time: string): string {
-  return `${date}T${time}:00`;
-}
-
-/** "HH:mm" → "HH:mm:ss" */
-function toHHmmss(t: string): string {
-  return `${t}:00`;
-}
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Props {
-  item?: ScheduleItem | null; // null = create mode
-  onClose: () => void;
-  onSuccess: () => void;
-}
+// ── Form State Types ───────────────────────────────────────────────────────────
 
 interface OneTimeForm {
   title: string;
   description: string;
-  date: string;
-  startTime: string;
-  endTime: string;
+  date: string; // "YYYY-MM-DD"
+  startTime: string; // "HH:mm"
+  endTime: string; // "HH:mm"
   location: string;
   isImportant: boolean;
 }
@@ -75,63 +65,140 @@ interface OneTimeForm {
 interface RecurringForm {
   title: string;
   description: string;
-  dayOfWeek: number;
-  recurringStartTime: string;
-  recurringEndTime: string;
+  dayOfWeek: number; // 1–7
+  recurringStartTime: string; // "HH:mm"
+  recurringEndTime: string; // "HH:mm"
   location: string;
   isImportant: boolean;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
-export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
-  const dispatch = useDispatch<AppDispatch>();
-  const isEditing = !!item;
+/** "2026-04-10T09:00:00Z" → { date: "2026-04-10", time: "09:00" } */
+function splitIsoDatetime(iso: string | null | undefined): {
+  date: string;
+  time: string;
+} {
+  if (!iso) return { date: "", time: "" };
+  const [date, timeFull] = iso.split("T");
+  return { date, time: timeFull.slice(0, 5) }; // keep "HH:mm" only
+}
 
-  const [activeTab, setActiveTab] = useState<ScheduleType>(
-    item?.type ?? "ONE_TIME",
+/** "HH:mm:ss" or "HH:mm" → "HH:mm" */
+function toHHmm(t: string | null | undefined): string {
+  if (!t) return "";
+  return t.slice(0, 5);
+}
+
+/** "YYYY-MM-DD" + "HH:mm" → "YYYY-MM-DDTHH:mm:00Z" */
+function toIsoDatetime(date: string, time: string): string {
+  return `${date}T${time}:00Z`;
+}
+
+/** "HH:mm" → "HH:mm:00" */
+function toHHmmss(t: string): string {
+  return `${t}:00`;
+}
+
+// ── Props ──────────────────────────────────────────────────────────────────────
+
+interface Props {
+  scheduleToEdit: Schedule | null; // null = create mode
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+// ── Modal Component ────────────────────────────────────────────────────────────
+
+export default function ScheduleModal({
+  scheduleToEdit,
+  onClose,
+  onSuccess,
+}: Props) {
+  const dispatch = useAppDispatch();
+
+  const isEditing = !!scheduleToEdit;
+
+  // Which type tab is active; locked to the schedule's type when editing
+  const [activeTab, setActiveTab] = useState<"ONE_TIME" | "RECURRING">(
+    scheduleToEdit?.type ?? "ONE_TIME",
   );
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // ── One-time form state ────────────────────────────────────────────────────
+  // Animate-in: starts hidden so the CSS transition fires on mount
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 10);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Lock the tab when editing (type cannot be changed)
+  useEffect(() => {
+    if (scheduleToEdit) setActiveTab(scheduleToEdit.type);
+  }, [scheduleToEdit]);
+
+  // ── One-time form state — pre-filled when editing ───────────────────────────
   const [oneTime, setOneTime] = useState<OneTimeForm>(() => {
-    const { date: startDate, time: startTime } = splitIsoDatetime(
-      item?.startTime ?? null,
-    );
-    const { time: endTime } = splitIsoDatetime(item?.endTime ?? null);
+    if (scheduleToEdit?.type === "ONE_TIME") {
+      const s = scheduleToEdit as OneTimeSchedule;
+      const { date, time: startTime } = splitIsoDatetime(s.startTime);
+      const { time: endTime } = splitIsoDatetime(s.endTime);
+      return {
+        title: s.title,
+        description: s.description ?? "",
+        date,
+        startTime,
+        endTime,
+        location: s.location ?? "",
+        isImportant: s.important,
+      };
+    }
+    // Create mode — empty
     return {
-      title: item?.title ?? "",
-      description: item?.description ?? "",
-      date: startDate,
-      startTime,
-      endTime,
-      location: item?.location ?? "",
-      isImportant: item?.isImportant ?? false,
+      title: "",
+      description: "",
+      date: "",
+      startTime: "",
+      endTime: "",
+      location: "",
+      isImportant: false,
     };
   });
 
-  // ── Recurring form state ───────────────────────────────────────────────────
-  const [recurring, setRecurring] = useState<RecurringForm>(() => ({
-    title: item?.title ?? "",
-    description: item?.description ?? "",
-    dayOfWeek: item?.dayOfWeek ?? 1,
-    recurringStartTime: toHHmm(item?.recurringStartTime ?? null),
-    recurringEndTime: toHHmm(item?.recurringEndTime ?? null),
-    location: item?.location ?? "",
-    isImportant: item?.isImportant ?? false,
-  }));
+  // ── Recurring form state — pre-filled when editing ─────────────────────────
+  const [recurring, setRecurring] = useState<RecurringForm>(() => {
+    if (scheduleToEdit?.type === "RECURRING") {
+      const r = scheduleToEdit as RecurringSchedule;
+      return {
+        title: r.title,
+        description: r.description ?? "",
+        dayOfWeek: r.dayOfWeek,
+        recurringStartTime: toHHmm(r.recurringStartTime),
+        recurringEndTime: toHHmm(r.recurringEndTime),
+        location: r.location ?? "",
+        isImportant: r.important,
+      };
+    }
+    // Create mode — empty
+    return {
+      title: "",
+      description: "",
+      dayOfWeek: 1,
+      recurringStartTime: "",
+      recurringEndTime: "",
+      location: "",
+      isImportant: false,
+    };
+  });
 
-  // Lock tab when editing
-  useEffect(() => {
-    if (item) setActiveTab(item.type);
-  }, [item]);
-
-  // ── Shared input helpers ───────────────────────────────────────────────────
+  // Typed setters so we don't repeat { ...prev, [key]: value } everywhere
   function setOT<K extends keyof OneTimeForm>(key: K, value: OneTimeForm[K]) {
     setOneTime((prev) => ({ ...prev, [key]: value }));
   }
-
   function setRec<K extends keyof RecurringForm>(
     key: K,
     value: RecurringForm[K],
@@ -139,16 +206,24 @@ export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
     setRecurring((prev) => ({ ...prev, [key]: value }));
   }
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
+  // Animate-out then call onClose
+  function handleClose() {
+    setVisible(false);
+    setTimeout(onClose, 200);
+  }
+
+  // ── Submit (Create or Update) ───────────────────────────────────────────────
   async function handleSubmit() {
     setError(null);
     setSubmitting(true);
 
     try {
-      if (isEditing && item) {
-        // Build update payload — only include what changed
+      if (isEditing && scheduleToEdit) {
+        // ── UPDATE ─────────────────────────────────────────────────────────────
+        // Build the update payload based on the schedule's type.
+        // All fields are sent; the backend only applies non-null ones.
         const payload: ScheduleUpdateRequest =
-          item.type === "ONE_TIME"
+          scheduleToEdit.type === "ONE_TIME"
             ? {
                 title: oneTime.title,
                 description: oneTime.description || undefined,
@@ -167,254 +242,322 @@ export default function ScheduleModal({ item, onClose, onSuccess }: Props) {
                 isImportant: recurring.isImportant,
               };
 
-        await dispatch(updateSchedule({ id: item.id, payload })).unwrap();
+        await dispatch(
+          updateScheduleAction({ id: scheduleToEdit.id, body: payload }),
+        ).unwrap();
       } else {
-        // Create
+        // ── CREATE ─────────────────────────────────────────────────────────────
         if (activeTab === "ONE_TIME") {
           const payload: OneTimeScheduleRequest = {
             title: oneTime.title,
-            description: oneTime.description || undefined,
+            description: oneTime.description,
             startTime: toIsoDatetime(oneTime.date, oneTime.startTime),
             endTime: toIsoDatetime(oneTime.date, oneTime.endTime),
-            location: oneTime.location || undefined,
+            location: oneTime.location,
             isImportant: oneTime.isImportant,
           };
-          await dispatch(createOneTimeSchedule(payload)).unwrap();
+          await dispatch(createOneTimeScheduleAction(payload)).unwrap();
         } else {
           const payload: RecurringScheduleRequest = {
             title: recurring.title,
-            description: recurring.description || undefined,
+            description: recurring.description,
             dayOfWeek: recurring.dayOfWeek,
             recurringStartTime: toHHmmss(recurring.recurringStartTime),
             recurringEndTime: toHHmmss(recurring.recurringEndTime),
-            location: recurring.location || undefined,
+            location: recurring.location,
             isImportant: recurring.isImportant,
           };
-          await dispatch(createRecurringSchedule(payload)).unwrap();
+          await dispatch(createRecurringScheduleAction(payload)).unwrap();
         }
       }
 
       onSuccess();
-      onClose();
+      handleClose();
     } catch (err: any) {
-      setError(typeof err === "string" ? err : "Something went wrong.");
+      setError(
+        typeof err === "string"
+          ? err
+          : "Something went wrong. Please try again.",
+      );
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  // ── Delete ─────────────────────────────────────────────────────────────────
+  async function handleDelete() {
+    if (!scheduleToEdit) return;
+    setDeleting(true);
+    try {
+      await dispatch(deleteScheduleAction(scheduleToEdit.id)).unwrap();
+      onSuccess();
+      handleClose();
+    } catch (err: any) {
+      setError(typeof err === "string" ? err : "Failed to delete schedule.");
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
+    <>
+      {/* ── Overlay + Modal ──────────────────────────────────────────────────── */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+        className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-200 ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={handleClose}
+        />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
-          <h2 className="text-lg font-semibold text-slate-900">
-            {isEditing ? "Edit Schedule" : "Add Schedule"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Modal card */}
+        <div
+          className={`relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col transition-all duration-200 ${
+            visible
+              ? "opacity-100 translate-y-0 scale-100"
+              : "opacity-0 translate-y-4 scale-95"
+          }`}
+        >
+          {/* ── Header ───────────────────────────────────────────────────────── */}
+          <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-100">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">
+                {isEditing ? "Edit Schedule" : "Add Schedule"}
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {isEditing
+                  ? "Update the details below"
+                  : "Fill in the details to create a new event"}
+              </p>
+            </div>
 
-        {/* Tab switcher — hidden when editing (type is locked) */}
-        {!isEditing && (
-          <div className="px-6 pt-4">
-            <div className="flex bg-slate-100 rounded-xl p-1 gap-1">
-              {(["ONE_TIME", "RECURRING"] as ScheduleType[]).map((tab) => (
+            <div className="flex items-center gap-2">
+              {/* Delete button — only shown in edit mode */}
+              {isEditing && (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    activeTab === tab
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-500 hover:text-slate-700"
-                  }`}
+                  onClick={() => setShowDeleteModal(true)}
+                  className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  title="Delete this schedule"
                 >
-                  {tab === "ONE_TIME" ? "Single Event" : "Repeats Weekly"}
+                  <Trash2 className="w-4 h-4" />
                 </button>
-              ))}
+              )}
+              <button
+                onClick={handleClose}
+                className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Body */}
-        <div className="overflow-y-auto px-6 py-4 flex-1 space-y-4">
-          {/* Error */}
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2.5">
-              {error}
-            </p>
-          )}
-
-          {/* ── ONE_TIME fields ────────────────────────────────────────────── */}
-          {activeTab === "ONE_TIME" && (
-            <>
-              <Field label="Title" required>
-                <Input
-                  value={oneTime.title}
-                  onChange={(v) => setOT("title", v)}
-                  placeholder="e.g. Midterm Exam"
-                />
-              </Field>
-
-              <Field label="Description">
-                <Textarea
-                  value={oneTime.description}
-                  onChange={(v) => setOT("description", v)}
-                  placeholder="Optional notes…"
-                />
-              </Field>
-
-              <Field label="Date" required>
-                <Input
-                  type="date"
-                  value={oneTime.date}
-                  onChange={(v) => setOT("date", v)}
-                />
-              </Field>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Start Time" required>
-                  <Input
-                    type="time"
-                    value={oneTime.startTime}
-                    onChange={(v) => setOT("startTime", v)}
-                  />
-                </Field>
-                <Field label="End Time" required>
-                  <Input
-                    type="time"
-                    value={oneTime.endTime}
-                    onChange={(v) => setOT("endTime", v)}
-                  />
-                </Field>
+          {/* ── Type Tabs — hidden when editing (type is locked) ──────────────── */}
+          {!isEditing && (
+            <div className="px-6 pt-4">
+              <div className="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
+                {(["ONE_TIME", "RECURRING"] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-150 ${
+                      activeTab === tab
+                        ? "bg-white text-slate-900 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {tab === "ONE_TIME" ? "One-time" : "Recurring"}
+                  </button>
+                ))}
               </div>
-
-              <Field label="Location">
-                <Input
-                  value={oneTime.location}
-                  onChange={(v) => setOT("location", v)}
-                  placeholder="e.g. Hall A"
-                />
-              </Field>
-
-              <ImportantToggle
-                value={oneTime.isImportant}
-                onChange={(v) => setOT("isImportant", v)}
-              />
-            </>
+            </div>
           )}
 
-          {/* ── RECURRING fields ───────────────────────────────────────────── */}
-          {activeTab === "RECURRING" && (
-            <>
-              <Field label="Title" required>
-                <Input
-                  value={recurring.title}
-                  onChange={(v) => setRec("title", v)}
-                  placeholder="e.g. Math 101"
-                />
-              </Field>
-
-              <Field label="Description">
-                <Textarea
-                  value={recurring.description}
-                  onChange={(v) => setRec("description", v)}
-                  placeholder="Optional notes…"
-                />
-              </Field>
-
-              <Field label="Day of Week" required>
-                <select
-                  value={recurring.dayOfWeek}
-                  onChange={(e) => setRec("dayOfWeek", Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
-                >
-                  {DAY_OPTIONS.map((d) => (
-                    <option key={d.value} value={d.value}>
-                      {d.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Start Time" required>
-                  <Input
-                    type="time"
-                    value={recurring.recurringStartTime}
-                    onChange={(v) => setRec("recurringStartTime", v)}
-                  />
-                </Field>
-                <Field label="End Time" required>
-                  <Input
-                    type="time"
-                    value={recurring.recurringEndTime}
-                    onChange={(v) => setRec("recurringEndTime", v)}
-                  />
-                </Field>
+          {/* ── Form Fields (scrollable) ──────────────────────────────────────── */}
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            {/* Error message */}
+            {error && (
+              <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-sm text-red-600">
+                {error}
               </div>
-
-              <Field label="Location">
-                <Input
-                  value={recurring.location}
-                  onChange={(v) => setRec("location", v)}
-                  placeholder="e.g. Room A1"
-                />
-              </Field>
-
-              <ImportantToggle
-                value={recurring.isImportant}
-                onChange={(v) => setRec("isImportant", v)}
-              />
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 pb-6 pt-4 border-t border-slate-100 flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={submitting}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
-          >
-            {submitting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                {isEditing ? "Saving…" : "Creating…"}
-              </>
-            ) : isEditing ? (
-              "Save Changes"
-            ) : (
-              "Create"
             )}
-          </button>
+
+            {/* ── ONE-TIME fields ───────────────────────────────────────────── */}
+            {activeTab === "ONE_TIME" && (
+              <>
+                <Field label="Title" required>
+                  <Input
+                    value={oneTime.title}
+                    onChange={(v) => setOT("title", v)}
+                    placeholder="e.g. Calculus Exam"
+                  />
+                </Field>
+
+                <Field label="Description">
+                  <Textarea
+                    value={oneTime.description}
+                    onChange={(v) => setOT("description", v)}
+                    placeholder="Optional notes…"
+                  />
+                </Field>
+
+                <Field label="Date" required>
+                  <Input
+                    type="date"
+                    value={oneTime.date}
+                    onChange={(v) => setOT("date", v)}
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Start Time" required>
+                    <Input
+                      type="time"
+                      value={oneTime.startTime}
+                      onChange={(v) => setOT("startTime", v)}
+                    />
+                  </Field>
+                  <Field label="End Time" required>
+                    <Input
+                      type="time"
+                      value={oneTime.endTime}
+                      onChange={(v) => setOT("endTime", v)}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Location">
+                  <Input
+                    value={oneTime.location}
+                    onChange={(v) => setOT("location", v)}
+                    placeholder="e.g. Hall A, Room 12"
+                  />
+                </Field>
+
+                <ImportantToggle
+                  value={oneTime.isImportant}
+                  onChange={(v) => setOT("isImportant", v)}
+                />
+              </>
+            )}
+
+            {/* ── RECURRING fields ──────────────────────────────────────────── */}
+            {activeTab === "RECURRING" && (
+              <>
+                <Field label="Title" required>
+                  <Input
+                    value={recurring.title}
+                    onChange={(v) => setRec("title", v)}
+                    placeholder="e.g. Math 101"
+                  />
+                </Field>
+
+                <Field label="Description">
+                  <Textarea
+                    value={recurring.description}
+                    onChange={(v) => setRec("description", v)}
+                    placeholder="Optional notes…"
+                  />
+                </Field>
+
+                <Field label="Day of Week" required>
+                  <select
+                    value={recurring.dayOfWeek}
+                    onChange={(e) =>
+                      setRec("dayOfWeek", Number(e.target.value))
+                    }
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-slate-800 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+                  >
+                    {DAY_OPTIONS.map((d) => (
+                      <option key={d.value} value={d.value}>
+                        {d.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="Start Time" required>
+                    <Input
+                      type="time"
+                      value={recurring.recurringStartTime}
+                      onChange={(v) => setRec("recurringStartTime", v)}
+                    />
+                  </Field>
+                  <Field label="End Time" required>
+                    <Input
+                      type="time"
+                      value={recurring.recurringEndTime}
+                      onChange={(v) => setRec("recurringEndTime", v)}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Location">
+                  <Input
+                    value={recurring.location}
+                    onChange={(v) => setRec("location", v)}
+                    placeholder="e.g. Room A1"
+                  />
+                </Field>
+
+                <ImportantToggle
+                  value={recurring.isImportant}
+                  onChange={(v) => setRec("isImportant", v)}
+                />
+              </>
+            )}
+          </div>
+
+          {/* ── Footer ───────────────────────────────────────────────────────── */}
+          <div className="px-6 pb-6 pt-4 border-t border-slate-100 flex gap-3">
+            <button
+              onClick={handleClose}
+              disabled={submitting}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {isEditing ? "Saving…" : "Creating…"}
+                </>
+              ) : isEditing ? (
+                "Save Changes"
+              ) : (
+                "Create Schedule"
+              )}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* ── Delete Confirmation Modal (layered on top) ──────────────────────── */}
+      {showDeleteModal && scheduleToEdit && (
+        <DeleteConfirmModal
+          title={scheduleToEdit.title}
+          isDeleting={deleting}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDeleteModal(false)}
+        />
+      )}
+    </>
   );
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
+/** Wraps a label + input field with consistent spacing. */
 function Field({
   label,
   required,
@@ -428,13 +571,14 @@ function Field({
     <div className="space-y-1.5">
       <label className="block text-sm font-medium text-slate-700">
         {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
+        {required && <span className="text-red-400 ml-0.5">*</span>}
       </label>
       {children}
     </div>
   );
 }
 
+/** Styled text / date / time input. */
 function Input({
   type = "text",
   value,
@@ -457,6 +601,7 @@ function Input({
   );
 }
 
+/** Styled multi-line textarea. */
 function Textarea({
   value,
   onChange,
@@ -477,6 +622,7 @@ function Textarea({
   );
 }
 
+/** Toggle button to mark a schedule as important. */
 function ImportantToggle({
   value,
   onChange,

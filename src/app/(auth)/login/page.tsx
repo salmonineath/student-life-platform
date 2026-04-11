@@ -4,18 +4,34 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { loginAction } from "../core/action";
-import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import {
+  GraduationCap,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 
 const CARD_VARIANTS: Variants = {
   hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" as const } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.45, ease: "easeOut" as const },
+  },
 };
 
 const ERROR_VARIANTS: Variants = {
   hidden: { opacity: 0, height: 0, marginTop: 0 },
-  visible: { opacity: 1, height: "auto", marginTop: 12, transition: { duration: 0.2 } },
+  visible: {
+    opacity: 1,
+    height: "auto",
+    marginTop: 12,
+    transition: { duration: 0.2 },
+  },
 };
 
 const LoginPage = () => {
@@ -36,7 +52,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const result = await dispatch(
-        loginAction({ email_or_username: emailOrUsername, password })
+        loginAction({ email_or_username: emailOrUsername, password }),
       );
       if (loginAction.fulfilled.match(result)) {
         window.location.href = "/dashboard";
@@ -67,21 +83,26 @@ const LoginPage = () => {
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
 
-          <h1 className="relative text-3xl font-extrabold tracking-tight">Student Life</h1>
+          <h1 className="relative text-3xl font-extrabold tracking-tight">
+            Student Life
+          </h1>
 
           <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
-            Manage your schedule, assignments, and study groups all in one place.
+            Manage your schedule, assignments, and study groups all in one
+            place.
           </p>
 
           <div className="relative mt-8 flex flex-wrap justify-center gap-2">
-            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map((feature) => (
-              <span
-                key={feature}
-                className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10 transition-transform duration-150 hover:scale-105 cursor-default"
-              >
-                {feature}
-              </span>
-            ))}
+            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map(
+              (feature) => (
+                <span
+                  key={feature}
+                  className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10 transition-transform duration-150 hover:scale-105 cursor-default"
+                >
+                  {feature}
+                </span>
+              ),
+            )}
           </div>
         </div>
 
@@ -95,8 +116,12 @@ const LoginPage = () => {
             Back
           </Link>
 
-          <h2 className="text-3xl font-bold text-slate-800 mb-1">Welcome Back!</h2>
-          <p className="text-sm text-gray-400 mb-8">Sign in to continue your journey</p>
+          <h2 className="text-3xl font-bold text-slate-800 mb-1">
+            Welcome Back!
+          </h2>
+          <p className="text-sm text-gray-400 mb-8">
+            Sign in to continue your journey
+          </p>
 
           {/* Email / Username */}
           <div className="mb-4">
@@ -108,7 +133,10 @@ const LoginPage = () => {
               <input
                 type="text"
                 value={emailOrUsername}
-                onChange={(e) => { setError(""); setEmailOrUsername(e.target.value); }}
+                onChange={(e) => {
+                  setError("");
+                  setEmailOrUsername(e.target.value);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 placeholder="example@email.com or username"
                 autoComplete="username"
@@ -120,7 +148,9 @@ const LoginPage = () => {
           {/* Password */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-600">Password</label>
+              <label className="text-sm font-medium text-gray-600">
+                Password
+              </label>
               <Link
                 href="/forget-password"
                 className="text-xs text-sky-500 hover:text-sky-600 hover:underline transition-colors"
@@ -133,7 +163,10 @@ const LoginPage = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) => { setError(""); setPassword(e.target.value); }}
+                onChange={(e) => {
+                  setError("");
+                  setPassword(e.target.value);
+                }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -145,7 +178,11 @@ const LoginPage = () => {
                 className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
@@ -171,18 +208,38 @@ const LoginPage = () => {
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                <svg
+                  className="animate-spin w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
                 </svg>
                 Logging in...
               </span>
-            ) : "Login"}
+            ) : (
+              "Login"
+            )}
           </button>
 
           <p className="text-center text-xs text-gray-400 mt-6">
             Don't have an account?{" "}
-            <Link href="/register" className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors">
+            <Link
+              href="/register"
+              className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors"
+            >
               Register
             </Link>
           </p>

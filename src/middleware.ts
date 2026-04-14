@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const publicRoutes = [
+  "/",
   "/student-life",
   "/login",
   "/register",
@@ -22,22 +23,29 @@ const protectedRoutes = [
 export const middleware = (request: NextRequest) => {
   const { pathname } = request.nextUrl;
 
-  const hasSession = request.cookies.get("session")?.value;
+  // Just check existence — Spring validates the actual token on every API call
+  const hasRefreshToken = !!request.cookies.get("refreshToken")?.value;
 
-  const isPublicRoute = publicRoutes.includes(pathname);
+  const isPublicRoute = publicRoutes.some((route) => pathname === route);
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   );
 
-  // Has a session and tries to visit a public page → go to dashboard
-  if (hasSession && isPublicRoute) {
+  if (!isPublicRoute && !isProtectedRoute) {
+    return NextResponse.next();
+  }
+
+  // Authenticated + public route → dashboard
+  if (hasRefreshToken && isPublicRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // No session at all and tries to visit a protected page → go to login
-  // if (!hasSession && isProtectedRoute) {
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
+  // Not authenticated + protected route → login
+  if (!hasRefreshToken && isProtectedRoute) {
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    response.cookies.delete("refreshToken");
+    return response;
+  }
 
   return NextResponse.next();
 };

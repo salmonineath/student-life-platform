@@ -1,26 +1,49 @@
+// app/(student)/assignment/page.tsx
 "use client";
 
 import Link from "next/link";
 import { Plus, Calendar, BookOpen, Edit2, Trash2 } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/redux/store";
+import { getMyAssignmentAction } from "./core/action";
+
+// ── Skeleton Card ──────────────────────────────────────────────────────────────
+function AssignmentCardSkeleton() {
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 animate-pulse">
+      {/* Title + subject */}
+      <div className="space-y-2">
+        <div className="h-5 bg-slate-200 rounded-lg w-3/4" />
+        <div className="h-4 bg-slate-100 rounded-lg w-1/3" />
+      </div>
+      {/* Description lines */}
+      <div className="space-y-2">
+        <div className="h-3 bg-slate-100 rounded w-full" />
+        <div className="h-3 bg-slate-100 rounded w-5/6" />
+        <div className="h-3 bg-slate-100 rounded w-4/6" />
+      </div>
+      {/* Due date */}
+      <div className="h-4 bg-slate-100 rounded w-2/5" />
+      {/* Buttons */}
+      <div className="flex gap-3 pt-4 border-t border-slate-100">
+        <div className="flex-1 h-9 bg-slate-100 rounded-xl" />
+        <div className="flex-1 h-9 bg-slate-100 rounded-xl" />
+      </div>
+    </div>
+  );
+}
 
 export default function AssignmentPage() {
-  // mock data (UI only)
-  const assignments = [
-    {
-      id: 1,
-      title: "Math Homework Chapter 5",
-      subject: "Mathematics",
-      description: "Complete all exercises from chapter 5 before next class.",
-      due_date: "2026-04-20",
-    },
-    {
-      id: 2,
-      title: "Build REST API",
-      subject: "Computer Science",
-      description: "Create a Spring Boot REST API with authentication.",
-      due_date: "2026-04-25",
-    },
-  ];
+  const dispatch = useDispatch<AppDispatch>();
+
+  const { assignments, loading, error } = useSelector(
+    (state: RootState) => state.assignment,
+  );
+
+  useEffect(() => {
+    dispatch(getMyAssignmentAction());
+  }, [dispatch]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -30,9 +53,6 @@ export default function AssignmentPage() {
       day: "numeric",
     });
   };
-
-  const loading = false;
-  const error = null;
 
   return (
     <div className="p-6 space-y-6">
@@ -48,17 +68,19 @@ export default function AssignmentPage() {
         </Link>
       </div>
 
-      {/* Loading */}
+      {/* Skeleton */}
       {loading && (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-600" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <AssignmentCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
       {/* Error */}
       {!loading && error && (
         <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-sm">
-          Something went wrong
+          {error}
         </div>
       )}
 
@@ -83,14 +105,16 @@ export default function AssignmentPage() {
               key={assignment.id}
               className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-all duration-200"
             >
-              <div className="mb-4">
-                <h3 className="font-semibold text-lg text-slate-900 line-clamp-2">
-                  {assignment.title}
-                </h3>
-                <p className="text-blue-600 font-medium mt-1">
-                  {assignment.subject}
-                </p>
-              </div>
+              <Link href={`/assignment/${assignment.id}`}>
+                <div className="mb-4 cursor-pointer">
+                  <h3 className="font-semibold text-lg text-slate-900 line-clamp-2">
+                    {assignment.title}
+                  </h3>
+                  <p className="text-blue-600 font-medium mt-1">
+                    {assignment.subject}
+                  </p>
+                </div>
+              </Link>
 
               <p className="text-slate-600 text-sm line-clamp-3 mb-5">
                 {assignment.description}
@@ -98,7 +122,7 @@ export default function AssignmentPage() {
 
               <div className="flex items-center gap-2 text-slate-500 text-sm mb-6">
                 <Calendar size={16} />
-                <span>Due: {formatDate(assignment.due_date)}</span>
+                <span>Due: {formatDate(assignment.dueDate)}</span>
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-slate-100">

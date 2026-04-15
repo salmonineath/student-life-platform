@@ -1,5 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getMyAssignmentAction, getAssignmentByIdAction } from "./action";
+import {
+  getMyAssignmentAction,
+  getAssignmentByIdAction,
+  createAssignmentAction,
+} from "./action";
 import { Assignments } from "@/types/assignmentType";
 
 interface AssignmentState {
@@ -51,6 +55,19 @@ const assignmentSlice = createSlice({
         state.selectedAssignment = action.payload;
       })
       .addCase(getAssignmentByIdAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Error";
+      })
+
+      .addCase(createAssignmentAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(createAssignmentAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.assignments = [...state.assignments, action.payload];
+      })
+      .addCase(createAssignmentAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Error";
       });

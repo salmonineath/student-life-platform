@@ -30,3 +30,10 @@ export interface AssignmentByIdResponse {
   message: string;
   data: Assignments;
 }
+
+export type CreateAssignmentPayload = {
+  title: string;
+  description: string;
+  subject: string;
+  dueDate: string;
+};

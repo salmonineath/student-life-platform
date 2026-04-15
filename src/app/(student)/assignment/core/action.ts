@@ -1,9 +1,14 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getMyAssignmentRequest, getAssignmentByIdRequest } from "./request";
+import {
+  getMyAssignmentRequest,
+  getAssignmentByIdRequest,
+  createAssignmentRequest,
+} from "./request";
 import {
   AssignmentByIdResponse,
   AssignmentResponse,
   Assignments,
+  CreateAssignmentPayload,
 } from "@/types/assignmentType";
 
 export const getMyAssignmentAction = createAsyncThunk<
@@ -32,6 +37,22 @@ export const getAssignmentByIdAction = createAsyncThunk<
   } catch (error: any) {
     return rejectWithValue(
       error?.response?.data?.message ?? "Failed to fetch assignment",
+    );
+  }
+});
+
+export const createAssignmentAction = createAsyncThunk<
+  Assignments,
+  CreateAssignmentPayload,
+  { rejectValue: string }
+>("assignment/create", async (payload, { rejectWithValue }) => {
+  try {
+    const res: AssignmentByIdResponse = await createAssignmentRequest(payload);
+    return res.data;
+  } catch (error: any) {
+    console.log(error);
+    return rejectWithValue(
+      error?.response?.data?.message ?? "Failed to create assignment",
     );
   }
 });

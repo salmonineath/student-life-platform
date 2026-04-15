@@ -22,6 +22,7 @@ import {
   MapPin,
   Star,
   Pencil,
+  Trash2,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getMyScheduleAction } from "../core/action";
@@ -40,6 +41,8 @@ import {
   isSameDay,
   isToday,
 } from "date-fns";
+import DeleteConfirmModal from "../modal/DeleteConfirmModal";
+import { deleteScheduleAction } from "../core/action";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -75,9 +78,11 @@ function formatTime(time: string): string {
 function EventCard({
   schedule,
   onEdit,
+  onDelete,
 }: {
   schedule: Schedule;
   onEdit: (s: Schedule) => void;
+  onDelete: (s: Schedule) => void;
 }) {
   const isOneTime = schedule.type === "ONE_TIME";
   const s = schedule as OneTimeSchedule;
@@ -132,16 +137,31 @@ function EventCard({
       )}
 
       {/* Edit button — appears on hover */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation(); // don't trigger day click
-          onEdit(schedule);
-        }}
-        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/60 text-slate-400 hover:text-slate-600 transition-all duration-150"
-        title="Edit schedule"
-      >
-        <Pencil className="w-3.5 h-3.5" />
-      </button>
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150">
+        {/* Edit */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(schedule);
+          }}
+          className="p-1.5 rounded-lg hover:bg-white/60 text-slate-400 hover:text-slate-600"
+          title="Edit schedule"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+        </button>
+
+        {/* Delete */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(schedule);
+          }}
+          className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600"
+          title="Delete schedule"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
     </div>
   );
 }
@@ -165,6 +185,10 @@ export default function WeeklyView({
   //   initialDate ?? new Date(),
   // );
   const { schedules, loading } = useAppSelector((s) => s.schedule);
+  const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(
+    null,
+  );
+  const [deleting, setDeleting] = useState(false);
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
@@ -194,6 +218,19 @@ export default function WeeklyView({
       format(todayWeekStart, "yyyy-MM-dd")
     );
   }, [currentWeekStart]);
+
+  const handleDelete = async () => {
+    if (!scheduleToDelete) return;
+    setDeleting(true);
+    try {
+      await dispatch(deleteScheduleAction(scheduleToDelete.id)).unwrap();
+      setScheduleToDelete(null);
+    } catch (error) {
+      console.log(error, "=======Someting is wrong==========");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -297,6 +334,7 @@ export default function WeeklyView({
                         key={s.id}
                         schedule={s}
                         onEdit={onEditSchedule}
+                        onDelete={(schedule) => setScheduleToDelete(schedule)}
                       />
                     ))
                   )}
@@ -304,6 +342,14 @@ export default function WeeklyView({
               </div>
             );
           })}
+          {scheduleToDelete && (
+            <DeleteConfirmModal
+              title={scheduleToDelete.title}
+              isDeleting={deleting}
+              onConfirm={handleDelete}
+              onCancel={() => setScheduleToDelete(null)}
+            />
+          )}
         </div>
       )}
     </div>

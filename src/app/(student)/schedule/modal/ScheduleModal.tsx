@@ -24,7 +24,6 @@ import {
   createOneTimeScheduleAction,
   createRecurringScheduleAction,
   updateScheduleAction,
-  deleteScheduleAction,
 } from "../core/action";
 import {
   Schedule,
@@ -34,7 +33,6 @@ import {
   RecurringScheduleRequest,
   ScheduleUpdateRequest,
 } from "@/types/scheduleTypes";
-import DeleteConfirmModal from "./DeleteConfirmModal";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -126,8 +124,6 @@ export default function ScheduleModal({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   // Animate-in: starts hidden so the CSS transition fires on mount
   const [visible, setVisible] = useState(false);
@@ -284,22 +280,6 @@ export default function ScheduleModal({
     }
   }
 
-  // ── Delete ─────────────────────────────────────────────────────────────────
-  async function handleDelete() {
-    if (!scheduleToEdit) return;
-    setDeleting(true);
-    try {
-      await dispatch(deleteScheduleAction(scheduleToEdit.id)).unwrap();
-      onSuccess();
-      handleClose();
-    } catch (err: any) {
-      setError(typeof err === "string" ? err : "Failed to delete schedule.");
-      setShowDeleteModal(false);
-    } finally {
-      setDeleting(false);
-    }
-  }
-
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <>
@@ -337,16 +317,6 @@ export default function ScheduleModal({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Delete button — only shown in edit mode */}
-              {isEditing && (
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                  title="Delete this schedule"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
               <button
                 onClick={handleClose}
                 className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
@@ -541,16 +511,6 @@ export default function ScheduleModal({
           </div>
         </div>
       </div>
-
-      {/* ── Delete Confirmation Modal (layered on top) ──────────────────────── */}
-      {showDeleteModal && scheduleToEdit && (
-        <DeleteConfirmModal
-          title={scheduleToEdit.title}
-          isDeleting={deleting}
-          onConfirm={handleDelete}
-          onCancel={() => setShowDeleteModal(false)}
-        />
-      )}
     </>
   );
 }

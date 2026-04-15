@@ -3,6 +3,7 @@ import {
   getMyAssignmentRequest,
   getAssignmentByIdRequest,
   createAssignmentRequest,
+  deleteAssignmentRequest,
 } from "./request";
 import {
   AssignmentByIdResponse,
@@ -53,6 +54,21 @@ export const createAssignmentAction = createAsyncThunk<
     console.log(error);
     return rejectWithValue(
       error?.response?.data?.message ?? "Failed to create assignment",
+    );
+  }
+});
+
+export const deleteAssignmentAction = createAsyncThunk<
+  number,
+  number,
+  { rejectValue: string }
+>("assignment/delete", async (id, { rejectWithValue }) => {
+  try {
+    await deleteAssignmentRequest(id);
+    return id;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ?? "Failed to delete assignment",
     );
   }
 });

@@ -3,6 +3,7 @@ import {
   getMyAssignmentAction,
   getAssignmentByIdAction,
   createAssignmentAction,
+  deleteAssignmentAction,
 } from "./action";
 import { Assignments } from "@/types/assignmentType";
 
@@ -59,6 +60,7 @@ const assignmentSlice = createSlice({
         state.error = action.payload ?? "Error";
       })
 
+      // create assignment
       .addCase(createAssignmentAction.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -68,6 +70,21 @@ const assignmentSlice = createSlice({
         state.assignments = [...state.assignments, action.payload];
       })
       .addCase(createAssignmentAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Error";
+      })
+
+      // delete assignment
+      .addCase(deleteAssignmentAction.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAssignmentAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.assignments = state.assignments.filter(
+          (assignment) => assignment.id !== action.payload,
+        );
+      })
+      .addCase(deleteAssignmentAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Error";
       });

@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Plus, Calendar, BookOpen, Edit2, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
-import { getMyAssignmentAction } from "./core/action";
+import { deleteAssignmentAction, getMyAssignmentAction } from "./core/action";
 import AssignmentModal from "./modal/AssignmentModal";
+import DeleteModal from "../components/DeleteModal";
 
 function AssignmentCardSkeleton() {
   return (
@@ -34,7 +35,11 @@ export default function AssignmentPage() {
   const { assignments, loading, error } = useSelector(
     (state: RootState) => state.assignment,
   );
-  const [modalOpen, setModalOpen] = useState(false);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState<
+    number | null
+  >(null);
 
   useEffect(() => {
     dispatch(getMyAssignmentAction());
@@ -48,12 +53,32 @@ export default function AssignmentPage() {
     });
   };
 
+  const handleDeleteClick = (id: number) => {
+    setSelectedAssignmentId(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDeleteClick = async () => {
+    if (!selectedAssignmentId) return;
+
+    try {
+      await dispatch(deleteAssignmentAction(selectedAssignmentId)).unwrap();
+
+      console.log("Assignment deleted successfully");
+
+      setDeleteModalOpen(false);
+      setSelectedAssignmentId(null);
+    } catch (error) {
+      console.log("Failed to delete assignment", error);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-slate-900">My Assignments</h1>
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={() => setCreateModalOpen(true)}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition shadow-sm"
         >
           <Plus size={20} />
@@ -115,18 +140,29 @@ export default function AssignmentPage() {
                 <button className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl text-sm font-medium transition">
                   <Edit2 size={16} /> Edit
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-xl text-sm font-medium transition">
+                <button
+                  onClick={() => handleDeleteClick(assignment.id)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-xl text-sm font-medium transition"
+                >
                   <Trash2 size={16} /> Delete
                 </button>
+
+                <DeleteModal
+                  isOpen={deleteModalOpen}
+                  onClose={() => setDeleteModalOpen(false)}
+                  onConfirm={handleConfirmDeleteClick}
+                  title="Delete Assignment"
+                  description="This action cannot be undone."
+                />
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {modalOpen && (
+      {createModalOpen && (
         <AssignmentModal
-          onClose={() => setModalOpen(false)}
+          onClose={() => setCreateModalOpen(false)}
           onSuccess={() => dispatch(getMyAssignmentAction())}
         />
       )}

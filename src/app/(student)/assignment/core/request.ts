@@ -30,3 +30,8 @@ export const createAssignmentRequest = async (
   );
   return res.data;
 };
+
+export const deleteAssignmentRequest = async (id: number): Promise<void> => {
+  const res = await axiosInstance.delete(`/assignments/${id}`);
+  return res.data;
+};

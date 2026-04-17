@@ -1,8 +1,9 @@
 import axiosInstance from "@/lib/axios";
 import {
   AssignmentByIdResponse,
+  AssignmentPayload,
   AssignmentResponse,
-  CreateAssignmentPayload,
+  UpdateProgressPayload,
 } from "@/types/assignmentType";
 
 export const getMyAssignmentRequest = async (): Promise<AssignmentResponse> => {
@@ -22,10 +23,34 @@ export const getAssignmentByIdRequest = async (
 };
 
 export const createAssignmentRequest = async (
-  payload: CreateAssignmentPayload,
+  payload: AssignmentPayload,
 ): Promise<AssignmentByIdResponse> => {
   const res = await axiosInstance.post<AssignmentByIdResponse>(
     "/assignments",
+    payload,
+  );
+  return res.data;
+};
+
+// PUT /assignments/:id — update title, description, subject, or dueDate
+export const updateAssignmentRequest = async (
+  id: number,
+  payload: AssignmentPayload,
+): Promise<AssignmentByIdResponse> => {
+  const res = await axiosInstance.put<AssignmentByIdResponse>(
+    `/assignments/${id}`,
+    payload,
+  );
+  return res.data;
+};
+
+// PATCH /assignments/:id/progress — update status and progress percentage
+export const updateProgressRequest = async (
+  id: number,
+  payload: UpdateProgressPayload,
+): Promise<AssignmentByIdResponse> => {
+  const res = await axiosInstance.patch<AssignmentByIdResponse>(
+    `/assignments/${id}/progress`,
     payload,
   );
   return res.data;

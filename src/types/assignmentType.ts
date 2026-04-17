@@ -9,11 +9,11 @@ export interface Assignments {
   title: string;
   description: string;
   subject: string;
-  dueDate: string; // ISO date string from Java Date
+  dueDate: string; // ISO date string from Java LocalDateTime
   status: AssignmentStatus;
   progress: number; // 0–100
-  scheduleId: number | null;
-  createdAt: string; // ISO instant string
+  scheduleId: number | null; // ← linked schedule, set by backend on create
+  createdAt: string;
   updatedAt: string;
 }
 
@@ -36,4 +36,16 @@ export type CreateAssignmentPayload = {
   description: string;
   subject: string;
   dueDate: string;
+};
+
+export type UpdateAssignmentPayload = {
+  title?: string;
+  description?: string;
+  subject?: string;
+  dueDate?: string;
+};
+
+export type UpdateProgressPayload = {
+  status: AssignmentStatus;
+  progress: number; // 0–100
 };

@@ -4,6 +4,8 @@ import {
   getAssignmentByIdAction,
   createAssignmentAction,
   deleteAssignmentAction,
+  updateProgressAction,
+  updateAssignmentAction,
 } from "./action";
 import { Assignments } from "@/types/assignmentType";
 
@@ -70,6 +72,44 @@ const assignmentSlice = createSlice({
         state.assignments = [...state.assignments, action.payload];
       })
       .addCase(createAssignmentAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Error";
+      })
+
+      // update assignment (title / description / subject / dueDate)
+      .addCase(updateAssignmentAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateAssignmentAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.assignments = state.assignments.map((a) =>
+          a.id === action.payload.id ? action.payload : a,
+        );
+        if (state.selectedAssignment?.id === action.payload.id) {
+          state.selectedAssignment = action.payload;
+        }
+      })
+      .addCase(updateAssignmentAction.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Error";
+      })
+
+      // update progress (status + progress %)
+      .addCase(updateProgressAction.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProgressAction.fulfilled, (state, action) => {
+        state.loading = false;
+        state.assignments = state.assignments.map((a) =>
+          a.id === action.payload.id ? action.payload : a,
+        );
+        if (state.selectedAssignment?.id === action.payload.id) {
+          state.selectedAssignment = action.payload;
+        }
+      })
+      .addCase(updateProgressAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Error";
       })

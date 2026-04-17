@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "./components/sidebar";
 import TopNav from "./components/topnav";
-// import ClientAuthWrapper from "@/app/ClientAuthWrapper";
+import ClientAuthWrapper from "@/app/ClientAuthWrapper";
 
 export default function StudentLayout({
   children,
@@ -9,18 +9,20 @@ export default function StudentLayout({
   children: React.ReactNode;
 }) {
   return (
+    <ClientAuthWrapper>
       <div className="min-h-screen bg-gray-100 flex">
-        {/* 1. Left Sidebar (Fixed width) */}
+        {/* Left Sidebar (Fixed width) */}
         <Sidebar />
 
-        {/* 2. Main Content Wrapper */}
+        {/* Main Content Wrapper */}
         <div className="flex-1 ml-64 flex flex-col">
-          {/* 3. Top Navigation Bar */}
+          {/* Top Navigation Bar */}
           <TopNav />
 
-          {/* 4. Page Content (This changes based on the URL) */}
+          {/* Page Content */}
           <main className="p-6">{children}</main>
         </div>
       </div>
+    </ClientAuthWrapper>
   );
 }

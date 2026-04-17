@@ -9,7 +9,8 @@ import {
 } from "./request";
 import {
   AssignmentByIdResponse,
-  AssignmentPayload,
+  CreateAssignmentPayload,
+  UpdateAssignmentPayload,
   AssignmentResponse,
   Assignments,
   UpdateProgressPayload,
@@ -47,7 +48,7 @@ export const getAssignmentByIdAction = createAsyncThunk<
 
 export const createAssignmentAction = createAsyncThunk<
   Assignments,
-  AssignmentPayload,
+  CreateAssignmentPayload,
   { rejectValue: string }
 >("assignment/create", async (payload, { rejectWithValue }) => {
   try {
@@ -63,7 +64,7 @@ export const createAssignmentAction = createAsyncThunk<
 
 export const updateAssignmentAction = createAsyncThunk<
   Assignments,
-  { id: number; payload: AssignmentPayload },
+  { id: number; payload: UpdateAssignmentPayload },
   { rejectValue: string }
 >("assignment/update", async ({ id, payload }, { rejectWithValue }) => {
   try {

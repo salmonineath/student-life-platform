@@ -3,12 +3,16 @@ import {
   getMyAssignmentRequest,
   getAssignmentByIdRequest,
   createAssignmentRequest,
+  deleteAssignmentRequest,
+  updateAssignmentRequest,
+  updateProgressRequest,
 } from "./request";
 import {
   AssignmentByIdResponse,
+  AssignmentPayload,
   AssignmentResponse,
   Assignments,
-  CreateAssignmentPayload,
+  UpdateProgressPayload,
 } from "@/types/assignmentType";
 
 export const getMyAssignmentAction = createAsyncThunk<
@@ -43,7 +47,7 @@ export const getAssignmentByIdAction = createAsyncThunk<
 
 export const createAssignmentAction = createAsyncThunk<
   Assignments,
-  CreateAssignmentPayload,
+  AssignmentPayload,
   { rejectValue: string }
 >("assignment/create", async (payload, { rejectWithValue }) => {
   try {
@@ -53,6 +57,57 @@ export const createAssignmentAction = createAsyncThunk<
     console.log(error);
     return rejectWithValue(
       error?.response?.data?.message ?? "Failed to create assignment",
+    );
+  }
+});
+
+export const updateAssignmentAction = createAsyncThunk<
+  Assignments,
+  { id: number; payload: AssignmentPayload },
+  { rejectValue: string }
+>("assignment/update", async ({ id, payload }, { rejectWithValue }) => {
+  try {
+    const res: AssignmentByIdResponse = await updateAssignmentRequest(
+      id,
+      payload,
+    );
+    return res.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ?? "Failed to update assignment",
+    );
+  }
+});
+
+export const updateProgressAction = createAsyncThunk<
+  Assignments,
+  { id: number; payload: UpdateProgressPayload },
+  { rejectValue: string }
+>("assignment/updateProgress", async ({ id, payload }, { rejectWithValue }) => {
+  try {
+    const res: AssignmentByIdResponse = await updateProgressRequest(
+      id,
+      payload,
+    );
+    return res.data;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ?? "Failed to update progress",
+    );
+  }
+});
+
+export const deleteAssignmentAction = createAsyncThunk<
+  number,
+  number,
+  { rejectValue: string }
+>("assignment/delete", async (id, { rejectWithValue }) => {
+  try {
+    await deleteAssignmentRequest(id);
+    return id;
+  } catch (error: any) {
+    return rejectWithValue(
+      error?.response?.data?.message ?? "Failed to delete assignment",
     );
   }
 });

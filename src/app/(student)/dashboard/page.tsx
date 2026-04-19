@@ -1,43 +1,66 @@
-"use client";
+import UpComingReport from "./components/UpComingReport";
+import TodayScheduleView from "./components/TodayScheduleView";
+import AssignmentStatusView from "./components/AssignmentStatusView";
+import GroupActivitiesView from "./components/GroupActivitiesView";
+import AssignmentProgressView from "./components/AssignmentProgressView";
 
-// This function MUST have 'export default' for Next.js to recognize it as a page
 export default function DashboardPage() {
+  const studentName = "Sal Monineath";
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
-    <div className="space-y-6">
-      {/* Header section of the inner page */}
-      <div>
-        <h2 className="text-3xl font-bold text-slate-900">Welcome back!</h2>
-        <p className="text-slate-500">
-          Here is what's happening with your studies today.
-        </p>
-      </div>
+    <>
 
-      {/* Placeholder for your Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <p className="text-sm font-medium text-slate-500">
-            Courses this Semester
+      {/* ── Header ── */}
+      <header className="flex items-end justify-between mb-8 gap-4 flex-wrap">
+        <div>
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-stone-400 mb-1">
+            {today}
           </p>
-          <p className="text-3xl font-bold text-slate-900 mt-2">12</p>
-        </div>
-        <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <p className="text-sm font-medium text-slate-500">
-            Upcoming Assignments
+          <h1 className="text-4xl font-bold tracking-tight text-stone-900 mb-1.5">
+            Welcome back,{" "}
+            <span className="text-indigo-600">{studentName}</span>
+          </h1>
+          <p className="text-sm text-stone-400">
+            Here&apos;s what&apos;s happening with your studies today.
           </p>
-          <p className="text-3xl font-bold text-slate-900 mt-2">6</p>
         </div>
-        <div className="p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
-          <p className="text-sm font-medium text-slate-500">
-            Completed assignment
-          </p>
-          <p className="text-3xl font-bold text-slate-900 mt-2">3</p>
+        <div className="flex gap-2 shrink-0">
+          <button className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-all">
+            + New Assignment
+          </button>
+          <button className="bg-white hover:bg-stone-100 active:scale-95 text-stone-700 text-sm font-medium px-4 py-2.5 rounded-lg border border-stone-200 transition-all">
+            + New Event
+          </button>
         </div>
-      </div>
+      </header>
 
-      {/* Placeholder for the Timetable/Schedule */}
-      <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 min-h-[400px] flex items-center justify-center">
-        <p className="text-slate-400 italic">Weekly Timetable coming soon...</p>
+      {/* ── Main Grid ── */}
+      <div className="grid grid-cols-4 gap-4">
+
+        {/* Row 1 */}
+        <div className="col-span-2 bg-white border border-stone-200 rounded-2xl hover:shadow-lg hover:shadow-stone-100 transition-shadow duration-200 overflow-hidden">
+          <UpComingReport />
+        </div>
+        <div className="col-span-2 bg-white border border-stone-200 rounded-2xl hover:shadow-lg hover:shadow-stone-100 transition-shadow duration-200 overflow-hidden">
+          <TodayScheduleView />
+        </div>
+
+        {/* Row 2 */}
+        <div className="col-span-1 bg-white border border-stone-200 rounded-2xl hover:shadow-lg hover:shadow-stone-100 transition-shadow duration-200 overflow-hidden">
+          <AssignmentStatusView />
+        </div>
+        <div className="col-span-2 bg-white border border-stone-200 rounded-2xl hover:shadow-lg hover:shadow-stone-100 transition-shadow duration-200 overflow-hidden">
+          <GroupActivitiesView />
+        </div>
+        <div className="col-span-1 bg-white border border-stone-200 rounded-2xl hover:shadow-lg hover:shadow-stone-100 transition-shadow duration-200 overflow-hidden">
+          <AssignmentProgressView />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

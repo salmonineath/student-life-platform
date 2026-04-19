@@ -1,24 +1,9 @@
 "use client";
 
-/**
- * Schedule Page — top-level controller for the schedule feature.
- *
- * Responsibilities:
- *  1. Track active view: "weekly" | "daily" | "monthly"
- *  2. Track selected date so clicking a day in Weekly/Monthly
- *     jumps to Daily view for that exact date.
- *  3. Control the ScheduleModal — open for create OR edit.
- *  4. After any successful create/edit/delete, re-fetch the
- *     current view's schedules so the list stays fresh.
- *
- * Modal state:
- *  modalOpen      — whether the modal is visible
- *  scheduleToEdit — null = create mode, Schedule = edit mode
- */
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/redux/hook";
+import { useSearchParams } from "next/navigation";
 import {
   format,
   startOfWeek,
@@ -39,69 +24,79 @@ type ViewType = "weekly" | "daily" | "monthly";
 
 export default function SchedulePage() {
   const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
 
-  // ── View & date state ────────────────────────────────────────────────────────
+  // If coming from an assignment card, this is the scheduleId to highlight
+  const highlightId = searchParams.get("highlightId")
+    ? Number(searchParams.get("highlightId"))
+    : null;
+
+  const dateParam = searchParams.get("date");
+
   const [activeView, setActiveView] = useState<ViewType>("weekly");
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  // ── Modal state ──────────────────────────────────────────────────────────────
+  const [selectedDate, setSelectedDate] = useState<Date>(
+    dateParam ? new Date(dateParam + "T00:00:00") : new Date()
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
 
-  /** Open modal in create mode */
+  // Pass highlightId down to DailyView — switch to daily view on mount if
+  // we came from an assignment so the highlighted entry is visible
+const didAutoSwitch = useRef(false);
+useEffect(() => {
+  if (highlightId && !didAutoSwitch.current) {
+    didAutoSwitch.current = true;
+    setActiveView("daily");
+    // Force fetch for the correct date right away
+    if (dateParam) {
+      dispatch(getMyScheduleAction({
+        startDate: dateParam,
+        endDate: dateParam,
+      }));
+    }
+  }
+}, [highlightId]);
+
   function openCreateModal() {
     setScheduleToEdit(null);
     setModalOpen(true);
   }
 
-  /** Open modal in edit mode with a pre-filled schedule */
   function openEditModal(schedule: Schedule) {
     setScheduleToEdit(schedule);
     setModalOpen(true);
   }
 
-  /** Close modal and reset edit target */
   function closeModal() {
     setModalOpen(false);
     setScheduleToEdit(null);
   }
 
-  /**
-   * Called after a successful create / edit / delete.
-   * Re-fetches the schedules for whichever view is currently active
-   * so the list reflects the latest data from the server.
-   */
   const handleSuccess = useCallback(() => {
     const now = selectedDate;
-
     if (activeView === "weekly") {
-      const start = startOfWeek(now, { weekStartsOn: 1 });
-      const end = endOfWeek(now, { weekStartsOn: 1 });
       dispatch(
         getMyScheduleAction({
-          startDate: format(start, "yyyy-MM-dd"),
-          endDate: format(end, "yyyy-MM-dd"),
+          startDate: format(
+            startOfWeek(now, { weekStartsOn: 1 }),
+            "yyyy-MM-dd",
+          ),
+          endDate: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
         }),
       );
     } else if (activeView === "daily") {
-      const dateStr = format(now, "yyyy-MM-dd");
-      dispatch(getMyScheduleAction({ startDate: dateStr, endDate: dateStr }));
+      const d = format(now, "yyyy-MM-dd");
+      dispatch(getMyScheduleAction({ startDate: d, endDate: d }));
     } else {
-      const start = startOfMonth(now);
-      const end = endOfMonth(now);
       dispatch(
         getMyScheduleAction({
-          startDate: format(start, "yyyy-MM-dd"),
-          endDate: format(end, "yyyy-MM-dd"),
+          startDate: format(startOfMonth(now), "yyyy-MM-dd"),
+          endDate: format(endOfMonth(now), "yyyy-MM-dd"),
         }),
       );
     }
   }, [activeView, selectedDate, dispatch]);
 
-  /**
-   * Called when user clicks a day in Weekly or Monthly view.
-   * Switches to Daily and shows that day's schedule.
-   */
   function handleDayClick(date: Date) {
     setSelectedDate(date);
     setActiveView("daily");
@@ -110,7 +105,7 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-[#F5F6FA]">
       <div className="space-y-6">
-        {/* ── Page Header ────────────────────────────────────────────── */}
+        {/* Header */}
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
@@ -120,8 +115,6 @@ export default function SchedulePage() {
               Manage and view your personal study schedule
             </p>
           </div>
-
-          {/* Opens the modal in create mode */}
           <button
             onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold shadow-sm transition-all duration-150"
@@ -131,39 +124,51 @@ export default function SchedulePage() {
           </button>
         </div>
 
-        {/* ── Stats + Important Banner ────────────────────────────────── */}
-        <ScheduleStats />
+        {/* If arrived from an assignment, show a banner */}
+        {highlightId && (
+          <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl text-sm font-medium">
+            <span className="text-blue-500">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1z" />
+              </svg>
+            </span>
+            Showing the schedule linked to your assignment — it's highlighted
+            below.
+          </div>
+        )}
 
-        {/* ── Tab Switcher ────────────────────────────────────────────── */}
+        <ScheduleStats />
         <ViewTabs activeView={activeView} onChange={setActiveView} />
 
-        {/* ── Active View ─────────────────────────────────────────────── */}
         <div>
           {activeView === "weekly" && (
             <WeeklyView
               onDayClick={handleDayClick}
               onEditSchedule={openEditModal}
+              highlightId={highlightId}
             />
           )}
-
           {activeView === "daily" && (
             <DailyView
               initialDate={selectedDate}
               onEditSchedule={openEditModal}
+              highlightId={highlightId}
             />
           )}
-
           {activeView === "monthly" && (
-            <MonthlyView onDayClick={handleDayClick} />
+            <MonthlyView
+              onDayClick={handleDayClick}
+              highlightId={highlightId}
+            />
           )}
         </div>
       </div>
 
-      {/* ── Schedule Modal ──────────────────────────────────────────────── */}
-      {/*
-        Rendered outside the content div so it sits above everything.
-        Only mounted when open so form state resets cleanly each time.
-      */}
       {modalOpen && (
         <ScheduleModal
           scheduleToEdit={scheduleToEdit}
@@ -174,8 +179,6 @@ export default function SchedulePage() {
     </div>
   );
 }
-
-// ── Tab Switcher ───────────────────────────────────────────────────────────────
 
 interface ViewTabsProps {
   activeView: ViewType;
@@ -191,25 +194,19 @@ const TABS: { label: string; value: ViewType }[] = [
 function ViewTabs({ activeView, onChange }: ViewTabsProps) {
   return (
     <div className="flex items-center gap-1 p-1 bg-white border border-slate-100 rounded-xl w-fit shadow-sm">
-      {TABS.map((tab) => {
-        const isActive = activeView === tab.value;
-        return (
-          <button
-            key={tab.value}
-            onClick={() => onChange(tab.value)}
-            className={`
-              px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150
-              ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
-              }
-            `}
-          >
-            {tab.label}
-          </button>
-        );
-      })}
+      {TABS.map((tab) => (
+        <button
+          key={tab.value}
+          onClick={() => onChange(tab.value)}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 ${
+            activeView === tab.value
+              ? "bg-blue-600 text-white shadow-sm"
+              : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
     </div>
   );
 }

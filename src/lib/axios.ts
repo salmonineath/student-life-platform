@@ -50,6 +50,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
+        // when access token expires, the refresh token is sent automatically via cookie
         await axios.post(
           `${API_URL}/auth/refresh-token`,
           {},
@@ -58,7 +59,13 @@ axiosInstance.interceptors.response.use(
         processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshError: any) {
-        processQueue(refreshError);
+        // If refresh also fails (e.g. refresh token expired), log out and redirect to login
+        await axios.post("/auth/logout", {}, { withCredentials: true });
+
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

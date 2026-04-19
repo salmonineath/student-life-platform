@@ -19,6 +19,7 @@ export interface OneTimeSchedule {
   location: string | null;
   createdBy: ScheduleCreatedBy;
   important: boolean;
+  assignmentId: number | null;
 }
 
 export interface RecurringSchedule {
@@ -34,6 +35,7 @@ export interface RecurringSchedule {
   location: string | null;
   createdBy: ScheduleCreatedBy;
   important: boolean;
+  assignmentId: number | null;
 }
 
 export interface OneTimeScheduleRequest {

@@ -88,7 +88,7 @@ export default function AssignmentCard({
         {assignment.scheduleId ? (
           <button
             onClick={() =>
-              router.push(`/schedule?highlightId=${assignment.scheduleId}`)
+              router.push(`/schedule?highlightId=${assignment.scheduleId}&date=${assignment.dueDate.split("T")[0]}`)
             }
             className="flex-1 flex items-center justify-center gap-1.5 bg-primary/10 hover:bg-primary/15 text-primary py-2.5 rounded-2xl text-sm font-medium transition"
           >

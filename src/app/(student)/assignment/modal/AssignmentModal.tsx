@@ -19,29 +19,19 @@ const initialForm: CreateAssignmentPayload = {
   dueDate: "",
 };
 
-export default function AssignmentModal({
-  onClose,
-  onSuccess,
-}: AssignmentModalProps) {
+export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalProps) {
   const dispatch = useDispatch<AppDispatch>();
-  const { loading, error } = useSelector(
-    (state: RootState) => state.assignment,
-  );
+  const { loading, error } = useSelector((state: RootState) => state.assignment);
   const [form, setForm] = useState<CreateAssignmentPayload>(initialForm);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async () => {
     if (!form.title || !form.subject || !form.dueDate) return;
     const result = await dispatch(
-      createAssignmentAction({
-        ...form,
-        dueDate: new Date(form.dueDate).toISOString(),
-      }),
+      createAssignmentAction({ ...form, dueDate: new Date(form.dueDate).toISOString() }),
     );
     if (createAssignmentAction.fulfilled.match(result)) {
       onSuccess();
@@ -50,104 +40,113 @@ export default function AssignmentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <BookOpen className="text-blue-600 w-5 h-5" />
-            <h2 className="text-lg font-semibold text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-stone-100">
+
+        {/* ── Header ── */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+          <div>
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-400 mb-0.5">
+              Create
+            </p>
+            <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-indigo-500" />
               New Assignment
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form */}
+        {/* ── Form ── */}
         <div className="px-6 py-5 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl">
+            <div className="bg-red-50 border border-red-100 text-red-500 text-xs font-medium p-3 rounded-xl">
               {error}
             </div>
           )}
 
+          {/* Title */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <BookOpen className="w-3.5 h-3.5" /> Title{" "}
-              <span className="text-red-500">*</span>
+            <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
+              <BookOpen className="w-3.5 h-3.5 text-stone-400" />
+              Title <span className="text-red-400">*</span>
             </label>
             <input
               name="title"
               value={form.title}
               onChange={handleChange}
-              placeholder="e.g. Research JWT"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="e.g. Research JWT authentication"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
           </div>
 
+          {/* Subject */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <Tag className="w-3.5 h-3.5" /> Subject{" "}
-              <span className="text-red-500">*</span>
+            <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
+              <Tag className="w-3.5 h-3.5 text-stone-400" />
+              Subject <span className="text-red-400">*</span>
             </label>
             <input
               name="subject"
               value={form.subject}
               onChange={handleChange}
               placeholder="e.g. IT, Math, Science"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
           </div>
 
+          {/* Due Date */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" /> Due Date{" "}
-              <span className="text-red-500">*</span>
+            <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
+              <Calendar className="w-3.5 h-3.5 text-stone-400" />
+              Due Date <span className="text-red-400">*</span>
             </label>
             <input
               type="datetime-local"
               name="dueDate"
               value={form.dueDate}
               onChange={handleChange}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
           </div>
 
+          {/* Description */}
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
-              <AlignLeft className="w-3.5 h-3.5" /> Description{" "}
-              <span className="text-slate-400 font-normal">(optional)</span>
+            <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
+              <AlignLeft className="w-3.5 h-3.5 text-stone-400" />
+              Description{" "}
+              <span className="text-stone-300 font-normal normal-case tracking-normal">optional</span>
             </label>
             <textarea
               name="description"
               value={form.description}
               onChange={handleChange}
-              placeholder="Add any details about this assignment..."
+              placeholder="Add any details about this assignment…"
               rows={3}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
             />
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex gap-3 px-6 py-4 border-t border-slate-100">
+        {/* ── Footer ── */}
+        <div className="flex gap-3 px-6 py-4 border-t border-stone-100">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition"
+            className="flex-1 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-600 transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={loading || !form.title || !form.subject || !form.dueDate}
-            className="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition"
+            className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
           >
-            {loading ? "Creating..." : "Create Assignment"}
+            {loading ? "Creating…" : "Create Assignment"}
           </button>
         </div>
       </div>

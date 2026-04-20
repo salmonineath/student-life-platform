@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Plus, GraduationCap, Search, Sparkles, BookOpen } from "lucide-react";
+import { Plus, Search, Sparkles, BookOpen } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { deleteAssignmentAction, getMyAssignmentAction } from "./core/action";
@@ -10,7 +10,7 @@ import DeleteModal from "../components/DeleteModal";
 import AssignmentCard from "./components/AssignmentCard";
 import { STATUS_MAP } from "./components/StatusMap";
 
-type Filter = "all" | "pending" | "completed" | "late"; // map your statuses accordingly
+type Filter = "all" | "pending" | "completed" | "late";
 
 export default function AssignmentPage() {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,7 +28,6 @@ export default function AssignmentPage() {
     dispatch(getMyAssignmentAction());
   }, [dispatch]);
 
-  // Filter + search + sort (by due date)
   const filteredAssignments = useMemo(() => {
     return assignments
       .filter((a) => {
@@ -48,22 +47,14 @@ export default function AssignmentPage() {
       );
   }, [assignments, filter, query]);
 
-  // Stats
   const stats = useMemo(() => {
     const total = assignments.length;
-    const completed = assignments.filter(
-      (a) => a.status === "COMPLETED",
-    ).length;
-    const overdue = assignments.filter(
-      (a) => STATUS_MAP[a.status] === "late",
-    ).length;
+    const completed = assignments.filter((a) => a.status === "COMPLETED").length;
+    const overdue = assignments.filter((a) => STATUS_MAP[a.status] === "late").length;
     const avg =
       total > 0
-        ? Math.round(
-            assignments.reduce((sum, a) => sum + (a.progress || 0), 0) / total,
-          )
+        ? Math.round(assignments.reduce((sum, a) => sum + (a.progress || 0), 0) / total)
         : 0;
-
     return { total, completed, overdue, avg };
   }, [assignments]);
 
@@ -83,134 +74,130 @@ export default function AssignmentPage() {
     }
   };
 
+  const statCards = [
+    { label: "Total",        value: stats.total,      valueClass: "text-indigo-600"  },
+    { label: "Completed",    value: stats.completed,  valueClass: "text-green-600"   },
+    { label: "Overdue",      value: stats.overdue,    valueClass: "text-red-500"     },
+    { label: "Avg Progress", value: `${stats.avg}%`,  valueClass: "text-stone-800"   },
+  ];
+
+  const filters: { key: Filter; label: string }[] = [
+    { key: "all",       label: "All"    },
+    { key: "pending",   label: "Active" },
+    { key: "completed", label: "Done"   },
+    { key: "late",      label: "Late"   },
+  ];
+
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-slate-900">My Assignments</h1>
-          <p className="text-md text-muted-foreground hidden sm:block">
+    <>
+
+      {/* ── Header ── */}
+      <header className="flex items-end justify-between mb-8 gap-4 flex-wrap">
+        <div>
+          <p className="text-sm font-semibold tracking-widest uppercase text-stone-400 mb-1">
+            Overview
+          </p>
+          <h1 className="text-4xl font-bold tracking-tight text-stone-900 mb-1.5">
+            My Assignments
+          </h1>
+          <p className="text-sm text-stone-400 hidden sm:block">
             Track assignments, beat deadlines.
           </p>
         </div>
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition shadow-sm"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shrink-0"
         >
-          <Plus size={20} />
+          <Plus className="w-4 h-4" />
           New Assignment
         </button>
       </header>
 
-      <main className="py-6 space-y-6">
-        {/* ReminderBanner — you can implement later or leave empty */}
-        {/* <ReminderBanner items={assignments} /> */}
+      <main className="space-y-6">
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            { label: "Total", value: stats.total, color: "text-primary" },
-            {
-              label: "Completed",
-              value: stats.completed,
-              color: "text-success",
-            },
-            {
-              label: "Overdue",
-              value: stats.overdue,
-              color: "text-destructive",
-            },
-            {
-              label: "Avg progress",
-              value: `${stats.avg}%`,
-              color: "text-foreground",
-            },
-          ].map((s) => (
+        {/* ── Stat cards ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {statCards.map((s) => (
             <div
               key={s.label}
-              className="rounded-2xl border border-border/60 bg-card p-4 shadow-soft"
+              className="bg-white border border-stone-200 rounded-2xl px-5 py-4 hover:shadow-md hover:shadow-stone-100 transition-shadow"
             >
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-400 mb-1">
+                {s.label}
+              </p>
+              <p className={`text-3xl font-bold ${s.valueClass}`}>{s.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Search + Filters */}
+        {/* ── Search + Filter ── */}
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search assignments…"
-              className="w-full pl-9 bg-card border border-border/60 rounded-xl py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
           </div>
 
-          <div className="flex bg-card border border-border/60 rounded-xl p-1">
-            {(["all", "pending", "completed", "late"] as const).map((f) => (
+          {/* Filter tabs */}
+          <div className="flex bg-white border border-stone-200 rounded-xl p-1 gap-1">
+            {filters.map((f) => (
               <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-5 py-2 text-sm font-medium rounded-lg transition ${
-                  filter === f
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted"
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  filter === f.key
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "text-stone-500 hover:bg-stone-100"
                 }`}
               >
-                {f === "all"
-                  ? "All"
-                  : f === "pending"
-                    ? "Active"
-                    : f === "completed"
-                      ? "Done"
-                      : "Late"}
+                {f.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Content */}
+        {/* ── Content ── */}
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
-                className="bg-card border border-border/60 rounded-2xl p-6 animate-pulse h-80"
+                className="bg-white border border-stone-200 rounded-2xl p-6 animate-pulse h-72"
               />
             ))}
           </div>
         ) : error ? (
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-2xl">
+          <div className="bg-red-50 border border-red-100 text-red-600 text-sm p-5 rounded-2xl">
             {error}
           </div>
         ) : filteredAssignments.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border bg-gradient-soft p-12 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-primary text-primary-foreground shadow-glow">
-              {assignments.length === 0 ? (
-                <Sparkles className="h-6 w-6" />
-              ) : (
-                <BookOpen className="h-6 w-6" />
-              )}
+          <div className="bg-white border border-dashed border-stone-200 rounded-2xl p-16 flex flex-col items-center text-center">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 flex items-center justify-center mb-4">
+              {assignments.length === 0
+                ? <Sparkles className="w-6 h-6 text-indigo-500" />
+                : <BookOpen className="w-6 h-6 text-indigo-500" />
+              }
             </div>
-            <h3 className="mt-4 font-semibold text-lg">
-              {assignments.length === 0
-                ? "Start your study journey"
-                : "Nothing here"}
+            <h3 className="text-base font-bold text-stone-800 mb-1">
+              {assignments.length === 0 ? "Start your study journey" : "Nothing here"}
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground max-w-sm mx-auto">
+            <p className="text-sm text-stone-400 max-w-sm">
               {assignments.length === 0
-                ? "Create your first assignment, set a deadline, and let the AI assistant build a study plan for you."
+                ? "Create your first assignment, set a deadline, and track your progress."
                 : "No assignments match your current filter or search."}
             </p>
             {assignments.length === 0 && (
               <button
                 onClick={() => setCreateModalOpen(true)}
-                className="mt-5 bg-gradient-primary text-primary-foreground hover:opacity-90 px-6 py-3 rounded-xl font-medium flex items-center gap-2 mx-auto"
+                className="mt-5 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
               >
-                <Plus className="h-4 w-4" /> Create assignment
+                <Plus className="w-4 h-4" /> Create assignment
               </button>
             )}
           </div>
@@ -227,7 +214,7 @@ export default function AssignmentPage() {
         )}
       </main>
 
-      {/* Modals */}
+      {/* ── Modals ── */}
       <DeleteModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -235,7 +222,6 @@ export default function AssignmentPage() {
         title="Delete Assignment"
         description="This will also delete the linked schedule. This action cannot be undone."
       />
-
       {createModalOpen && (
         <AssignmentModal
           onClose={() => setCreateModalOpen(false)}
@@ -245,6 +231,6 @@ export default function AssignmentPage() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }

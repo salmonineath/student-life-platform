@@ -60,7 +60,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError: any) {
         // If refresh also fails (e.g. refresh token expired), log out and redirect to login
-        await axios.post("/auth/logout", {}, { withCredentials: true });
+        await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
 
         if (typeof window !== "undefined") {
           window.location.href = "/login";

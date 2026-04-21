@@ -108,7 +108,7 @@ useEffect(() => {
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+            <h1 className="text-4xl font-bold text-slate-800 tracking-tight">
               My Schedule
             </h1>
             <p className="text-sm text-slate-400 mt-0.5">

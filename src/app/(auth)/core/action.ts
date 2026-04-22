@@ -79,8 +79,8 @@ export const loginAction = createAsyncThunk(
       document.cookie = "isLoggedIn=true; path=/; max-age=2592000";
 
       return {
-        user: res.data.user,
         accessToken: res.data.accessToken,
+        user: res.data.user,
       };
     } catch (error: any) {
       return rejectWithValue(error?.response?.data?.message || "Login failed.");

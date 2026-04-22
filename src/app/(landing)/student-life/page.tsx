@@ -11,7 +11,7 @@ import BannerSection from "../components/BannerSection";
 import TrustBar from "../components/TrustBar";
 
 function WarmUpServer() {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const backendUrl = process.env.NEXT_PUBLIC_HEALTH_API_URL || "http://localhost:5000/health";
 
   useEffect(() => {
     fetch(`${backendUrl}`)

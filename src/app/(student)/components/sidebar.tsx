@@ -39,30 +39,35 @@ const Sidebar = () => {
 
   const dispatch = useDispatch<AppDispatch>();
 
+  // const handleLogout = async () => {
+  //   setLoading(true);
+  //   setError("");
+
+  //   try {
+  //     await dispatch(logoutAction());
+  //     // Full reload so cookies are fully cleared before middleware checks them
+  //     window.location.href = "/student-life";
+  //   } catch (err: any) {
+  //     if (err.response) {
+  //       console.error(
+  //         "Logout failed:",
+  //         err.response.data?.message || err.message,
+  //       );
+  //     } else if (err.request) {
+  //       console.error("No response from server during logout");
+  //     } else {
+  //       console.error("Error during logout:", err.message);
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleLogout = async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      await dispatch(logoutAction());
-      // Full reload so cookies are fully cleared before middleware checks them
-      window.location.href = "/student-life";
-    } catch (err: any) {
-      if (err.response) {
-        console.error(
-          "Logout failed:",
-          err.response.data?.message || err.message,
-        );
-      } else if (err.request) {
-        console.error("No response from server during logout");
-      } else {
-        console.error("Error during logout:", err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  setLoading(true);
+  await dispatch(logoutAction());
+  window.location.href = "/student-life";
+};
   // Check if a nav item is active
   const isActive = (href: string) => {
     if (href === "/dashboard") {

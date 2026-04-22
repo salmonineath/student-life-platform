@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, Suspense } from "react";
 import { Plus } from "lucide-react";
 import { useAppDispatch } from "@/redux/hook";
 import { useSearchParams } from "next/navigation";
@@ -22,11 +22,11 @@ import ScheduleModal from "./modal/ScheduleModal";
 
 type ViewType = "weekly" | "daily" | "monthly";
 
-export default function SchedulePage() {
+// ✅ Inner component that safely uses useSearchParams()
+function ScheduleContent() {
   const dispatch = useAppDispatch();
   const searchParams = useSearchParams();
 
-  // If coming from an assignment card, this is the scheduleId to highlight
   const highlightId = searchParams.get("highlightId")
     ? Number(searchParams.get("highlightId"))
     : null;
@@ -40,22 +40,16 @@ export default function SchedulePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<Schedule | null>(null);
 
-  // Pass highlightId down to DailyView — switch to daily view on mount if
-  // we came from an assignment so the highlighted entry is visible
-const didAutoSwitch = useRef(false);
-useEffect(() => {
-  if (highlightId && !didAutoSwitch.current) {
-    didAutoSwitch.current = true;
-    setActiveView("daily");
-    // Force fetch for the correct date right away
-    if (dateParam) {
-      dispatch(getMyScheduleAction({
-        startDate: dateParam,
-        endDate: dateParam,
-      }));
+  const didAutoSwitch = useRef(false);
+  useEffect(() => {
+    if (highlightId && !didAutoSwitch.current) {
+      didAutoSwitch.current = true;
+      setActiveView("daily");
+      if (dateParam) {
+        dispatch(getMyScheduleAction({ startDate: dateParam, endDate: dateParam }));
+      }
     }
-  }
-}, [highlightId]);
+  }, [highlightId]);
 
   function openCreateModal() {
     setScheduleToEdit(null);
@@ -77,12 +71,9 @@ useEffect(() => {
     if (activeView === "weekly") {
       dispatch(
         getMyScheduleAction({
-          startDate: format(
-            startOfWeek(now, { weekStartsOn: 1 }),
-            "yyyy-MM-dd",
-          ),
+          startDate: format(startOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
           endDate: format(endOfWeek(now, { weekStartsOn: 1 }), "yyyy-MM-dd"),
-        }),
+        })
       );
     } else if (activeView === "daily") {
       const d = format(now, "yyyy-MM-dd");
@@ -92,7 +83,7 @@ useEffect(() => {
         getMyScheduleAction({
           startDate: format(startOfMonth(now), "yyyy-MM-dd"),
           endDate: format(endOfMonth(now), "yyyy-MM-dd"),
-        }),
+        })
       );
     }
   }, [activeView, selectedDate, dispatch]);
@@ -103,70 +94,58 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA]">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-800 tracking-tight">
-              My Schedule
-            </h1>
-            <p className="text-sm text-slate-400 mt-0.5">
-              Manage and view your personal study schedule
-            </p>
-          </div>
-          <button
-            onClick={openCreateModal}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold shadow-sm transition-all duration-150"
-          >
-            <Plus className="w-4 h-4" />
-            Add Schedule
-          </button>
-        </div>
-
-        {/* If arrived from an assignment, show a banner */}
-        {highlightId && (
-          <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl text-sm font-medium">
-            <span className="text-blue-500">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1z" />
-              </svg>
-            </span>
-            Showing the schedule linked to your assignment — it's highlighted
-            below.
-          </div>
-        )}
-
-        <ScheduleStats />
-        <ViewTabs activeView={activeView} onChange={setActiveView} />
-
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
         <div>
-          {activeView === "weekly" && (
-            <WeeklyView
-              onDayClick={handleDayClick}
-              onEditSchedule={openEditModal}
-              highlightId={highlightId}
-            />
-          )}
-          {activeView === "daily" && (
-            <DailyView
-              initialDate={selectedDate}
-              onEditSchedule={openEditModal}
-              highlightId={highlightId}
-            />
-          )}
-          {activeView === "monthly" && (
-            <MonthlyView
-              onDayClick={handleDayClick}
-              highlightId={highlightId}
-            />
-          )}
+          <h1 className="text-4xl font-bold text-slate-800 tracking-tight">
+            My Schedule
+          </h1>
+          <p className="text-sm text-slate-400 mt-0.5">
+            Manage and view your personal study schedule
+          </p>
         </div>
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm font-semibold shadow-sm transition-all duration-150"
+        >
+          <Plus className="w-4 h-4" />
+          Add Schedule
+        </button>
+      </div>
+
+      {highlightId && (
+        <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-2xl text-sm font-medium">
+          <span className="text-blue-500">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M6 2a1 1 0 0 0-1 1v1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1V3a1 1 0 1 0-2 0v1H7V3a1 1 0 0 0-1-1z" />
+            </svg>
+          </span>
+          Showing the schedule linked to your assignment — it's highlighted below.
+        </div>
+      )}
+
+      <ScheduleStats />
+      <ViewTabs activeView={activeView} onChange={setActiveView} />
+
+      <div>
+        {activeView === "weekly" && (
+          <WeeklyView
+            onDayClick={handleDayClick}
+            onEditSchedule={openEditModal}
+            highlightId={highlightId}
+          />
+        )}
+        {activeView === "daily" && (
+          <DailyView
+            initialDate={selectedDate}
+            onEditSchedule={openEditModal}
+            highlightId={highlightId}
+          />
+        )}
+        {activeView === "monthly" && (
+          <MonthlyView onDayClick={handleDayClick} highlightId={highlightId} />
+        )}
       </div>
 
       {modalOpen && (
@@ -180,6 +159,18 @@ useEffect(() => {
   );
 }
 
+// ✅ Page component wraps the inner component in Suspense
+export default function SchedulePage() {
+  return (
+    <div className="min-h-screen bg-[#F5F6FA]">
+      <Suspense fallback={<div className="p-8 text-slate-400">Loading schedule…</div>}>
+        <ScheduleContent />
+      </Suspense>
+    </div>
+  );
+}
+
+// --- ViewTabs (unchanged) ---
 interface ViewTabsProps {
   activeView: ViewType;
   onChange: (view: ViewType) => void;

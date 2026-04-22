@@ -1,37 +1,17 @@
 import axiosInstance from "@/lib/axios";
+import {ApiResponse, GroupSummary, ChatMessage} from "@/types/groupMessageType";
 
-export interface GroupSummary {
-  assignmentId: number;
-  assignmentTitle: string;
-  subject: string;
-  ownerName: string;
-  ownerUsername: string;
-  memberCount: number;
-  lastMessage: string | null;
-  lastMessageTime: string | null;
-  lastMessageSender: string | null;
+export const getAllGroupsRequest = async (): Promise<ApiResponse<GroupSummary[]>> => {
+    const res = await axiosInstance.get<ApiResponse<GroupSummary[]>>("/chat/groups")
+    return res.data;
 }
 
-export interface ChatMessage {
-  id: number;
-  assignmentId: number;
-  senderId: number;
-  senderName: string;
-  senderUsername: string;
-  content: string;
-  createdAt: string;
+export const getChatHistoryRequest = async (assignmentId: number): Promise<ApiResponse<ChatMessage[]>> => {
+    const res = await axiosInstance.get<ApiResponse<ChatMessage[]>>(`/chat/${assignmentId}/history`)
+    return res.data;
 }
 
-export const getMyGroupsRequest = async (): Promise<GroupSummary[]> => {
-  const res = await axiosInstance.get("/chat/groups");
-  return res.data.data;
-};
-
-export const getChatHistoryRequest = async (assignmentId: number): Promise<ChatMessage[]> => {
-  const res = await axiosInstance.get(`/chat/${assignmentId}/history`);
-  return res.data.data;
-};
-
-export const clearChatHistoryRequest = async (assignmentId: number): Promise<void> => {
-  await axiosInstance.delete(`/chat/${assignmentId}/history`);
-};
+export const clearChatHistoryRequest = async (assignmentId: number): Promise<ApiResponse<null>> => {
+    const res = await axiosInstance.delete<ApiResponse<null>>(`/chat/${assignmentId}/history`)
+    return res.data;
+}

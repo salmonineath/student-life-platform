@@ -49,7 +49,8 @@ export default function AssignmentCard({
     <div className="bg-white border border-stone-200 rounded-2xl p-5 flex flex-col hover:shadow-lg hover:shadow-stone-100 transition-all duration-200 group">
 
       {/* ── Top ── */}
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-start justify-between gap-2 mb-3 cursor-pointer"
+           onClick={() => router.push(`/assignment/${assignment.id}`)}>
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-stone-900 text-base leading-snug line-clamp-2 mb-0.5">
             {assignment.title}
@@ -124,7 +125,7 @@ export default function AssignmentCard({
           <Trash2 className="w-3.5 h-3.5" />
           Delete
         </button>
-      </div>
+      </div> 
     </div>
   );
 }

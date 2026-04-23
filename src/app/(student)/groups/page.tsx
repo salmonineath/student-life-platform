@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams, useRouter } from "next/navigation"; // ← added useRouter
 import { AppDispatch, RootState } from "@/redux/store";
 
 import {
@@ -24,41 +25,43 @@ import GroupList         from "./components/GroupList";
 import ChatPanel         from "./components/ChatPanel";
 import ClearConfirmModal from "./modal/ClearConfirmModal";
 
-export default function GroupsPage() {
+function GroupsContent() {
   const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter(); // ← added
+  const searchParams = useSearchParams();
+  const assignmentIdParam = searchParams.get("assignmentId");
 
-  // ── Auth: current user from your existing Redux auth slice ───────────────
   const currentUser = useSelector((state: RootState) => state.auth.user);
-
-  const {
-    groups,
-    messageMap,
-    activeId,
-    input,
-    search,
-    showClearConfirm,
-  } = useSelector((state: RootState) => state.group);
+  const { groups, messageMap, activeId, input, search, showClearConfirm } =
+    useSelector((state: RootState) => state.group);
 
   const activeGroup = groups.find((g) => g.assignmentId === activeId) ?? null;
   const messages    = activeId ? (messageMap[activeId] ?? []) : [];
 
-  // ── Load groups on mount ──────────────────────────────────────────────────
+  // Load groups on mount
   useEffect(() => {
     dispatch(getAllGroupAction());
   }, [dispatch]);
 
-  // ── Load history when switching groups ────────────────────────────────────
+  // Auto-select group from URL param once groups are loaded
+  useEffect(() => {
+    if (!assignmentIdParam || groups.length === 0) return;
+    const id = Number(assignmentIdParam);
+    if (id === activeId) return;
+    const exists = groups.some((g) => g.assignmentId === id);
+    if (exists) dispatch(setActiveId(id));
+  }, [assignmentIdParam, groups]);
+
+  // Load history when switching groups
   useEffect(() => {
     if (!activeId) return;
-    if (messageMap[activeId]) return; // already loaded
+    if (messageMap[activeId]) return;
     dispatch(getChatHistoryAction(activeId));
   }, [activeId, dispatch]);
 
-  // ── WebSocket — real-time incoming messages ───────────────────────────────
+  // WebSocket
   const handleIncoming = useCallback(
-    (msg: ChatMessage) => {
-      dispatch(appendIncomingMessage(msg));
-    },
+    (msg: ChatMessage) => { dispatch(appendIncomingMessage(msg)); },
     [dispatch]
   );
 
@@ -67,31 +70,32 @@ export default function GroupsPage() {
     onMessage:    handleIncoming,
   });
 
-  // ── Send ─────────────────────────────────────────────────────────────────
+  // ← added: updates both Redux state AND the URL
+  const handleSelect = (id: number) => {
+    dispatch(setActiveId(id));
+    router.replace(`/groups?assignmentId=${id}`, { scroll: false });
+  };
+
   const handleSend = () => {
     if (!input.trim() || !activeId || !currentUser) return;
-
     const optimistic: ChatMessage = {
-      id:             Date.now(),       // temp id — real one comes back via WS
+      id:             Date.now(),
       assignmentId:   activeId,
       senderId:       currentUser.id,
-      senderFullname: currentUser.fullname,  // matches AuthUser.fullname
+      senderFullname: currentUser.fullname,
       senderUsername: currentUser.username,
       content:        input.trim(),
       createdAt:      new Date().toISOString(),
     };
-
     dispatch(appendOptimisticMessage(optimistic));
     wsSend(activeId, input.trim());
   };
 
-  // ── Clear ─────────────────────────────────────────────────────────────────
   const handleClear = () => {
     if (!activeId) return;
     dispatch(clearChatHistoryAction(activeId));
   };
 
-  // ── Guard: user not loaded yet ────────────────────────────────────────────
   if (!currentUser) return null;
 
   return (
@@ -101,9 +105,8 @@ export default function GroupsPage() {
         activeId={activeId}
         search={search}
         onSearchChange={(val) => dispatch(setSearch(val))}
-        onSelect={(id) => dispatch(setActiveId(id))}
+        onSelect={handleSelect} // ← was: (id) => dispatch(setActiveId(id))
       />
-
       <ChatPanel
         activeGroup={activeGroup}
         messages={messages}
@@ -111,10 +114,12 @@ export default function GroupsPage() {
         input={input}
         onInputChange={(val) => dispatch(setInput(val))}
         onSend={handleSend}
-        onBack={() => dispatch(setActiveId(null))}
+        onBack={() => {
+          dispatch(setActiveId(null));
+          router.replace("/groups", { scroll: false }); // ← clear param on back
+        }}
         onClearRequest={() => dispatch(setShowClearConfirm(true))}
       />
-
       {showClearConfirm && (
         <ClearConfirmModal
           onConfirm={handleClear}
@@ -122,5 +127,13 @@ export default function GroupsPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function GroupsPage() {
+  return (
+    <Suspense fallback={<div className="flex h-full" />}>
+      <GroupsContent />
+    </Suspense>
   );
 }

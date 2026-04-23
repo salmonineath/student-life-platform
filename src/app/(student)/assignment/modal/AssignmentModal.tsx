@@ -14,10 +14,19 @@ interface AssignmentModalProps {
   onSuccess: () => void;
 }
 
+// Default startDate to today at current time in datetime-local format
+const todayLocal = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offset * 60 * 1000);
+  return local.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+};
+
 const initialForm: CreateAssignmentPayload = {
   title: "",
   description: "",
   subject: "",
+  startDate: todayLocal(), // ← defaults to right now
   dueDate: "",
 };
 
@@ -39,11 +48,14 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Step 1 — Create assignment then move to Step 2
   const handleSubmit = async () => {
-    if (!form.title || !form.subject || !form.dueDate) return;
+    if (!form.title || !form.subject || !form.startDate || !form.dueDate) return;
     const result = await dispatch(
-      createAssignmentAction({ ...form, dueDate: new Date(form.dueDate).toISOString() }),
+      createAssignmentAction({
+        ...form,
+        startDate: new Date(form.startDate).toISOString(),
+        dueDate: new Date(form.dueDate).toISOString(),
+      }),
     );
     if (createAssignmentAction.fulfilled.match(result)) {
       setCreatedAssignment(result.payload);
@@ -52,7 +64,6 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
     }
   };
 
-  // Generate plan from backend
   const handleGeneratePlan = async () => {
     if (!createdAssignment) return;
     setPlanLoading(true);
@@ -61,8 +72,6 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
       const res = await axiosInstance.post(`/study-plan/${createdAssignment.id}`);
       const generatedPlan: string = res.data.data.plan;
       setPlan(generatedPlan);
-
-      // Save to localStorage so student can recover it if they close the modal
       localStorage.setItem(
         `study-plan-${createdAssignment.id}`,
         JSON.stringify({
@@ -78,33 +87,19 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
     }
   };
 
-  // Accept — go to study plan page with plan in localStorage
   const handleAccept = () => {
     if (!createdAssignment) return;
     onClose();
     router.push(`/assignment/${createdAssignment.id}/study-plan`);
   };
 
-  // Edit — same as accept, student edits on the page
   const handleEdit = () => {
     if (!createdAssignment) return;
     onClose();
     router.push(`/assignment/${createdAssignment.id}/study-plan?mode=edit`);
   };
 
-  // Skip — close modal, assignment already saved
-  const handleSkip = () => {
-    onClose();
-  };
-
-  // Check localStorage for existing plan on mount (if modal reopened)
-  const checkExistingPlan = (assignmentId: number) => {
-    const saved = localStorage.getItem(`study-plan-${assignmentId}`);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setPlan(parsed.plan);
-    }
-  };
+  const handleSkip = () => onClose();
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
@@ -148,7 +143,9 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   Title <span className="text-red-400">*</span>
                 </label>
                 <input
-                  name="title" value={form.title} onChange={handleChange}
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
                   placeholder="e.g. Research JWT authentication"
                   className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
@@ -160,19 +157,41 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   Subject <span className="text-red-400">*</span>
                 </label>
                 <input
-                  name="subject" value={form.subject} onChange={handleChange}
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
                   placeholder="e.g. IT, Math, Science"
                   className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
 
+              {/* Start date — defaults to today */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
+                  <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                  Start Date <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  name="startDate"
+                  value={form.startDate}
+                  onChange={handleChange}
+                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                />
+                <p className="text-[11px] text-stone-400">Defaults to today — change if needed.</p>
+              </div>
+
+              {/* Due date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
                   <Calendar className="w-3.5 h-3.5 text-stone-400" />
                   Due Date <span className="text-red-400">*</span>
                 </label>
                 <input
-                  type="datetime-local" name="dueDate" value={form.dueDate} onChange={handleChange}
+                  type="datetime-local"
+                  name="dueDate"
+                  value={form.dueDate}
+                  onChange={handleChange}
                   className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
@@ -180,10 +199,13 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
                   <AlignLeft className="w-3.5 h-3.5 text-stone-400" />
-                  Description <span className="text-stone-300 font-normal normal-case tracking-normal">optional</span>
+                  Description{" "}
+                  <span className="text-stone-300 font-normal normal-case tracking-normal">optional</span>
                 </label>
                 <textarea
-                  name="description" value={form.description} onChange={handleChange}
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
                   placeholder="Add any details about this assignment…"
                   rows={3}
                   className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
@@ -192,12 +214,15 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
             </div>
 
             <div className="flex gap-3 px-6 py-4 border-t border-stone-100">
-              <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-600 transition-colors">
+              <button
+                onClick={onClose}
+                className="flex-1 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-600 transition-colors"
+              >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={loading || !form.title || !form.subject || !form.dueDate}
+                disabled={loading || !form.title || !form.subject || !form.startDate || !form.dueDate}
                 className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
               >
                 {loading ? "Creating…" : "Create Assignment"}
@@ -210,7 +235,6 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
         {step === "plan" && (
           <>
             <div className="px-6 py-5 space-y-4">
-              {/* Success message */}
               <div className="flex items-center gap-3 bg-green-50 border border-green-100 p-3 rounded-xl">
                 <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
                 <p className="text-sm text-green-700 font-medium">
@@ -218,13 +242,14 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                 </p>
               </div>
 
-              {/* Plan area */}
               {!plan ? (
                 <div className="text-center py-6 space-y-3">
                   <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto">
                     <Sparkles className="w-6 h-6 text-indigo-500" />
                   </div>
-                  <p className="text-sm text-stone-600">Let AI generate a study plan based on your assignment details.</p>
+                  <p className="text-sm text-stone-600">
+                    Let AI generate a study plan based on your assignment details.
+                  </p>
                   {planError && (
                     <p className="text-xs text-red-500 font-medium">{planError}</p>
                   )}
@@ -242,27 +267,22 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* Plan display */}
                   <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 max-h-52 overflow-y-auto">
                     <pre className="text-xs text-indigo-800 whitespace-pre-wrap font-sans leading-relaxed">
                       {plan}
                     </pre>
                   </div>
-
-                  {/* Regenerate */}
                   <button
                     onClick={handleGeneratePlan}
                     disabled={planLoading}
                     className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 transition-colors"
                   >
-                    <RefreshCw className="w-3 h-3" />
-                    Regenerate
+                    <RefreshCw className="w-3 h-3" /> Regenerate
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Footer */}
             <div className="px-6 py-4 border-t border-stone-100 space-y-2">
               {plan && (
                 <div className="flex gap-2">

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -15,14 +13,23 @@ interface UseGroupSocketProps {
 export function useGroupSocket({ assignmentId, onMessage }: UseGroupSocketProps) {
   const clientRef = useRef<Client | null>(null);
   const onMessageRef = useRef(onMessage);
-  onMessageRef.current = onMessage; // always latest without re-subscribing
+  onMessageRef.current = onMessage;
 
   useEffect(() => {
     if (!assignmentId) return;
 
+    // Get token the same way axios does — from localStorage
+    const token = localStorage.getItem("accessToken");
+
     const client = new Client({
       webSocketFactory: () => new SockJS(`${BASE}/ws`),
       reconnectDelay: 5000,
+
+      // ← pass JWT here so Spring knows who you are
+      connectHeaders: {
+        Authorization: `Bearer ${token}`,
+      },
+
       onConnect: () => {
         client.subscribe(`/topic/group/${assignmentId}`, (frame: IMessage) => {
           try {
@@ -47,7 +54,6 @@ export function useGroupSocket({ assignmentId, onMessage }: UseGroupSocketProps)
     };
   }, [assignmentId]);
 
-  // Sends a message over WebSocket to /app/chat.send
   const sendMessage = (assignmentId: number, content: string) => {
     const client = clientRef.current;
     if (!client?.connected) {

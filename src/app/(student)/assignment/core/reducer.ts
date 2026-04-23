@@ -101,14 +101,18 @@ const assignmentSlice = createSlice({
         state.error = null;
       })
       .addCase(updateProgressAction.fulfilled, (state, action) => {
-        state.loading = false;
-        state.assignments = state.assignments.map((a) =>
-          a.id === action.payload.id ? action.payload : a,
-        );
-        if (state.selectedAssignment?.id === action.payload.id) {
-          state.selectedAssignment = action.payload;
-        }
-      })
+  state.loading = false;
+
+  // Update the list
+  state.assignments = state.assignments.map((a) =>
+    a.id === action.payload.id ? { ...a, ...action.payload } : a
+  );
+
+  // Merge into selectedAssignment instead of replacing it
+  if (state.selectedAssignment?.id === action.payload.id) {
+    state.selectedAssignment = { ...state.selectedAssignment, ...action.payload };
+  }
+})
       .addCase(updateProgressAction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Error";

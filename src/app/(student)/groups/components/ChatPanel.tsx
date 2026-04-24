@@ -5,38 +5,51 @@ import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
 
 interface Props {
-  activeGroup:    GroupSummary | null;
-  messages:       ChatMessage[];
-  currentUserId:  number;
-  input:          string;
-  onInputChange:  (val: string) => void;
-  onSend:         () => void;
-  onBack:         () => void;
-  onClearRequest: () => void;
+  activeGroup:     GroupSummary | null;
+  messages:        ChatMessage[];
+  currentUserId:   number;
+  input:           string;
+  onInputChange:   (val: string) => void;
+  onSend:          () => void;
+  onBack:          () => void;
+  onClearRequest:  () => void;
 }
 
 export default function ChatPanel({
   activeGroup, messages, currentUserId, input, onInputChange, onSend, onBack, onClearRequest,
 }: Props) {
-  return (
-    <div className={`flex-1 flex flex-col min-w-0 ${!activeGroup ? "hidden md:flex" : "flex"}`}>
-      {!activeGroup ? (
-        <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-          <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-4">
-            <MessageSquare className="w-10 h-10 text-indigo-400" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-700 mb-2">Select a group</h2>
-          <p className="text-sm text-slate-400 max-w-xs">
-            Choose a study group from the left to start chatting with your team.
-          </p>
+  if (!activeGroup) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-8 bg-slate-50 h-full">
+        <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mb-4">
+          <MessageSquare className="w-10 h-10 text-indigo-400" />
         </div>
-      ) : (
-        <>
-          <ChatHeader group={activeGroup} onBack={onBack} onClearRequest={onClearRequest} />
-          <MessageList messages={messages} currentUserId={currentUserId} />
-          <ChatInput value={input} onChange={onInputChange} onSend={onSend} />
-        </>
-      )}
+        <h2 className="text-xl font-bold text-slate-700 mb-2">Select a group</h2>
+        <p className="text-sm text-slate-400 max-w-xs">
+          Choose a study group from the left to start chatting with your team.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    // h-full + flex col + overflow-hidden = header and input are fixed, only messages scroll
+    <div className="h-full flex flex-col overflow-hidden">
+
+      {/* FIXED top — chat header never scrolls */}
+      <ChatHeader
+        group={activeGroup}
+        onBack={onBack}
+        onClearRequest={onClearRequest}
+      />
+
+      {/* SCROLLABLE middle — only this area scrolls */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <MessageList messages={messages} currentUserId={currentUserId} />
+      </div>
+
+      {/* FIXED bottom — input never scrolls */}
+      <ChatInput value={input} onChange={onInputChange} onSend={onSend} />
     </div>
   );
 }

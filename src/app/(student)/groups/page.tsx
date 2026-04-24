@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useCallback, Suspense } from "react";
+import { useEffect, useCallback, useState, Suspense } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useSearchParams, useRouter } from "next/navigation"; // ← added useRouter
+import { useSearchParams, useRouter } from "next/navigation";
 import { AppDispatch, RootState } from "@/redux/store";
 
 import {
@@ -26,8 +26,8 @@ import ChatPanel         from "./components/ChatPanel";
 import ClearConfirmModal from "./modal/ClearConfirmModal";
 
 function GroupsContent() {
-  const dispatch = useDispatch<AppDispatch>();
-  const router = useRouter(); // ← added
+  const dispatch   = useDispatch<AppDispatch>();
+  const router     = useRouter();
   const searchParams = useSearchParams();
   const assignmentIdParam = searchParams.get("assignmentId");
 
@@ -38,18 +38,18 @@ function GroupsContent() {
   const activeGroup = groups.find((g) => g.assignmentId === activeId) ?? null;
   const messages    = activeId ? (messageMap[activeId] ?? []) : [];
 
-  // Load groups on mount
-  useEffect(() => {
-    dispatch(getAllGroupAction());
-  }, [dispatch]);
+  // Study-groups sidebar toggle (separate from the main app sidebar)
+  const [groupSidebarCollapsed, setGroupSidebarCollapsed] = useState(false);
 
-  // Auto-select group from URL param once groups are loaded
+  // Load groups on mount
+  useEffect(() => { dispatch(getAllGroupAction()); }, [dispatch]);
+
+  // Auto-select from URL param
   useEffect(() => {
     if (!assignmentIdParam || groups.length === 0) return;
     const id = Number(assignmentIdParam);
     if (id === activeId) return;
-    const exists = groups.some((g) => g.assignmentId === id);
-    if (exists) dispatch(setActiveId(id));
+    if (groups.some((g) => g.assignmentId === id)) dispatch(setActiveId(id));
   }, [assignmentIdParam, groups]);
 
   // Load history when switching groups
@@ -64,13 +64,8 @@ function GroupsContent() {
     (msg: ChatMessage) => { dispatch(appendIncomingMessage(msg)); },
     [dispatch]
   );
+  const { sendMessage: wsSend } = useGroupSocket({ assignmentId: activeId, onMessage: handleIncoming });
 
-  const { sendMessage: wsSend } = useGroupSocket({
-    assignmentId: activeId,
-    onMessage:    handleIncoming,
-  });
-
-  // ← added: updates both Redux state AND the URL
   const handleSelect = (id: number) => {
     dispatch(setActiveId(id));
     router.replace(`/groups?assignmentId=${id}`, { scroll: false });
@@ -89,6 +84,12 @@ function GroupsContent() {
     };
     dispatch(appendOptimisticMessage(optimistic));
     wsSend(activeId, input.trim());
+    dispatch(setInput(""));
+  };
+
+  const handleBack = () => {
+    dispatch(setActiveId(null));
+    router.replace("/groups", { scroll: false });
   };
 
   const handleClear = () => {
@@ -99,27 +100,39 @@ function GroupsContent() {
   if (!currentUser) return null;
 
   return (
-    <div className="flex h-full overflow-hidden">
-      <GroupList
-        groups={groups}
-        activeId={activeId}
-        search={search}
-        onSearchChange={(val) => dispatch(setSearch(val))}
-        onSelect={handleSelect} // ← was: (id) => dispatch(setActiveId(id))
-      />
-      <ChatPanel
-        activeGroup={activeGroup}
-        messages={messages}
-        currentUserId={currentUser.id}
-        input={input}
-        onInputChange={(val) => dispatch(setInput(val))}
-        onSend={handleSend}
-        onBack={() => {
-          dispatch(setActiveId(null));
-          router.replace("/groups", { scroll: false }); // ← clear param on back
-        }}
-        onClearRequest={() => dispatch(setShowClearConfirm(true))}
-      />
+    // This fills the full height given by the layout's overflow-hidden container
+    <div className="flex h-full w-full overflow-hidden">
+
+      {/* Study groups sidebar */}
+      <div
+        className="flex flex-col bg-white border-r border-slate-100 shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
+        style={{ width: groupSidebarCollapsed ? 64 : 280 }}
+      >
+        <GroupList
+          groups={groups}
+          activeId={activeId}
+          search={search}
+          collapsed={groupSidebarCollapsed}
+          onSearchChange={(val) => dispatch(setSearch(val))}
+          onSelect={handleSelect}
+          onToggleCollapse={() => setGroupSidebarCollapsed((c) => !c)}
+        />
+      </div>
+
+      {/* Chat panel — fills remaining space, flex column so header/input stay fixed */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <ChatPanel
+          activeGroup={activeGroup}
+          messages={messages}
+          currentUserId={currentUser.id}
+          input={input}
+          onInputChange={(val) => dispatch(setInput(val))}
+          onSend={handleSend}
+          onBack={handleBack}
+          onClearRequest={() => dispatch(setShowClearConfirm(true))}
+        />
+      </div>
+
       {showClearConfirm && (
         <ClearConfirmModal
           onConfirm={handleClear}
@@ -132,7 +145,7 @@ function GroupsContent() {
 
 export default function GroupsPage() {
   return (
-    <Suspense fallback={<div className="flex h-full" />}>
+    <Suspense fallback={<div className="flex h-full bg-white" />}>
       <GroupsContent />
     </Suspense>
   );

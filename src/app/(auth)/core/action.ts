@@ -74,9 +74,31 @@ export const loginAction = createAsyncThunk(
     try {
       const res = await loginRequest(payload);
 
-      // Save token + set middleware flag cookie (30 days)
       localStorage.setItem("accessToken", res.data.accessToken);
       document.cookie = "isLoggedIn=true; path=/; max-age=2592000";
+
+      // ✅ Register OneSignal player ID after login
+      try {
+        const OneSignal = (await import("react-onesignal")).default;
+        await OneSignal.init({
+          appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!,
+          allowLocalhostAsSecureOrigin: true,
+        });
+        await OneSignal.Slidedown.promptPush();
+        const playerId = OneSignal.User.PushSubscription.id;
+        if (playerId) {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/onesignal/register`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${res.data.accessToken}`,
+            },
+            body: JSON.stringify({ playerId }),
+          });
+        }
+      } catch (e) {
+        console.warn("[OneSignal] Registration skipped:", e);
+      }
 
       return {
         accessToken: res.data.accessToken,
@@ -93,7 +115,38 @@ export const registerAction = createAsyncThunk(
   async (payload: RegisterPayload, { rejectWithValue }) => {
     try {
       const res = await registerRequest(payload);
-      return { user: res.data.user };
+
+      // ✅ Save token same way as login
+      localStorage.setItem("accessToken", res.data.accessToken);
+      document.cookie = "isLoggedIn=true; path=/; max-age=2592000";
+
+      // ✅ Register OneSignal player ID after successful registration
+      try {
+        const OneSignal = (await import("react-onesignal")).default;
+        await OneSignal.init({
+          appId: process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID!,
+          allowLocalhostAsSecureOrigin: true,
+        });
+        await OneSignal.Slidedown.promptPush();
+        const playerId = OneSignal.User.PushSubscription.id;
+        if (playerId) {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/onesignal/register`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${res.data.accessToken}`,
+            },
+            body: JSON.stringify({ playerId }),
+          });
+        }
+      } catch (e) {
+        console.warn("[OneSignal] Registration skipped:", e);
+      }
+
+      return {
+        accessToken: res.data.accessToken,
+        user: res.data.user,
+      };
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "Register failed.",

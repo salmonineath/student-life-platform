@@ -194,7 +194,9 @@ export default function AssignmentDetailPage() {
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">Start</p>
-                <p className="text-sm font-semibold text-stone-700">{formatDate(assignment.startDate)}</p>
+                <p className="text-sm font-semibold text-stone-700">
+                   {assignment.startDate ? formatDate(assignment.startDate) : "N/A"}
+                </p>
               </div>
             </div>
 

@@ -5,4 +5,7 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 };
 
+module.exports = {
+  allowedDevOrigins: ['radar-manhattan-navy-wma.trycloudflare.com'],
+}
 export default nextConfig;

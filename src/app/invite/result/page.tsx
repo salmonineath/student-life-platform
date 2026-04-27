@@ -3,7 +3,7 @@
 import { useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hook";
-import { getMyScheduleAction } from "@/app/(student)/schedule/core/action";
+import { getMyScheduleAction } from "@/app/(student)/schedules/core/action";
 import { format, startOfWeek, endOfWeek } from "date-fns";
 import { CheckCircle, XCircle, AlertCircle, Clock } from "lucide-react";
 

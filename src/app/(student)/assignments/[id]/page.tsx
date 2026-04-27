@@ -149,7 +149,7 @@ export default function AssignmentDetailPage() {
 
       {/* ── Back ── */}
       <button
-        onClick={() => router.back()}
+        onClick={() => router.push("/assignments")}
         className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-700 font-medium transition-colors group"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />

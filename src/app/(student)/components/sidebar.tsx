@@ -37,8 +37,8 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
  
   const navItems = [
     { name: "Dashboard",   icon: LayoutDashboard, href: "/dashboard"  },
-    { name: "Schedule",    icon: CalendarDays,    href: "/schedule"   },
-    { name: "Assignment",  icon: ClipboardList,   href: "/assignment" },
+    { name: "Schedule",    icon: CalendarDays,    href: "/schedules"   },
+    { name: "Assignment",  icon: ClipboardList,   href: "/assignments" },
     { name: "Study Group", icon: Users,           href: "/groups"     },
     { name: "Notes",       icon: StickyNote,      href: "/notes"      },
     { name: "AI Chat",     icon: BotMessageSquare,href: "/chat"       },

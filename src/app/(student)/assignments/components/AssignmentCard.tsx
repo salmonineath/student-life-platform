@@ -50,7 +50,7 @@ export default function AssignmentCard({
 
       {/* ── Top ── */}
       <div className="flex items-start justify-between gap-2 mb-3 cursor-pointer"
-           onClick={() => router.push(`/assignment/${assignment.id}`)}>
+           onClick={() => router.push(`/assignments/${assignment.id}`)}>
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-stone-900 text-base leading-snug line-clamp-2 mb-0.5">
             {assignment.title}

@@ -25,6 +25,8 @@ import { ChatMessage, PresenceEvent } from "@/types/groupMessageType";
 import GroupList          from "./components/GroupList";
 import ChatPanel          from "./components/ChatPanel";
 import ClearConfirmModal  from "./modal/ClearConfirmModal";
+import GroupPanelDrawer   from "./components/GroupPanelDrawer";
+import MessageToast, { ToastMessage } from "./components/MessageToast";
 
 function GroupsContent() {
   const dispatch     = useDispatch<AppDispatch>();
@@ -40,6 +42,8 @@ function GroupsContent() {
   const messages    = activeId ? (messageMap[activeId] ?? []) : [];
 
   const [groupSidebarCollapsed, setGroupSidebarCollapsed] = useState(false);
+  const [panelOpen, setPanelOpen]   = useState(false);
+  const [toasts, setToasts]         = useState<ToastMessage[]>([]);
   const [onlineUserIds, setOnlineUserIds] = useState<number[]>([]);
 
   // Track onlineCount per group (assignmentId -> count)
@@ -68,8 +72,27 @@ function GroupsContent() {
   const handleIncoming = useCallback(
     (msg: ChatMessage) => {
       dispatch(appendIncomingMessage(msg));
+
+      // Show in-app toast if message is from another group or another user
+      if (msg.assignmentId !== activeId && msg.senderId !== currentUser?.id) {
+        const group = groups.find((g) => g.assignmentId === msg.assignmentId);
+        const toast: ToastMessage = {
+          id:             `${Date.now()}-${msg.id}`,
+          groupTitle:     group?.assignmentTitle ?? "Group",
+          assignmentId:   msg.assignmentId,
+          senderFullname: msg.senderFullname,
+          content:        msg.content,
+        };
+        setToasts((prev) => [...prev.slice(-4), toast]); // max 5 toasts
+
+        // Browser push notification (OneSignal) — fire and forget
+        if (typeof window !== "undefined" && (window as any).OneSignal) {
+          // OneSignal handles the actual push — this is just a client hint
+          // The real push comes from your backend OneSignal integration
+        }
+      }
     },
-    [dispatch]
+    [dispatch, activeId, currentUser, groups]
   );
 
   // Handle presence updates
@@ -91,6 +114,7 @@ function GroupsContent() {
   const handleSelect = (id: number) => {
     dispatch(setActiveId(id));
     router.replace(`/groups?assignmentId=${id}`, { scroll: false });
+    setPanelOpen(false);
   };
 
   const handleSend = () => {
@@ -111,12 +135,20 @@ function GroupsContent() {
 
   const handleBack = () => {
     dispatch(setActiveId(null));
+    setPanelOpen(false);
     router.replace("/groups", { scroll: false });
   };
 
   const handleClear = () => {
     if (!activeId) return;
     dispatch(clearChatHistoryAction(activeId));
+  };
+
+  const dismissToast = (id: string) =>
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+
+  const navigateFromToast = (assignmentId: number) => {
+    handleSelect(assignmentId);
   };
 
   if (!currentUser) return null;
@@ -152,8 +184,22 @@ function GroupsContent() {
           onSend={handleSend}
           onBack={handleBack}
           onClearRequest={() => dispatch(setShowClearConfirm(true))}
+          onOpenPanel={() => setPanelOpen(true)}
         />
       </div>
+
+      {/* Group panel drawer */}
+      {panelOpen && activeGroup && (
+        <GroupPanelDrawer
+          group={activeGroup}
+          onlineUserIds={onlineUserIds}
+          onClose={() => setPanelOpen(false)}
+          onInvite={() => {
+            setPanelOpen(false);
+            // TODO: dispatch your existing invite modal open action here
+          }}
+        />
+      )}
 
       {/* Clear confirm modal */}
       {showClearConfirm && (
@@ -162,6 +208,13 @@ function GroupsContent() {
           onCancel={() => dispatch(setShowClearConfirm(false))}
         />
       )}
+
+      {/* In-app message toasts */}
+      <MessageToast
+        toasts={toasts}
+        onDismiss={dismissToast}
+        onNavigate={navigateFromToast}
+      />
     </div>
   );
 }

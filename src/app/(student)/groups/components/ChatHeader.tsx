@@ -1,4 +1,4 @@
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Menu } from "lucide-react";
 import { GroupSummary } from "@/types/groupMessageType";
 import { getInitials, avatarColor } from "@/utils/GroupUtil";
 
@@ -7,6 +7,7 @@ interface Props {
   onlineCount:    number;
   onBack:         () => void;
   onClearRequest: () => void;
+  onOpenPanel:    () => void;
 }
 
 export default function ChatHeader({
@@ -14,6 +15,7 @@ export default function ChatHeader({
   onlineCount,
   onBack,
   onClearRequest,
+  onOpenPanel,
 }: Props) {
   const showOnline = onlineCount > 1; // only show "X online" if more than just you
 
@@ -62,6 +64,14 @@ export default function ChatHeader({
         <Trash2 size={16} />
       </button>
 
+      {/* Hamburger — opens group panel drawer */}
+      <button
+        onClick={onOpenPanel}
+        className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors shrink-0"
+        title="Group info"
+      >
+        <Menu size={18} />
+      </button>
     </div>
   );
 }

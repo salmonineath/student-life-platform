@@ -321,7 +321,7 @@ export default function AssignmentDetailPage() {
         </button>
 
         {/* Reminders */}
-        <button
+        {/* <button
           onClick={() => router.push(`/assignment/${assignment.id}/reminders`)}
           className="group bg-white border border-stone-200 hover:border-amber-300 hover:shadow-md hover:shadow-amber-50 rounded-2xl p-5 text-left transition-all"
         >
@@ -333,7 +333,7 @@ export default function AssignmentDetailPage() {
           <div className="flex items-center gap-1 mt-3 text-xs font-semibold text-amber-500 group-hover:gap-2 transition-all">
             Set reminders <ChevronRight className="w-3.5 h-3.5" />
           </div>
-        </button>
+        </button> */}
 
         {/* Invite Member */}
 <button

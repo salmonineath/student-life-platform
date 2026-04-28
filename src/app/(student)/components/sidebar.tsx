@@ -40,10 +40,10 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
     { name: "Schedule",    icon: CalendarDays,    href: "/schedules"   },
     { name: "Assignment",  icon: ClipboardList,   href: "/assignments" },
     { name: "Study Group", icon: Users,           href: "/groups"     },
-    { name: "Notes",       icon: StickyNote,      href: "/notes"      },
-    { name: "AI Chat",     icon: BotMessageSquare,href: "/chat"       },
+    // { name: "Notes",       icon: StickyNote,      href: "/notes"      },
+    // { name: "AI Chat",     icon: BotMessageSquare,href: "/chat"       },
     { name: "Profile",     icon: User,            href: "/profile"    },
-    { name: "Settings",    icon: Settings,        href: "/settings"   },
+    // { name: "Settings",    icon: Settings,        href: "/settings"   },
   ];
 
       // const handleLogout = async () => {

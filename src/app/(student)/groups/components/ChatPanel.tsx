@@ -14,12 +14,11 @@ interface Props {
   onSend:         () => void;
   onBack:         () => void;
   onClearRequest: () => void;
-  onOpenPanel:    () => void;
 }
 
 export default function ChatPanel({
   activeGroup, messages, currentUserId, input, onlineCount,
-  onInputChange, onSend, onBack, onClearRequest, onOpenPanel,
+  onInputChange, onSend, onBack, onClearRequest,
 }: Props) {
   if (!activeGroup) {
     return (
@@ -42,7 +41,6 @@ export default function ChatPanel({
         onlineCount={onlineCount}
         onBack={onBack}
         onClearRequest={onClearRequest}
-        onOpenPanel={onOpenPanel}
       />
       <div className="flex-1 min-h-0 overflow-y-auto">
         <MessageList messages={messages} currentUserId={currentUserId} />

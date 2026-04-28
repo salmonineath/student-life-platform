@@ -19,15 +19,12 @@ import {
   getChatHistoryAction,
   clearChatHistoryAction,
 } from "./core/action";
-import { useGroupSocket }   from "@/hooks/useGroupSocket";
+import { useGroupSocket }    from "@/hooks/useGroupSocket";
 import { ChatMessage, PresenceEvent } from "@/types/groupMessageType";
 
-import GroupList         from "./components/GroupList";
-import ChatPanel         from "./components/ChatPanel";
-import ClearConfirmModal from "./modal/ClearConfirmModal";
-import InviteModal       from "@/app/(student)/assignments/modal/InviteModal";
-import GroupPanelDrawer  from "./components/GroupPanelDrawer";
-import MessageToast, { ToastMessage } from "./components/MessageToast";
+import GroupList          from "./components/GroupList";
+import ChatPanel          from "./components/ChatPanel";
+import ClearConfirmModal  from "./modal/ClearConfirmModal";
 
 function GroupsContent() {
   const dispatch     = useDispatch<AppDispatch>();
@@ -43,16 +40,16 @@ function GroupsContent() {
   const messages    = activeId ? (messageMap[activeId] ?? []) : [];
 
   const [groupSidebarCollapsed, setGroupSidebarCollapsed] = useState(false);
-  const [panelOpen, setPanelOpen]         = useState(false);
-  const [inviteOpen, setInviteOpen]       = useState(false);
-  const [toasts, setToasts]               = useState<ToastMessage[]>([]);
   const [onlineUserIds, setOnlineUserIds] = useState<number[]>([]);
 
-  const onlineCountMap    = useRef<Record<number, number>>({});
+  // Track onlineCount per group (assignmentId -> count)
+  const onlineCountMap = useRef<Record<number, number>>({});
   const activeOnlineCount = activeId ? (onlineCountMap.current[activeId] ?? 0) : 0;
 
+  // Load groups on mount
   useEffect(() => { dispatch(getAllGroupAction()); }, [dispatch]);
 
+  // Auto-select from URL param
   useEffect(() => {
     if (!assignmentIdParam || groups.length === 0) return;
     const id = Number(assignmentIdParam);
@@ -60,32 +57,22 @@ function GroupsContent() {
     if (groups.some((g) => g.assignmentId === id)) dispatch(setActiveId(id));
   }, [assignmentIdParam, groups]);
 
+  // Load history when switching groups
   useEffect(() => {
     if (!activeId) return;
     if (messageMap[activeId]) return;
     dispatch(getChatHistoryAction(activeId));
   }, [activeId, dispatch]);
 
+  // Handle incoming chat messages
   const handleIncoming = useCallback(
     (msg: ChatMessage) => {
       dispatch(appendIncomingMessage(msg));
-      if (msg.assignmentId !== activeId && msg.senderId !== currentUser?.id) {
-        const group = groups.find((g) => g.assignmentId === msg.assignmentId);
-        setToasts((prev) => [
-          ...prev.slice(-4),
-          {
-            id:             `${Date.now()}-${msg.id}`,
-            groupTitle:     group?.assignmentTitle ?? "Group",
-            assignmentId:   msg.assignmentId,
-            senderFullname: msg.senderFullname,
-            content:        msg.content,
-          },
-        ]);
-      }
     },
-    [dispatch, activeId, currentUser, groups]
+    [dispatch]
   );
 
+  // Handle presence updates
   const handlePresence = useCallback(
     (event: PresenceEvent) => {
       onlineCountMap.current[event.assignmentId] = event.onlineCount;
@@ -124,7 +111,6 @@ function GroupsContent() {
 
   const handleBack = () => {
     dispatch(setActiveId(null));
-    setPanelOpen(false);
     router.replace("/groups", { scroll: false });
   };
 
@@ -136,11 +122,9 @@ function GroupsContent() {
   if (!currentUser) return null;
 
   return (
-    // Outer container: 3-column layout [sidebar | chat | panel]
-    // Panel width animates from 0 → 320px so the chat shrinks, not overlaps
     <div className="flex h-full w-full overflow-hidden">
 
-      {/* ── Col 1: Study groups sidebar ── */}
+      {/* Study groups sidebar */}
       <div
         className="flex flex-col bg-white border-r border-slate-100 shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
         style={{ width: groupSidebarCollapsed ? 64 : 280 }}
@@ -156,7 +140,7 @@ function GroupsContent() {
         />
       </div>
 
-      {/* ── Col 2: Chat panel — shrinks when panel is open ── */}
+      {/* Chat panel */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <ChatPanel
           activeGroup={activeGroup}
@@ -168,47 +152,16 @@ function GroupsContent() {
           onSend={handleSend}
           onBack={handleBack}
           onClearRequest={() => dispatch(setShowClearConfirm(true))}
-          onOpenPanel={() => setPanelOpen((o) => !o)}
         />
       </div>
 
-      {/* ── Col 3: Group info panel — part of layout, pushes chat left ── */}
-      <div
-        className="shrink-0 h-full overflow-hidden border-l border-slate-100 bg-white transition-[width] duration-300 ease-in-out"
-        style={{ width: panelOpen && activeGroup ? 300 : 0 }}
-      >
-        {/* Only render content when panel is open to avoid invisible DOM clutter */}
-        {panelOpen && activeGroup && (
-          <GroupPanelDrawer
-            group={activeGroup}
-            onlineUserIds={onlineUserIds}
-            onClose={() => setPanelOpen(false)}
-            onInvite={() => setInviteOpen(true)}
-          />
-        )}
-      </div>
-
-      {/* ── Modals ── */}
+      {/* Clear confirm modal */}
       {showClearConfirm && (
         <ClearConfirmModal
           onConfirm={handleClear}
           onCancel={() => dispatch(setShowClearConfirm(false))}
         />
       )}
-
-      {inviteOpen && activeId && (
-        <InviteModal
-          assignmentId={activeId}
-          onClose={() => setInviteOpen(false)}
-        />
-      )}
-
-      {/* ── In-app toasts ── */}
-      <MessageToast
-        toasts={toasts}
-        onDismiss={(id) => setToasts((p) => p.filter((t) => t.id !== id))}
-        onNavigate={handleSelect}
-      />
     </div>
   );
 }

@@ -1,22 +1,25 @@
 import { MessageSquare } from "lucide-react";
 import { GroupSummary, ChatMessage } from "@/types/groupMessageType";
-import ChatHeader from "./ChatHeader";
+import ChatHeader  from "./ChatHeader";
 import MessageList from "./MessageList";
-import ChatInput from "./ChatInput";
+import ChatInput   from "./ChatInput";
 
 interface Props {
-  activeGroup:     GroupSummary | null;
-  messages:        ChatMessage[];
-  currentUserId:   number;
-  input:           string;
-  onInputChange:   (val: string) => void;
-  onSend:          () => void;
-  onBack:          () => void;
-  onClearRequest:  () => void;
+  activeGroup:    GroupSummary | null;
+  messages:       ChatMessage[];
+  currentUserId:  number;
+  input:          string;
+  onlineCount:    number;
+  onInputChange:  (val: string) => void;
+  onSend:         () => void;
+  onBack:         () => void;
+  onClearRequest: () => void;
+  onOpenPanel:    () => void;
 }
 
 export default function ChatPanel({
-  activeGroup, messages, currentUserId, input, onInputChange, onSend, onBack, onClearRequest,
+  activeGroup, messages, currentUserId, input, onlineCount,
+  onInputChange, onSend, onBack, onClearRequest, onOpenPanel,
 }: Props) {
   if (!activeGroup) {
     return (
@@ -33,22 +36,17 @@ export default function ChatPanel({
   }
 
   return (
-    // h-full + flex col + overflow-hidden = header and input are fixed, only messages scroll
     <div className="h-full flex flex-col overflow-hidden">
-
-      {/* FIXED top — chat header never scrolls */}
       <ChatHeader
         group={activeGroup}
+        onlineCount={onlineCount}
         onBack={onBack}
         onClearRequest={onClearRequest}
+        onOpenPanel={onOpenPanel}
       />
-
-      {/* SCROLLABLE middle — only this area scrolls */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         <MessageList messages={messages} currentUserId={currentUserId} />
       </div>
-
-      {/* FIXED bottom — input never scrolls */}
       <ChatInput value={input} onChange={onInputChange} onSend={onSend} />
     </div>
   );

@@ -1,18 +1,28 @@
-import { ArrowLeft, Users, Trash2, PanelLeftOpen } from "lucide-react";
+import { ArrowLeft, Trash2, Menu } from "lucide-react";
 import { GroupSummary } from "@/types/groupMessageType";
 import { getInitials, avatarColor } from "@/utils/GroupUtil";
 
 interface Props {
-  group:           GroupSummary;
-  onBack:          () => void;
-  onClearRequest:  () => void;
+  group:          GroupSummary;
+  onlineCount:    number;
+  onBack:         () => void;
+  onClearRequest: () => void;
+  onOpenPanel:    () => void;
 }
 
-export default function ChatHeader({ group, onBack, onClearRequest }: Props) {
+export default function ChatHeader({
+  group,
+  onlineCount,
+  onBack,
+  onClearRequest,
+  onOpenPanel,
+}: Props) {
+  const showOnline = onlineCount > 1; // only show "X online" if more than just you
+
   return (
     <div className="flex items-center gap-2 px-3 py-3 border-b border-slate-100 bg-white shrink-0">
 
-      {/* Back arrow — deselects group, always visible */}
+      {/* Back arrow */}
       <button
         onClick={onBack}
         className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition-colors shrink-0"
@@ -26,23 +36,24 @@ export default function ChatHeader({ group, onBack, onClearRequest }: Props) {
         {getInitials(group.assignmentTitle)}
       </div>
 
-      {/* Name + meta */}
+      {/* Name + online status */}
       <div className="flex-1 min-w-0">
         <h2 className="text-sm font-bold text-slate-900 truncate leading-tight">
           {group.assignmentTitle}
         </h2>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-slate-400">{group.memberCount} members</span>
-          <span className="w-1 h-1 rounded-full bg-slate-300" />
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-          <span className="text-xs text-slate-400">Online</span>
+          {showOnline && (
+            <>
+              <span className="w-1 h-1 rounded-full bg-slate-300" />
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
+              <span className="text-xs text-green-600 font-medium">
+                {onlineCount - 1} other{onlineCount - 1 !== 1 ? "s" : ""} online
+              </span>
+            </>
+          )}
         </div>
       </div>
-
-      {/* Members */}
-      <button className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-indigo-600 px-3 py-2 rounded-xl hover:bg-indigo-50 transition-colors shrink-0">
-        <Users size={14} /> Members
-      </button>
 
       {/* Clear chat */}
       <button
@@ -51,6 +62,15 @@ export default function ChatHeader({ group, onBack, onClearRequest }: Props) {
         title="Clear chat"
       >
         <Trash2 size={16} />
+      </button>
+
+      {/* Hamburger — opens group panel drawer */}
+      <button
+        onClick={onOpenPanel}
+        className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors shrink-0"
+        title="Group info"
+      >
+        <Menu size={18} />
       </button>
     </div>
   );

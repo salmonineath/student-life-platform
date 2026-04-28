@@ -8,6 +8,8 @@ interface Props {
 }
 
 export default function GroupItem({ group, isActive, onClick }: Props) {
+  const unread = group.unreadCount ?? 0;
+
   return (
     <button
       onClick={onClick}
@@ -15,22 +17,30 @@ export default function GroupItem({ group, isActive, onClick }: Props) {
         isActive ? "bg-indigo-50" : "hover:bg-slate-50"
       }`}
     >
-      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${avatarColor(group.assignmentId)}`}>
+      {/* Avatar */}
+      <div className={`relative w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${avatarColor(group.assignmentId)}`}>
         {getInitials(group.assignmentTitle)}
+        {unread > 0 && !isActive && (
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-indigo-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold text-white px-1">
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
       </div>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
-          <span className={`text-sm font-semibold truncate ${isActive ? "text-indigo-700" : "text-slate-900"}`}>
+          <span className={`text-sm font-semibold truncate ${
+            isActive ? "text-indigo-700" : unread > 0 ? "text-slate-900 font-bold" : "text-slate-900"
+          }`}>
             {group.assignmentTitle}
           </span>
           {group.lastMessageTime && (
-            <span className="text-[10px] text-slate-400 shrink-0">
+            <span className={`text-[10px] shrink-0 ${unread > 0 && !isActive ? "text-indigo-500 font-semibold" : "text-slate-400"}`}>
               {formatSidebarTime(group.lastMessageTime)}
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-400 truncate mt-0.5">
+        <p className={`text-xs truncate mt-0.5 ${unread > 0 && !isActive ? "text-slate-700 font-medium" : "text-slate-400"}`}>
           {group.lastMessage
             ? `${group.lastMessageSender}: ${group.lastMessage}`
             : `${group.memberCount} members · ${group.subject}`}

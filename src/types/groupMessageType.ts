@@ -8,6 +8,7 @@ export interface GroupSummary {
   lastMessage?: string;
   lastMessageTime?: string;
   lastMessageSender?: string;
+  unreadCount?: number; // tracked client-side
 }
 
 export interface ChatMessage {
@@ -17,25 +18,29 @@ export interface ChatMessage {
   senderFullname: string;
   senderUsername: string;
   content: string;
-  createdAt: string; // Java Instant → ISO 8601 string
+  createdAt: string;
 }
 
-// Matches ChatMessageRequest.java — sent over WebSocket
 export interface ChatMessageRequest {
   assignmentId: number;
   content: string;
 }
 
-// Full app state shape
-export interface ChatState {
-  groups: GroupSummary[];
-  messageMap: Record<number, ChatMessage[]>;
-  activeId: number | null;
-  input: string;
-  search: string;
-  showClearConfirm: boolean;
-  loading: boolean;
-  error: string | null;
+export interface Member {
+  id: number;
+  fullname: string;
+  username: string;
+  email: string;
+  university?: string;
+  major?: string;
+  academicYear?: string;
+  online: boolean;
+}
+
+export interface PresenceEvent {
+  assignmentId: number;
+  onlineCount: number;
+  onlineUserIds: number[];
 }
 
 export interface GroupChatState {

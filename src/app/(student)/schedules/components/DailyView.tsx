@@ -11,15 +11,19 @@ import { format, isSameDay, isToday, addDays, subDays } from "date-fns";
 function apiDayOfWeek(date: Date): number { const d = date.getDay(); return d === 0 ? 7 : d; }
 
 function getSchedulesForDay(schedules: Schedule[], date: Date): Schedule[] {
+  const targetStr = format(date, "yyyy-MM-dd"); // e.g. "2026-04-27"
+  
   return schedules.filter((s) => {
     if (s.type === "ONE_TIME") {
       const ot = s as OneTimeSchedule;
-      return isSameDay(new Date(ot.startTime), date) || isSameDay(new Date(ot.endTime), date);
+      // Slice the date part directly from the ISO string — no timezone conversion
+      const startDateStr = ot.startTime.slice(0, 10); // "2026-04-27"
+      const endDateStr = ot.endTime.slice(0, 10);
+      return startDateStr === targetStr || endDateStr === targetStr;
     }
     return (s as RecurringSchedule).dayOfWeek === apiDayOfWeek(date);
   });
 }
-
 function formatTime(time: string): string {
   const t = time.includes("T") ? time.split("T")[1] : time;
   const [h, m] = t.split(":");

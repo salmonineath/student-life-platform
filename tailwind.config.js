@@ -4,6 +4,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        sora: ["var(--font-sora)", "sans-serif"],
       },
     },
   },

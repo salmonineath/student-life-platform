@@ -38,9 +38,16 @@ function apiDayOfWeek(date: Date): number {
 }
 
 function getSchedulesForDay(schedules: Schedule[], date: Date): Schedule[] {
+  const targetStr = format(date, "yyyy-MM-dd"); // e.g. "2026-04-27"
+  
   return schedules.filter((s) => {
-    if (s.type === "ONE_TIME")
-      return isSameDay(new Date((s as OneTimeSchedule).startTime), date);
+    if (s.type === "ONE_TIME") {
+      const ot = s as OneTimeSchedule;
+      // Slice the date part directly from the ISO string — no timezone conversion
+      const startDateStr = ot.startTime.slice(0, 10); // "2026-04-27"
+      const endDateStr = ot.endTime.slice(0, 10);
+      return startDateStr === targetStr || endDateStr === targetStr;
+    }
     return (s as RecurringSchedule).dayOfWeek === apiDayOfWeek(date);
   });
 }

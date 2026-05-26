@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { loginAction } from "../core/action";
@@ -14,15 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
-
-const CARD_VARIANTS: Variants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.45, ease: "easeOut" as const },
-  },
-};
+import { usePageTransition } from "@/app/PageTransitionProvider";
 
 const ERROR_VARIANTS: Variants = {
   hidden: { opacity: 0, height: 0, marginTop: 0 },
@@ -42,6 +34,9 @@ const LoginPage = () => {
   const [error, setError] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
+  const { navigate, transitionReady } = usePageTransition();
+
+  useEffect(() => { transitionReady(); }, [transitionReady]);
 
   const handleLogin = async () => {
     if (!emailOrUsername || !password) {
@@ -68,12 +63,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-100 to-sky-50">
-      <motion.div
-        variants={CARD_VARIANTS}
-        initial="hidden"
-        animate="visible"
-        className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2"
-      >
+      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
         {/* LEFT PANEL */}
         <div className="relative flex flex-col justify-center items-center bg-[#0F172A] text-white p-10 overflow-hidden">
           <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl animate-pulse" />
@@ -108,13 +98,13 @@ const LoginPage = () => {
 
         {/* RIGHT PANEL */}
         <div className="p-10 flex flex-col justify-center">
-          <Link
-            href="/student-life"
+          <button
+            onClick={() => navigate("/student-life")}
             className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
-          </Link>
+          </button>
 
           <h2 className="text-3xl font-bold text-slate-800 mb-1">
             Welcome Back!
@@ -235,16 +225,16 @@ const LoginPage = () => {
           </button>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Don't have an account?{" "}
-            <Link
-              href="/register"
+            Don&apos;t have an account?{" "}
+            <button
+              onClick={() => navigate("/register")}
               className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors"
             >
               Register
-            </Link>
+            </button>
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

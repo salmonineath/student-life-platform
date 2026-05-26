@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import { usePageTransition } from "@/app/PageTransitionProvider";
 import Reveal from "./Reveal";
 
 const AVATARS = [
@@ -13,7 +13,7 @@ const AVATARS = [
 ];
 
 export default function CTASection() {
-  const router = useRouter();
+  const { navigate } = usePageTransition();
 
   return (
     <section
@@ -100,7 +100,7 @@ export default function CTASection() {
           <motion.button
             whileHover={{ y: -3, scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => router.push("/register")}
+            onClick={() => navigate("/register")}
             className="font-sora group relative overflow-hidden inline-flex items-center gap-3 bg-white text-[#080C14] px-12 py-5 rounded-2xl font-bold text-[17px] shadow-[0_0_60px_rgba(255,255,255,0.08)] hover:shadow-[0_0_80px_rgba(96,165,250,0.15)] transition-all duration-300"
           >
             Create Your Free Account

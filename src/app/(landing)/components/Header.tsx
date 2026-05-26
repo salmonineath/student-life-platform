@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { usePageTransition } from "@/app/PageTransitionProvider";
 
 const NAV_LINKS = [
   { label: "Home", href: "#hero" },
@@ -15,7 +15,7 @@ const NAV_LINKS = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const router = useRouter();
+  const { navigate } = usePageTransition();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -46,7 +46,7 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/student-life" className="flex items-center gap-2.5 shrink-0">
             <div className="w-9 h-9 bg-[#080C14] rounded-[10px] flex items-center justify-center text-lg">
               🎓
             </div>
@@ -72,13 +72,13 @@ export default function Header() {
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-2">
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => navigate("/login")}
               className="text-sm font-medium text-slate-500 hover:text-[#080C14] px-4 py-2 rounded-lg hover:bg-slate-100 transition-all"
             >
               Login
             </button>
             <button
-              onClick={() => router.push("/register")}
+              onClick={() => navigate("/register")}
               className="text-sm font-semibold text-white bg-[#080C14] hover:bg-[#2563EB] px-5 py-2.5 rounded-xl transition-all duration-200 hover:-translate-y-px hover:shadow-lg hover:shadow-blue-500/20"
             >
               Get Started Free
@@ -139,7 +139,7 @@ export default function Header() {
               <button
                 onClick={() => {
                   setOpen(false);
-                  router.push("/login");
+                  navigate("/login");
                 }}
                 className="w-full py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               >
@@ -148,7 +148,7 @@ export default function Header() {
               <button
                 onClick={() => {
                   setOpen(false);
-                  router.push("/register");
+                  navigate("/register");
                 }}
                 className="w-full bg-[#080C14] hover:bg-[#2563EB] text-white py-3 rounded-xl font-semibold text-sm transition-all duration-200"
               >

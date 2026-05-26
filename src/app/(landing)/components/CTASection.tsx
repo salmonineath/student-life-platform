@@ -1,127 +1,120 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
+import Reveal from "./Reveal";
 
-function Reveal({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.12 },
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div
-      ref={ref}
-      style={{
-        transitionDelay: `${delay}ms`,
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(28px)",
-      }}
-      className="transition-all duration-700"
-    >
-      {children}
-    </div>
-  );
-}
+const AVATARS = [
+  { initial: "D", color: "#3B82F6" },
+  { initial: "S", color: "#10B981" },
+  { initial: "R", color: "#F59E0B" },
+  { initial: "V", color: "#6366F1" },
+  { initial: "K", color: "#EC4899" },
+];
 
 export default function CTASection() {
   const router = useRouter();
 
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&display=swap');
-        @keyframes spinSlow { to { transform: translate(-50%,-50%) rotate(360deg); } }
-        .cta-spin {
-          animation: spinSlow 22s linear infinite;
-          background: conic-gradient(
-            from 0deg,
-            transparent 0deg,
-            rgba(37,99,235,0.09) 60deg,
-            transparent 120deg,
-            rgba(99,102,241,0.09) 180deg,
-            transparent 240deg,
-            rgba(37,99,235,0.05) 300deg,
-            transparent 360deg
-          );
-        }
-        .btn-cta-white:hover {
-          background: #EFF6FF;
-          color: #2563EB;
-          transform: translateY(-3px);
-          box-shadow: 0 0 60px rgba(255,255,255,0.1);
-        }
-        .btn-cta-white { transition: all 0.25s; }
-      `}</style>
+    <section
+      className="py-32 md:py-40 px-6 text-center relative overflow-hidden"
+      style={{ background: "#080C14" }}
+    >
+      {/* Dot grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
 
-      <section
-        className="py-32 md:py-40 px-6 text-center relative overflow-hidden"
-        style={{ background: "#080C14" }}
-      >
-        {/* Spinning conic glow */}
-        <div
-          className="cta-spin absolute w-[800px] h-[800px] rounded-full pointer-events-none"
-          style={{ top: "50%", left: "50%", transform: "translate(-50%,-50%)" }}
-        />
+      {/* Glow orbs */}
+      <div
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          width: 500, height: 500,
+          top: "50%", left: "50%",
+          translate: "-50% -50%",
+          background: "radial-gradient(circle, rgba(37,99,235,0.12) 0%, transparent 65%)",
+          filter: "blur(40px)",
+        }}
+      />
+      <div
+        className="absolute rounded-full pointer-events-none"
+        style={{
+          width: 320, height: 320,
+          top: "30%", left: "60%",
+          background: "radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 65%)",
+          filter: "blur(30px)",
+        }}
+      />
 
-        <div className="relative z-10 max-w-[720px] mx-auto">
-          <Reveal>
-            <h2
-              style={{
-                fontFamily: "'Sora', sans-serif",
-                letterSpacing: "-2.5px",
-              }}
-              className="text-[clamp(36px,5vw,64px)] font-extrabold text-white leading-[1.05] mb-6"
-            >
-              Ready to actually
-              <br />
-              organize your life?
-            </h2>
-          </Reveal>
+      <div className="relative z-10 max-w-[680px] mx-auto">
 
-          <Reveal delay={100}>
-            <p className="text-[18px] text-slate-500 mb-14">
-              Join thousands of Cambodian students who already have their
-              academic life under control.
+        {/* Avatar stack */}
+        <Reveal>
+          <div className="flex items-center justify-center gap-3 mb-10">
+            <div className="flex -space-x-2.5">
+              {AVATARS.map((a, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.7, x: -10 }}
+                  whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+                  className="w-9 h-9 rounded-full border-2 flex items-center justify-center text-white text-[12px] font-bold"
+                  style={{ background: a.color, borderColor: "#080C14" }}
+                >
+                  {a.initial}
+                </motion.div>
+              ))}
+            </div>
+            <p className="text-[13px] text-slate-500">
+              Students from <span className="text-slate-300 font-semibold">CADT, EHT & more</span> already here
             </p>
-          </Reveal>
+          </div>
+        </Reveal>
 
-          <Reveal delay={200}>
-            <button
-              onClick={() => router.push("/register")}
-              className="btn-cta-white inline-flex items-center gap-3 bg-white text-[#080C14] px-12 py-5 rounded-2xl font-bold text-[17px]"
-              style={{ fontFamily: "'Sora', sans-serif" }}
-            >
-              Create Your Free Account
-              <span>→</span>
-            </button>
-          </Reveal>
+        {/* Headline */}
+        <Reveal delay={60}>
+          <h2
+            className="font-sora text-[clamp(34px,5vw,62px)] font-extrabold text-white leading-[1.07] mb-5"
+            style={{ letterSpacing: "-2.5px" }}
+          >
+            No more exam panic.
+            <br />
+            <span className="text-[#60A5FA]">Start organized.</span>
+          </h2>
+        </Reveal>
 
-          <Reveal delay={300}>
-            <p className="mt-5 text-[13px] text-slate-700">
-              Takes less than 30 seconds · No credit card needed
-            </p>
-          </Reveal>
-        </div>
-      </section>
-    </>
+        <Reveal delay={120}>
+          <p className="text-[17px] text-slate-500 mb-12 leading-[1.75]">
+            Everything you need for a successful semester —
+            schedule, assignments, groups, and AI — all free, forever.
+          </p>
+        </Reveal>
+
+        {/* CTA button */}
+        <Reveal delay={180}>
+          <motion.button
+            whileHover={{ y: -3, scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => router.push("/register")}
+            className="font-sora group relative overflow-hidden inline-flex items-center gap-3 bg-white text-[#080C14] px-12 py-5 rounded-2xl font-bold text-[17px] shadow-[0_0_60px_rgba(255,255,255,0.08)] hover:shadow-[0_0_80px_rgba(96,165,250,0.15)] transition-all duration-300"
+          >
+            Create Your Free Account
+            <span className="group-hover:translate-x-1 transition-transform duration-200">→</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-100/40 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+          </motion.button>
+        </Reveal>
+
+        <Reveal delay={240}>
+          <p className="mt-5 text-[13px] text-slate-600">
+            Takes less than 30 seconds · No credit card · Free forever
+          </p>
+        </Reveal>
+      </div>
+    </section>
   );
 }

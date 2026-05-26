@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 const NAV_LINKS = [
+  { label: "Home", href: "#hero" },
   { label: "Features", href: "#features" },
   { label: "AI Tools", href: "#ai" },
   { label: "For Students", href: "#for-students" },
@@ -36,24 +37,6 @@ export default function Header() {
 
   return (
     <>
-      <style>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%); opacity: 0; }
-          to   { transform: translateX(0);    opacity: 1; }
-        }
-        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
-        .mobile-drawer  { animation: slideInRight 0.32s cubic-bezier(0.32,0.72,0,1) forwards; }
-        .mobile-overlay { animation: fadeInOverlay 0.25s ease forwards; }
-        .nav-link-underline::after {
-          content: ''; display: block;
-          height: 2px; width: 0;
-          background: #2563EB;
-          border-radius: 99px;
-          transition: width 0.25s ease;
-        }
-        .nav-link-underline:hover::after { width: 100%; }
-      `}</style>
-
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
@@ -67,9 +50,7 @@ export default function Header() {
             <div className="w-9 h-9 bg-[#080C14] rounded-[10px] flex items-center justify-center text-lg">
               🎓
             </div>
-            <span
-              style={{ fontFamily: "'Sora', sans-serif" }}
-              className="font-bold text-base text-[#080C14] tracking-tight"
+            <span className="font-sora font-bold text-base text-[#080C14] tracking-tight"
             >
               Student Life
             </span>
@@ -81,7 +62,7 @@ export default function Header() {
               <button
                 key={link.href}
                 onClick={() => scrollToSection(link.href)}
-                className="nav-link-underline text-sm font-medium text-slate-500 hover:text-[#080C14] transition-colors"
+                className="nav-link-underline text-sm font-medium text-slate-500 hover:text-[#080C14] transition-colors cursor-pointer"
               >
                 {link.label}
               </button>
@@ -125,7 +106,7 @@ export default function Header() {
           <div className="mobile-drawer fixed top-0 right-0 bottom-0 z-50 w-[80%] max-w-[300px] bg-white shadow-2xl flex flex-col md:hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
               <Link
-                href="/"
+                href="/student-life"
                 className="flex items-center gap-2.5"
                 onClick={() => setOpen(false)}
               >

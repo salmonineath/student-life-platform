@@ -1,11 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   reactCompiler: true,
+  allowedDevOrigins: ["radar-manhattan-navy-wma.trycloudflare.com"],
 };
 
-module.exports = {
-  allowedDevOrigins: ['radar-manhattan-navy-wma.trycloudflare.com'],
-}
 export default nextConfig;

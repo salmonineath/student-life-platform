@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { usePageTransition } from "@/app/PageTransitionProvider";
 
 const FEATURE_PILLS = [
   { icon: "📅", label: "Schedule" },
@@ -179,7 +180,9 @@ function AppPreview() {
 // ── Main HeroSection ─────────────────────────────────────────────────────────
 
 export default function HeroSection() {
-  const router = useRouter();
+  const { navigate, transitionReady } = usePageTransition();
+
+  useEffect(() => { transitionReady(); }, [transitionReady]);
 
   return (
     <section className="relative min-h-[calc(100vh-64px)] flex items-center overflow-hidden bg-white">
@@ -309,7 +312,7 @@ export default function HeroSection() {
             <motion.button
               whileHover={{ y: -2, scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
-              onClick={() => router.push("/register")}
+              onClick={() => navigate("/register")}
               className="font-sora group relative overflow-hidden inline-flex items-center gap-2.5 bg-[#080C14] hover:bg-[#2563EB] text-white px-8 py-3.5 rounded-2xl font-semibold text-[15px] transition-all duration-200 shadow-xl shadow-slate-900/20"
             >
               Get Started Free
@@ -318,7 +321,7 @@ export default function HeroSection() {
             </motion.button>
 
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => navigate("/login")}
               className="text-[14px] font-medium text-slate-400 hover:text-[#080C14] transition-colors duration-200"
             >
               Already have an account?{" "}

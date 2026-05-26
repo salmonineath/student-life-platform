@@ -46,7 +46,7 @@ export default function Header() {
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between">
           {/* Logo */}
-          <Link href="/student-life" className="flex items-center gap-2.5 shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <div className="w-9 h-9 bg-[#080C14] rounded-[10px] flex items-center justify-center text-lg">
               🎓
             </div>

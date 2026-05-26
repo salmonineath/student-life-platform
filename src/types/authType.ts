@@ -41,6 +41,7 @@ export interface RegisterResponse {
   success: boolean;
   message: string;
   data: {
+    accessToken: string;
     user: AuthUser
   }
 }

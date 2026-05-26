@@ -9,6 +9,7 @@ export interface Assignments {
   title: string;
   description: string;
   subject: string;
+  startDate?: string;
   dueDate: string; // ISO date string from Java LocalDateTime
   status: AssignmentStatus;
   progress: number; // 0–100
@@ -35,6 +36,7 @@ export type CreateAssignmentPayload = {
   title: string;
   description: string;
   subject: string;
+  startDate: string;
   dueDate: string;
 };
 
@@ -46,6 +48,6 @@ export type UpdateAssignmentPayload = {
 };
 
 export type UpdateProgressPayload = {
-  status: AssignmentStatus;
+  // status: AssignmentStatus;
   progress: number; // 0–100
 };

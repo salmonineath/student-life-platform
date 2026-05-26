@@ -3,19 +3,18 @@
 import Link from "next/link";
 
 const FOOTER_LINKS = {
-  Product: [
-    { label: "Features", href: "#features" },
-    { label: "AI Tools", href: "#ai" },
-    { label: "Pricing", href: "#pricing" },
+  Platform: [
+    { label: "Features",    href: "#features"      },
+    { label: "AI Tools",    href: "#ai"             },
+    { label: "For Students",href: "#for-students"   },
   ],
-  Company: [
-    { label: "About", href: "#about" },
-    { label: "For Universities", href: "#universities" },
-    { label: "Contact", href: "#contact" },
+  Account: [
+    { label: "Sign Up Free",href: "/register"       },
+    { label: "Sign In",     href: "/login"          },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#privacy" },
-    { label: "Terms of Service", href: "#terms" },
+    { label: "Privacy Policy",  href: "#privacy"   },
+    { label: "Terms of Service",href: "#terms"     },
   ],
 };
 
@@ -49,49 +48,34 @@ const SOCIALS = [
 export default function Footer() {
   return (
     <footer
-      style={{ background: "#020617" }}
-      className="pt-16 pb-8 px-6 text-slate-500"
+      style={{ background: "#080C14" }}
+      className="pt-16 pb-8 px-6 text-slate-600"
     >
       <div className="max-w-[1160px] mx-auto">
         {/* Top grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-14">
+
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
-              <div className="w-9 h-9 bg-[#080C14] border border-white/10 rounded-[10px] flex items-center justify-center text-lg">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-3">
+              <div className="w-9 h-9 bg-white/5 border border-white/8 rounded-[10px] flex items-center justify-center text-lg">
                 🎓
               </div>
-              <span className="font-bold text-base text-slate-200 tracking-tight">
+              <span className="font-sora font-bold text-base text-slate-400 tracking-tight">
                 Student Life
               </span>
             </Link>
-            <p className="text-[14px] leading-[1.75] max-w-[220px]">
-              Your all-in-one academic companion for Cambodian universities.
+            <p className="text-[13px] leading-[1.75] max-w-[210px] mb-5">
+              Your all-in-one academic companion for Cambodian university students.
             </p>
-            <div className="flex gap-2.5 mt-6">
+
+            <div className="flex gap-2.5">
               {SOCIALS.map((s) => (
                 <a
                   key={s.label}
                   href="#"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 hover:text-white"
-                  style={{
-                    background: "#0f172a",
-                    border: "1px solid #1e293b",
-                    color: "#475569",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background =
-                      "#2563EB";
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                      "#2563EB";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background =
-                      "#0f172a";
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor =
-                      "#1e293b";
-                  }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:-translate-y-0.5 text-slate-600 hover:text-slate-300 bg-white/4 border border-white/6 hover:bg-[#2563EB]/20 hover:border-[#2563EB]/40"
                 >
                   {s.icon}
                 </a>
@@ -102,7 +86,7 @@ export default function Footer() {
           {/* Link columns */}
           {Object.entries(FOOTER_LINKS).map(([heading, links]) => (
             <div key={heading}>
-              <h4 className="text-[11px] font-bold uppercase tracking-[1.5px] text-slate-600 mb-5">
+              <h4 className="text-[11px] font-bold uppercase tracking-[1.5px] text-slate-700 mb-5">
                 {heading}
               </h4>
               <ul className="space-y-3">
@@ -110,7 +94,7 @@ export default function Footer() {
                   <li key={link.label}>
                     <a
                       href={link.href}
-                      className="text-[14px] text-slate-500 hover:text-slate-200 transition-colors"
+                      className="text-[14px] text-slate-600 hover:text-slate-400 transition-colors duration-200"
                     >
                       {link.label}
                     </a>
@@ -124,19 +108,12 @@ export default function Footer() {
         {/* Bottom bar */}
         <div
           className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px]"
-          style={{ borderTop: "1px solid #0f172a" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
-          <span>© 2026 Student Life</span>
+          <span className="text-slate-700">© 2026 Student Life · Free for all Cambodian students</span>
           <div className="flex gap-5">
-            <a
-              href="#privacy"
-              className="hover:text-slate-300 transition-colors"
-            >
-              Privacy
-            </a>
-            <a href="#terms" className="hover:text-slate-300 transition-colors">
-              Terms
-            </a>
+            <a href="#privacy" className="hover:text-slate-500 transition-colors duration-200">Privacy</a>
+            <a href="#terms"   className="hover:text-slate-500 transition-colors duration-200">Terms</a>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { GraduationCap } from "lucide-react";
 
 // Four phases:

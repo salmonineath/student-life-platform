@@ -1,7 +1,7 @@
+import ComingSoon from "@/app/components/ComingSoon";
+
 export default function ResetPasswrod() {
   return (
-    <div>
-      <h1>Reset your password</h1>
-    </div>
+    <ComingSoon />
   );
 }

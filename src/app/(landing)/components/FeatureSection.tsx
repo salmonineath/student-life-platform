@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "motion/react";
 import Reveal from "./Reveal";
 
 type FeatureId = "schedule" | "assignments" | "groups";
@@ -186,6 +186,8 @@ const PREVIEWS: Record<FeatureId, React.ReactNode> = {
 export default function FeatureSection() {
   const [active, setActive] = useState<FeatureId>("schedule");
   const [cycleKey, setCycleKey] = useState(0);
+  const sectionRef = useRef<HTMLElement>(null);
+  const inView = useInView(sectionRef, { amount: 0.3 });
 
   const handleSelect = (id: FeatureId) => {
     setActive(id);
@@ -193,17 +195,18 @@ export default function FeatureSection() {
   };
 
   useEffect(() => {
+    if (!inView) return;
     const ids: FeatureId[] = ["schedule", "assignments", "groups"];
     const timer = setInterval(() => {
       setActive((prev) => ids[(ids.indexOf(prev) + 1) % ids.length]);
     }, 3500);
     return () => clearInterval(timer);
-  }, [cycleKey]);
+  }, [inView, cycleKey]);
 
   const activeFeature = FEATURES.find((f) => f.id === active)!;
 
   return (
-    <section id="features" className="py-24 md:py-32 px-6" style={{ background: "#EBF0FF" }}>
+    <section ref={sectionRef} id="features" className="py-24 md:py-32 px-6" style={{ background: "#EBF0FF" }}>
       <div className="max-w-[1160px] mx-auto">
 
         {/* Header */}

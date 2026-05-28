@@ -11,20 +11,32 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
+  Calendar,
+  BookOpen,
+  Users,
+  Zap,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
-import { motion, type Variants } from "framer-motion";
+import { motion, type Variants } from "motion/react";
 import { usePageTransition } from "@/app/PageTransitionProvider";
+
+const CARD_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 const ERROR_VARIANTS: Variants = {
   hidden: { opacity: 0, height: 0, marginTop: 0 },
-  visible: {
-    opacity: 1,
-    height: "auto",
-    marginTop: 12,
-    transition: { duration: 0.2 },
-  },
+  visible: { opacity: 1, height: "auto", marginTop: 12, transition: { duration: 0.2 } },
 };
+
+const FEATURES = [
+  { icon: Calendar, title: "Smart Schedule", desc: "Never miss a class or deadline" },
+  { icon: BookOpen, title: "Assignments", desc: "Track all your tasks in one place" },
+  { icon: Users, title: "Study Groups", desc: "Collaborate with your peers" },
+  { icon: Zap, title: "AI Assistant", desc: "Get instant homework help" },
+];
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,13 +58,11 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
     try {
-      const result = await dispatch(
-        loginAction({ email_or_username: emailOrUsername, password }),
-      );
+      const result = await dispatch(loginAction({ email_or_username: emailOrUsername, password }));
       if (loginAction.fulfilled.match(result)) {
         window.location.href = "/dashboard";
       } else {
-        setError("Login failed. Please check your credentials.");
+        setError((result.payload as string) || "Login failed. Please check your credentials.");
       }
     } catch {
       setError("Login failed. Please check your credentials.");
@@ -61,180 +71,172 @@ const LoginPage = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-100 to-sky-50">
-      <div className="w-full max-w-5xl bg-white rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        {/* LEFT PANEL */}
-        <div className="relative flex flex-col justify-center items-center bg-[#0F172A] text-white p-10 overflow-hidden">
-          <div className="absolute -top-16 -left-16 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-16 -right-16 w-64 h-64 bg-sky-500/20 rounded-full blur-3xl animate-pulse [animation-delay:1s]" />
+  const fieldClass =
+    "flex items-center gap-2.5 border border-slate-200 rounded-lg px-4 py-3 bg-slate-50 focus-within:bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/10 hover:border-slate-300 transition-all duration-150 group";
+  const inputClass =
+    "flex-1 outline-none text-sm bg-transparent text-slate-800 placeholder-slate-400";
+  const iconClass =
+    "w-4 h-4 text-slate-400 shrink-0 group-focus-within:text-blue-500 transition-colors";
 
-          <div className="relative inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/40 transition-transform duration-200 hover:scale-105 hover:rotate-6">
-            <GraduationCap className="w-10 h-10 text-white" />
+  return (
+    <div className="w-full flex items-center justify-center">
+      <motion.div
+        variants={CARD_VARIANTS}
+        initial="hidden"
+        animate="visible"
+        className="w-full max-w-4xl overflow-hidden rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-5"
+      >
+        {/* LEFT PANEL */}
+        <div className="hidden md:flex md:col-span-2 relative flex-col justify-between bg-[#0F172A] text-white p-8 overflow-hidden">
+          <div className="absolute -top-20 -left-20 w-72 h-72 bg-blue-600/25 rounded-full blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-sky-400/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 -right-12 w-48 h-48 bg-indigo-500/15 rounded-full blur-2xl" />
+
+          <div className="relative z-10">
+            <div className="inline-flex bg-gradient-to-br from-blue-500 to-sky-400 p-3 rounded-xl shadow-lg shadow-blue-500/30">
+              <GraduationCap className="w-7 h-7 text-white" />
+            </div>
+            <p className="mt-4 font-bold text-xl tracking-tight">Student Life</p>
+            <p className="text-slate-400 text-sm mt-1">Your academic companion</p>
           </div>
 
-          <h1 className="relative text-3xl font-extrabold tracking-tight">
-            Student Life
-          </h1>
+          <div className="relative z-10 space-y-5">
+            {FEATURES.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 text-sky-400" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{title}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
 
-          <p className="relative mt-4 text-center text-slate-400 text-sm max-w-xs leading-relaxed">
-            Manage your schedule, assignments, and study groups all in one
-            place.
-          </p>
-
-          <div className="relative mt-8 flex flex-wrap justify-center gap-2">
-            {["Schedule", "Assignments", "Study Groups", "AI Chat"].map(
-              (feature) => (
-                <span
-                  key={feature}
-                  className="text-xs bg-white/10 text-slate-300 px-3 py-1 rounded-full border border-white/10 transition-transform duration-150 hover:scale-105 cursor-default"
-                >
-                  {feature}
-                </span>
-              ),
-            )}
+          <div className="relative z-10">
+            <div className="h-px bg-white/10 mb-4" />
+            <p className="text-xs text-slate-500">Free for all students · No credit card required</p>
           </div>
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="p-10 flex flex-col justify-center">
+        <div className="col-span-full md:col-span-3 bg-white p-8 sm:p-10 flex flex-col justify-center">
           <button
             onClick={() => navigate("/student-life")}
-            className="flex items-center gap-1 text-sm text-gray-400 hover:text-sky-500 hover:-translate-x-1 transition-all duration-200 mb-6 w-fit"
+            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-700 transition-colors duration-200 mb-8 w-fit group"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform duration-200" />
+            Back to home
           </button>
 
-          <h2 className="text-3xl font-bold text-slate-800 mb-1">
-            Welcome Back!
-          </h2>
-          <p className="text-sm text-gray-400 mb-8">
-            Sign in to continue your journey
-          </p>
-
-          {/* Email / Username */}
-          <div className="mb-4">
-            <label className="text-sm font-medium text-gray-600 mb-1.5 block">
-              Email or Username
-            </label>
-            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent focus-within:bg-white hover:border-sky-300 transition-all duration-200 group">
-              <Mail className="w-4 h-4 text-gray-400 mr-2 shrink-0 group-focus-within:text-sky-500 transition-colors duration-200" />
-              <input
-                type="text"
-                value={emailOrUsername}
-                onChange={(e) => {
-                  setError("");
-                  setEmailOrUsername(e.target.value);
-                }}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                placeholder="example@email.com or username"
-                autoComplete="username"
-                className="w-full outline-none text-sm bg-transparent text-gray-700 placeholder-gray-400"
-              />
+          <div className="mb-7">
+            <div className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-600 text-xs font-medium px-3 py-1 rounded-full border border-sky-100 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+              Welcome back
             </div>
+            <h2 className="text-2xl font-bold text-slate-900">Sign in to your account</h2>
+            <p className="text-sm text-slate-500 mt-1">Continue your academic journey</p>
           </div>
 
-          {/* Password */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-sm font-medium text-gray-600">
-                Password
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
+                Email or Username
               </label>
-              <Link
-                href="/forget-password"
-                className="text-xs text-sky-500 hover:text-sky-600 hover:underline transition-colors"
-              >
-                Forgot password?
-              </Link>
+              <div className={fieldClass}>
+                <Mail className={iconClass} />
+                <input
+                  type="text"
+                  value={emailOrUsername}
+                  onChange={(e) => { setError(""); setEmailOrUsername(e.target.value); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  placeholder="example@email.com or username"
+                  autoComplete="username"
+                  className={inputClass}
+                />
+              </div>
             </div>
-            <div className="flex items-center border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus-within:ring-2 focus-within:ring-sky-400 focus-within:border-transparent focus-within:bg-white hover:border-sky-300 transition-all duration-200 group">
-              <Lock className="w-4 h-4 text-gray-400 mr-2 shrink-0 group-focus-within:text-sky-500 transition-colors duration-200" />
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => {
-                  setError("");
-                  setPassword(e.target.value);
-                }}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                placeholder="••••••••"
-                autoComplete="current-password"
-                className="w-full outline-none text-sm bg-transparent text-gray-700 placeholder-gray-400"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="ml-2 text-gray-400 hover:text-sky-500 transition-colors duration-200"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? (
-                  <EyeOff className="w-4 h-4" />
-                ) : (
-                  <Eye className="w-4 h-4" />
-                )}
-              </button>
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Password
+                </label>
+                <Link
+                  href="/forget-password"
+                  className="text-xs text-sky-500 hover:text-sky-600 transition-colors font-medium"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+              <div className={fieldClass}>
+                <Lock className={iconClass} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => { setError(""); setPassword(e.target.value); }}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Error */}
           <motion.div
             variants={ERROR_VARIANTS}
             initial="hidden"
             animate={error ? "visible" : "hidden"}
             className="overflow-hidden"
           >
-            <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-100 rounded-lg px-3.5 py-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
               {error}
             </div>
           </motion.div>
 
-          {/* Login Button */}
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="mt-6 bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600 text-white py-2.5 rounded-xl font-semibold transition-all duration-200 shadow-md shadow-sky-200 hover:shadow-sky-300 hover:-translate-y-px active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 disabled:hover:translate-y-0"
+            className="mt-6 w-full bg-slate-900 hover:bg-slate-800 text-white py-3 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
           >
             {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8z"
-                  />
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                 </svg>
-                Logging in...
+                Signing in...
               </span>
             ) : (
-              "Login"
+              <>
+                Sign In
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </>
             )}
           </button>
 
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <p className="text-center text-xs text-slate-400 mt-6">
             Don&apos;t have an account?{" "}
             <button
               onClick={() => navigate("/register")}
-              className="text-sky-500 font-medium hover:text-sky-600 hover:underline transition-colors"
+              className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
             >
-              Register
+              Create one free
             </button>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

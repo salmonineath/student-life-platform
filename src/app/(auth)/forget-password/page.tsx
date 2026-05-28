@@ -1,7 +1,9 @@
+import ComingSoon from "@/app/components/ComingSoon";
+
 export default function ForgetPassword() {
   return (
     <div>
-      <h1>Forget password</h1>
+      <ComingSoon />
     </div>
   );
 }

@@ -1,120 +1,67 @@
-// import axios from "axios";
-
-// const API_URL =
-//   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
-
-// const axiosInstance = axios.create({
-//   baseURL: API_URL,
-//   withCredentials: true,
-// });
-
-// let isRefreshing = false;
-// let failedQueue: {
-//   resolve: (value: any) => void;
-//   reject: (reason?: any) => void;
-// }[] = [];
-
-// const processQueue = (error: any) => {
-//   failedQueue.forEach((req) => (error ? req.reject(error) : req.resolve(null)));
-//   failedQueue = [];
-// };
-
-// axiosInstance.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const originalRequest = error.config;
-//     const isUnauthorized = error.response?.status === 401;
-//     const isRefreshRequest = originalRequest?.url?.includes(
-//       "/auth/refresh-token",
-//     );
-
-//     // Refresh token itself is expired → go to login
-//     if (isRefreshRequest && isUnauthorized) {
-//       isRefreshing = false;
-//       processQueue(error);
-//       window.location.href = "/login";
-//       return Promise.reject(error);
-//     }
-
-//     // Access token expired → try refresh
-//     if (isUnauthorized && !originalRequest._retry) {
-//       if (isRefreshing) {
-//         return new Promise((resolve, reject) => {
-//           failedQueue.push({ resolve, reject });
-//         })
-//           .then(() => axiosInstance(originalRequest))
-//           .catch((err) => Promise.reject(err));
-//       }
-
-//       originalRequest._retry = true;
-//       isRefreshing = true;
-
-//       try {
-//         // when access token expires, the refresh token is sent automatically via cookie
-//         await axios.post(
-//           `${API_URL}/auth/refresh-token`,
-//           {},
-//           { withCredentials: true },
-//         );
-//         processQueue(null);
-//         return axiosInstance(originalRequest);
-//       } catch (refreshError: any) {
-//         // If refresh also fails (e.g. refresh token expired), log out and redirect to login
-//         await axiosInstance.post("/auth/logout", {}, { withCredentials: true });
-
-//         if (typeof window !== "undefined") {
-//           window.location.href = "/login";
-//         }
-
-//         return Promise.reject(refreshError);
-//       } finally {
-//         isRefreshing = false;
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   },
-// );
-
-// export default axiosInstance;
-
 import axios from "axios";
+import { clearSessionCookie } from "@/lib/session";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true, // browser automatically sends cookies on every request
 });
 
-// Attach token from localStorage on every request
-axiosInstance.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
+let isRefreshing = false;
+let failedQueue: { resolve: (v: any) => void; reject: (r?: any) => void }[] = [];
 
-// If token is expired (401) → clear everything and go to login
+const processQueue = (error: any) => {
+  failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(null)));
+  failedQueue = [];
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("accessToken");
+  async (error) => {
+    const originalRequest = error.config;
+    const is401 = error.response?.status === 401;
+    const isRefreshUrl = originalRequest?.url?.includes("/auth/refresh-token");
 
-        // Clear the middleware flag cookie
-        document.cookie =
-          "isLoggedIn=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    // Refresh token itself expired → clear session and go to login
+    if (isRefreshUrl && is401) {
+      isRefreshing = false;
+      processQueue(error);
+      await clearSessionCookie().catch(() => {});
+      if (typeof window !== "undefined") window.location.href = "/login";
+      return Promise.reject(error);
+    }
 
-        window.location.href = "/login";
+    // Access token expired → try refresh once
+    if (is401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => axiosInstance(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        await axios.post(`${API_URL}/auth/refresh-token`, {}, { withCredentials: true });
+        processQueue(null);
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError);
+        await clearSessionCookie().catch(() => {});
+        if (typeof window !== "undefined") window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { GraduationCap } from "lucide-react";
 
 const LETTERS = "Student Life".split("");
@@ -13,12 +13,16 @@ const PILLS = [
 ];
 
 export default function SplashScreen() {
-  // true by default so the splash is in the initial SSR HTML —
-  // the website loads behind it with no visible flash.
   const [exiting, setExiting] = useState(false);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    // Skip splash for returning visitors in the same session
+    if (sessionStorage.getItem("splashShown")) {
+      setDone(true);
+      return;
+    }
+    sessionStorage.setItem("splashShown", "1");
     const t1 = setTimeout(() => setExiting(true), 2600);
     const t2 = setTimeout(() => setDone(true), 2600 + 540);
     return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -34,8 +38,8 @@ export default function SplashScreen() {
       animate={exiting ? { y: "-100%" } : { y: 0 }}
       transition={{ duration: 0.52, ease: [0.76, 0, 0.24, 1] }}
     >
-      {/* ── Background orbs ── */}
-      <motion.div
+      {/* ── Background orbs (static — no JS animation needed) ── */}
+      <div
         className="absolute rounded-full pointer-events-none"
         style={{
           width: 720, height: 720,
@@ -44,28 +48,22 @@ export default function SplashScreen() {
           background: "radial-gradient(circle, rgba(37,99,235,0.17) 0%, transparent 68%)",
           filter: "blur(80px)",
         }}
-        animate={{ scale: [0.82, 1.18, 0.82] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div
+      <div
         className="absolute rounded-full pointer-events-none"
         style={{
           width: 480, height: 480, top: "-8%", right: "-4%",
           background: "radial-gradient(circle, rgba(99,102,241,0.11) 0%, transparent 70%)",
           filter: "blur(100px)",
         }}
-        animate={{ x: [0, 28, 0], y: [0, -18, 0] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div
+      <div
         className="absolute rounded-full pointer-events-none"
         style={{
           width: 400, height: 400, bottom: "-6%", left: "-4%",
           background: "radial-gradient(circle, rgba(14,165,233,0.09) 0%, transparent 70%)",
           filter: "blur(80px)",
         }}
-        animate={{ x: [0, -18, 0], y: [0, 22, 0] }}
-        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
       />
 
       {/* ── Content ── */}

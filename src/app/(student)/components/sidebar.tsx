@@ -1,199 +1,233 @@
 "use client";
- 
-import { usePathname } from "next/navigation";
-import Link from "next/link";
+
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   CalendarDays,
   ClipboardList,
   Users,
-  StickyNote,
-  BotMessageSquare,
-  Settings,
+  User,
   LogOut,
   GraduationCap,
-  User,
-  Menu,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { useDispatch } from "react-redux";
 import { logoutAction } from "@/app/(auth)/core/action";
 import type { AppDispatch } from "@/redux/store";
- 
-const EXPANDED_W  = 256; // w-64
-const COLLAPSED_W = 64;  // icon-only rail
- 
+
+export const EXPANDED_W  = 256;
+export const COLLAPSED_W = 64;
+
+// paddingLeft that centers a 17px icon inside a 64px collapsed rail
+// (64 - 17) / 2 ≈ 23px
+const ICON_CENTER_PL = 23;
+
+const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const DUR  = "320ms";
+
+const navItems = [
+  { name: "Dashboard",    icon: LayoutDashboard, href: "/dashboard"   },
+  { name: "Schedule",     icon: CalendarDays,    href: "/schedules"   },
+  { name: "Assignments",  icon: ClipboardList,   href: "/assignments" },
+  { name: "Study Groups", icon: Users,           href: "/groups"      },
+  { name: "Profile",      icon: User,            href: "/profile"     },
+];
+
 interface SidebarProps {
-  collapsed:  boolean;
-  onToggle:   () => void;
+  collapsed: boolean;
+  onToggle:  () => void;
 }
- 
+
 const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
-  const [loading, setLoading] = useState(false);
-  const [error]     = useState("");
-  const pathname              = usePathname();
-  const dispatch              = useDispatch<AppDispatch>();
- 
-  const navItems = [
-    { name: "Dashboard",   icon: LayoutDashboard, href: "/dashboard"  },
-    { name: "Schedule",    icon: CalendarDays,    href: "/schedules"   },
-    { name: "Assignment",  icon: ClipboardList,   href: "/assignments" },
-    { name: "Study Group", icon: Users,           href: "/groups"     },
-    // { name: "Notes",       icon: StickyNote,      href: "/notes"      },
-    // { name: "AI Chat",     icon: BotMessageSquare,href: "/chat"       },
-    { name: "Profile",     icon: User,            href: "/profile"    },
-    // { name: "Settings",    icon: Settings,        href: "/settings"   },
-  ];
+  const [loggingOut,  setLoggingOut]  = useState(false);
+  const [loadingHref, setLoadingHref] = useState<string | null>(null);
+  const pathname = usePathname();
+  const router   = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
-      // const handleLogout = async () => {
-  //   setLoading(true);
-  //   setError("");
-
-  //   try {
-  //     await dispatch(logoutAction());
-  //     // Full reload so cookies are fully cleared before middleware checks them
-  //     window.location.href = "/student-life";
-  //   } catch (err: any) {
-  //     if (err.response) {
-  //       console.error(
-  //         "Logout failed:",
-  //         err.response.data?.message || err.message,
-  //       );
-  //     } else if (err.request) {
-  //       console.error("No response from server during logout");
-  //     } else {
-  //       console.error("Error during logout:", err.message);
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
+  useEffect(() => { setLoadingHref(null); }, [pathname]);
 
   const handleLogout = async () => {
-    setLoading(true);
+    setLoggingOut(true);
     await dispatch(logoutAction());
     window.location.href = "/student-life";
   };
- 
+
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === href : pathname.startsWith(href);
- 
+
+  // Shared layout style for every nav row.
+  // Transitions padding-left and gap so the icon slides to center when collapsed.
+  const rowStyle: React.CSSProperties = {
+    paddingLeft:  collapsed ? `${ICON_CENTER_PL}px` : "12px",
+    paddingRight: "12px",
+    paddingTop:   "10px",
+    paddingBottom:"10px",
+    gap:          collapsed ? "0px" : "12px",
+    transition: [
+      `padding-left ${DUR} ${EASE}`,
+      `gap          ${DUR} ${EASE}`,
+      "background-color 150ms ease",
+      "color 150ms ease",
+    ].join(", "),
+  };
+
+  // Label fades + collapses in sync with the sidebar width.
+  const labelStyle: React.CSSProperties = {
+    opacity:    collapsed ? 0 : 1,
+    maxWidth:   collapsed ? "0px" : "160px",
+    overflow:   "hidden",
+    whiteSpace: "nowrap",
+    transition: `opacity 200ms ease, max-width ${DUR} ${EASE}`,
+  };
+
   return (
     <aside
-      style={{ width: collapsed ? COLLAPSED_W : EXPANDED_W }}
-      className="fixed top-0 left-0 h-screen bg-white border-r border-slate-200 text-slate-800 flex flex-col z-40 overflow-hidden transition-[width] duration-300 ease-in-out"
+      style={{
+        width:      collapsed ? COLLAPSED_W : EXPANDED_W,
+        transition: `width ${DUR} ${EASE}`,
+      }}
+      className="fixed top-0 left-0 h-screen bg-white border-r border-stone-100 flex flex-col z-40 overflow-hidden"
     >
-        {/* Logo + hamburger */}
-      <div className="relative flex items-center border-b border-slate-100 px-3 py-4 shrink-0 h-[65px]">
-        {/* Logo icon — always visible, absolutely positioned so it never moves */}
-        <div className="shrink-0 bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
-          <GraduationCap className="text-white w-5 h-5" />
-        </div>
- 
-        {/* Title — fades out when collapsed */}
-          <div
-          className="overflow-hidden transition-all duration-300 ml-3"
-          style={{
-            opacity:  collapsed ? 0 : 1,
-            width:    collapsed ? 0 : "auto",
-            pointerEvents: collapsed ? "none" : "auto",
-          }}
-        >
-          <span className="text-lg font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent tracking-tight whitespace-nowrap">
-            Student Life
-          </span>
-          <p className="text-xs text-slate-500 whitespace-nowrap">Welcome</p>
-        </div>
- 
-        {/* Toggle button — absolutely positioned at top-right, always visible */}
-        <button
-          onClick={onToggle}
-          style={{ position: "absolute", top: "50%", right: "8px", transform: "translateY(-50%)" }}
-          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors z-50"
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <Menu size={16} /> : <X size={16} />}
-        </button>
+      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* Two completely separate layouts to avoid any overlap issue. */}
+      <div className="h-16 border-b border-stone-100 shrink-0">
+        <AnimatePresence mode="wait" initial={false}>
+          {collapsed ? (
+            // Collapsed: the whole header IS the expand button — no overlap possible
+            <motion.button
+              key="collapsed"
+              onClick={onToggle}
+              title="Expand sidebar"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="w-full h-full flex items-center justify-center hover:bg-indigo-50 transition-colors group"
+            >
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <GraduationCap className="w-[18px] h-[18px] text-white" />
+              </div>
+            </motion.button>
+          ) : (
+            // Expanded: logo + brand name + collapse button
+            <motion.div
+              key="expanded"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.12 }}
+              className="h-full flex items-center justify-between px-4"
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-[18px] h-[18px] text-white" />
+                </div>
+                <span
+                  className="text-[14px] font-bold text-stone-900 whitespace-nowrap tracking-tight"
+                  style={{ fontFamily: "var(--font-sora)" }}
+                >
+                  Student Life
+                </span>
+              </div>
+              <button
+                onClick={onToggle}
+                title="Collapse sidebar"
+                className="shrink-0 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+              >
+                <X size={15} />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
- 
-      {/* Nav */}
-      <nav className="flex-1 px-2 space-y-1 mt-3 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300">
+
+      {/* ── Navigation ─────────────────────────────────────────── */}
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
-          const active = isActive(item.href);
+          const active       = isActive(item.href);
+          const isNavLoading = loadingHref === item.href;
           return (
-            <Link
+            <button
               key={item.name}
-              href={item.href}
+              onClick={() => {
+                if (active || isNavLoading) return;
+                setLoadingHref(item.href);
+                router.push(item.href);
+              }}
               title={collapsed ? item.name : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${
+              style={rowStyle}
+              className={`w-full flex items-center rounded-xl ${
                 active
-                  ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200"
-                  : "hover:bg-slate-100 text-slate-700"
+                  ? "bg-indigo-50 text-indigo-600"
+                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-800"
               }`}
             >
-              <item.icon
-                className={`w-5 h-5 shrink-0 transition-all duration-200 ${
-                  active ? "text-white" : "text-slate-500 group-hover:text-blue-500"
-                }`}
-              />
- 
-              {/* Label — slides + fades out when collapsed */}
-              <span
-                className="font-medium text-sm whitespace-nowrap overflow-hidden transition-all duration-300"
-                style={{
-                  opacity:   collapsed ? 0 : 1,
-                  maxWidth:  collapsed ? 0 : 200,
-                  marginLeft: collapsed ? 0 : undefined,
-                }}
-              >
+              {/* Icon / spinner */}
+              {isNavLoading ? (
+                <svg
+                  className="animate-spin w-[17px] h-[17px] shrink-0 text-indigo-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              ) : (
+                <item.icon className="w-[17px] h-[17px] shrink-0" />
+              )}
+
+              {/* Label */}
+              <span className="text-sm font-medium" style={labelStyle}>
                 {item.name}
               </span>
- 
-              {active && !collapsed && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-white shadow-sm shrink-0" />
+
+              {/* Active dot — always in the tree, hidden when collapsed */}
+              {active && (
+                <span
+                  className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"
+                  style={{
+                    opacity:    collapsed ? 0 : 1,
+                    transform:  `scale(${collapsed ? 0 : 1})`,
+                    transition: "opacity 150ms ease, transform 150ms ease",
+                  }}
+                />
               )}
-            </Link>
+            </button>
           );
         })}
       </nav>
- 
-      {/* Logout */}
-      <div className="p-3 border-t border-slate-200 mt-auto shrink-0">
-        {error && <p className="text-red-500 text-xs mb-2">{error}</p>}
+
+      {/* ── Log out ────────────────────────────────────────────── */}
+      <div className="px-2 py-3 border-t border-stone-100 shrink-0">
         <button
           onClick={handleLogout}
-          disabled={loading}
-          title={collapsed ? "Logout" : undefined}
-          className={`group relative flex items-center justify-center gap-2 w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-red-200 transition-all duration-300 active:scale-[0.97] overflow-hidden ${
-            loading ? "opacity-70 cursor-not-allowed" : ""
-          }`}
+          disabled={loggingOut}
+          title={collapsed ? "Log out" : undefined}
+          style={rowStyle}
+          className="w-full flex items-center rounded-xl text-stone-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
         >
-          {!loading && (
-            <span className="absolute inset-0 -skew-x-12 -translate-x-full group-hover:translate-x-full bg-white/20 transition-transform duration-700 w-3/5" />
-          )}
- 
-          {loading ? (
-            <svg className="animate-spin w-4 h-4 relative z-10" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8v8H4z" />
+          {loggingOut ? (
+            <svg
+              className="animate-spin w-[17px] h-[17px] shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
             </svg>
           ) : (
-            <LogOut className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:rotate-6 relative z-10 shrink-0" />
+            <LogOut className="w-[17px] h-[17px] shrink-0" />
           )}
- 
-          <span
-            className="relative z-10 font-medium whitespace-nowrap overflow-hidden transition-all duration-300"
-            style={{ opacity: collapsed ? 0 : 1, maxWidth: collapsed ? 0 : 200 }}
-          >
-            {loading ? "Logging out..." : "Logout"}
+          <span className="text-sm font-medium" style={labelStyle}>
+            {loggingOut ? "Logging out..." : "Log out"}
           </span>
         </button>
       </div>
     </aside>
   );
 };
- 
+
 export default Sidebar;
- 

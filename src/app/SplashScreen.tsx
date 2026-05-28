@@ -17,15 +17,32 @@ export default function SplashScreen() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // Skip splash for returning visitors in the same session
     if (sessionStorage.getItem("splashShown")) {
       setDone(true);
       return;
     }
     sessionStorage.setItem("splashShown", "1");
-    const t1 = setTimeout(() => setExiting(true), 2600);
-    const t2 = setTimeout(() => setDone(true), 2600 + 540);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+
+    let cancelled = false;
+
+    const exit = () => {
+      if (cancelled) return;
+      setExiting(true);
+      setTimeout(() => { if (!cancelled) setDone(true); }, 540);
+    };
+
+    // Wait for both: fonts loaded (network-speed dependent) AND a minimum display
+    // time so the animation plays out. This makes the splash dynamic — slow
+    // connections see it longer because fonts take longer to arrive.
+    Promise.all([
+      document.fonts.ready,
+      new Promise<void>((r) => setTimeout(r, 2400)),
+    ]).then(() => {
+      // Double RAF: ensures the browser has painted the page beneath before we leave
+      requestAnimationFrame(() => requestAnimationFrame(exit));
+    });
+
+    return () => { cancelled = true; };
   }, []);
 
   if (done) return null;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/sidebar";
 import TopNav from "./components/topnav";
@@ -14,6 +14,13 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const isChat     = pathname?.startsWith("/groups");
   const [collapsed, setCollapsed] = useState(false);
 
+  useEffect(() => {
+    // Prevent the browser from restoring a non-zero scroll position on refresh.
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }, []);
+
   const ml = collapsed ? COLLAPSED_W : EXPANDED_W;
 
   return (
@@ -23,8 +30,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         {/* Main content — margin auto-adjusts with smooth transition */}
         <div
-          className="flex-1 flex flex-col min-h-screen transition-[margin-left] duration-300 ease-in-out"
-          style={{ marginLeft: ml }}
+          className="flex-1 flex flex-col min-h-screen"
+          style={{ marginLeft: ml, transition: "margin-left 320ms cubic-bezier(0.22, 1, 0.36, 1)" }}
         >
           <TopNav />
 

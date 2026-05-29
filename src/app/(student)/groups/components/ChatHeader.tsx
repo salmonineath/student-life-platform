@@ -20,7 +20,7 @@ export default function ChatHeader({
   const showOnline = onlineCount > 1; // only show "X online" if more than just you
 
   return (
-    <div className="flex items-center gap-2 px-3 py-3 border-b border-slate-100 bg-white shrink-0">
+    <div className="flex items-center gap-2 px-3 py-3 border-b border-slate-200 bg-white shrink-0">
 
       {/* Back arrow */}
       <button
@@ -42,10 +42,10 @@ export default function ChatHeader({
           {group.assignmentTitle}
         </h2>
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-slate-400">{group.memberCount} members</span>
+          <span className="text-xs text-slate-600">{group.memberCount} members</span>
           {showOnline && (
             <>
-              <span className="w-1 h-1 rounded-full bg-slate-300" />
+              <span className="w-1 h-1 rounded-full bg-slate-500" />
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
               <span className="text-xs text-green-600 font-medium">
                 {onlineCount - 1} other{onlineCount - 1 !== 1 ? "s" : ""} online
@@ -58,7 +58,7 @@ export default function ChatHeader({
       {/* Clear chat */}
       <button
         onClick={onClearRequest}
-        className="p-2 rounded-xl hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors shrink-0"
+        className="p-2 rounded-xl hover:bg-red-50 text-slate-600 hover:text-red-500 transition-colors shrink-0"
         title="Clear chat"
       >
         <Trash2 size={16} />

@@ -1,46 +1,68 @@
 "use client";
 
-import { Bell, MessageCircle, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell } from "lucide-react";
+
+const PAGE_NAMES: Record<string, string> = {
+  "/dashboard":   "Dashboard",
+  "/schedules":   "Schedule",
+  "/assignments": "Assignments",
+  "/groups":      "Study Groups",
+  "/profile":     "Profile",
+};
+
+function getPageName(pathname: string): string {
+  const entry = Object.entries(PAGE_NAMES).find(([key]) =>
+    key === "/dashboard" ? pathname === key : pathname.startsWith(key)
+  );
+  return entry ? entry[1] : "";
+}
 
 const TopNav = () => {
+  const pathname = usePathname();
+  const pageName = getPageName(pathname);
+
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-30">
-      {/* 1. Page Title */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800"></h1>
-      </div>
+    <header className="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-6 sticky top-0 z-30 shrink-0">
 
-      {/* 2. Right Side Actions (Search, Notifications, Profile) */}
-      <div className="flex items-center gap-6">
-        {/* Icons Group */}
-        <div className="flex items-center gap-3">
-          <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors relative">
-            <Bell className="w-6 h-6" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
+      {/* Page title */}
+      <h2
+        className="text-base font-semibold text-stone-800"
+        style={{ fontFamily: "var(--font-sora)" }}
+      >
+        {pageName}
+      </h2>
 
-          <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-            <MessageCircle className="w-6 h-6" />
-          </button>
-        </div>
+      {/* Right actions */}
+      <div className="flex items-center gap-2">
 
-        {/* User Profile */}
-        <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-gray-800 leading-none">
-              Sal Monineath
-            </p>
-            <p className="text-xs text-gray-500 mt-1">Year 3 Student</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-50 overflow-hidden">
-        {/* Replace with an actual image tag later */}
-        <img
+        {/* Notifications */}
+        <button className="relative p-2 rounded-xl text-stone-600 hover:text-stone-600 hover:bg-stone-100 transition-colors">
+          <Bell className="w-[18px] h-[18px]" />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+        </button>
+
+        <div className="w-px h-5 bg-stone-200 mx-1" />
+
+        {/* Profile */}
+        <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-stone-100 transition-colors">
+          <div className="w-8 h-8 rounded-full bg-indigo-100 overflow-hidden shrink-0">
+            <img
               src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="User Avatar"
+              alt="Avatar"
               className="w-full h-full object-cover"
             />
           </div>
-        </div>
+          <div className="text-left hidden sm:block">
+            <p className="text-sm font-semibold text-stone-800 leading-tight">
+              Sal Monineath
+            </p>
+            <p className="text-[11px] text-stone-600 leading-tight mt-0.5">
+              Year 3 · Student
+            </p>
+          </div>
+        </button>
+
       </div>
     </header>
   );

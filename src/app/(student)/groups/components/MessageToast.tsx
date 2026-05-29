@@ -85,7 +85,7 @@ function ToastItem({
         {/* Dismiss */}
         <button
           onClick={(e) => { e.stopPropagation(); onDismiss(toast.id); }}
-          className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 shrink-0 transition-colors"
+          className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0 transition-colors"
         >
           <X size={12} />
         </button>

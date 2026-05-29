@@ -1,197 +1,338 @@
 "use client";
 
-import { useEffect, useState, useMemo, useRef } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, Clock, MapPin, Star, Pencil, ExternalLink } from "lucide-react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, CalendarDays, Star, Pencil, MapPin, ExternalLink } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { useRouter } from "next/navigation";
 import { getMyScheduleAction } from "../core/action";
 import { Schedule, OneTimeSchedule, RecurringSchedule } from "@/types/scheduleTypes";
-import { format, isSameDay, isToday, addDays, subDays } from "date-fns";
+import { format, isToday, addDays, subDays } from "date-fns";
 
-function apiDayOfWeek(date: Date): number { const d = date.getDay(); return d === 0 ? 7 : d; }
+// ── Grid constants ─────────────────────────────────────────────────────────────
+const START_HOUR = 7;
+const END_HOUR = 22;
+const HOUR_HEIGHT = 72;
+const TOTAL_HEIGHT = (END_HOUR - START_HOUR) * HOUR_HEIGHT;
+const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 
-function getSchedulesForDay(schedules: Schedule[], date: Date): Schedule[] {
-  const targetStr = format(date, "yyyy-MM-dd"); // e.g. "2026-04-27"
-  
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function apiDayOfWeek(date: Date): number {
+  const d = date.getDay();
+  return d === 0 ? 7 : d;
+}
+
+function timeToMins(t: string): number {
+  const s = t.includes("T") ? t.split("T")[1] : t;
+  const [h, m] = s.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function getStart(s: Schedule) {
+  return timeToMins(s.type === "ONE_TIME" ? (s as OneTimeSchedule).startTime : (s as RecurringSchedule).recurringStartTime);
+}
+
+function getEnd(s: Schedule) {
+  return timeToMins(s.type === "ONE_TIME" ? (s as OneTimeSchedule).endTime : (s as RecurringSchedule).recurringEndTime);
+}
+
+function fmt(mins: number) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+}
+
+function fmtHour(h: number) {
+  if (h === 0 || h === 24) return "12 AM";
+  if (h === 12) return "12 PM";
+  return h > 12 ? `${h - 12} PM` : `${h} AM`;
+}
+
+function forDay(schedules: Schedule[], date: Date): Schedule[] {
+  const target = format(date, "yyyy-MM-dd");
   return schedules.filter((s) => {
     if (s.type === "ONE_TIME") {
-      const ot = s as OneTimeSchedule;
-      // Slice the date part directly from the ISO string — no timezone conversion
-      const startDateStr = ot.startTime.slice(0, 10); // "2026-04-27"
-      const endDateStr = ot.endTime.slice(0, 10);
-      return startDateStr === targetStr || endDateStr === targetStr;
+      const o = s as OneTimeSchedule;
+      return o.startTime.slice(0, 10) === target || o.endTime.slice(0, 10) === target;
     }
     return (s as RecurringSchedule).dayOfWeek === apiDayOfWeek(date);
   });
 }
-function formatTime(time: string): string {
-  const t = time.includes("T") ? time.split("T")[1] : time;
-  const [h, m] = t.split(":");
-  const hour = parseInt(h);
-  return `${hour % 12 === 0 ? 12 : hour % 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
+
+function overlapMap(events: Schedule[]): Map<number, { idx: number; total: number }> {
+  const map = new Map<number, { idx: number; total: number }>();
+  events.forEach((ev) => {
+    const a = getStart(ev);
+    const b = Math.max(getEnd(ev), a + 30);
+    const group = events.filter((o) => {
+      const c = getStart(o);
+      const d = Math.max(getEnd(o), c + 30);
+      return c < b && d > a;
+    });
+    map.set(ev.id, { idx: group.findIndex((o) => o.id === ev.id), total: group.length });
+  });
+  return map;
 }
 
-function getStartMinutes(schedule: Schedule): number {
-  const timeStr = schedule.type === "ONE_TIME"
-    ? (schedule as OneTimeSchedule).startTime
-    : (schedule as RecurringSchedule).recurringStartTime;
-  const t = timeStr.includes("T") ? timeStr.split("T")[1] : timeStr;
-  const [h, m] = t.split(":").map(Number);
-  return h * 60 + m;
-}
+// ── Event block ────────────────────────────────────────────────────────────────
+const COLORS = {
+  oneTime:  { bg: "bg-emerald-500", bar: "bg-emerald-700", text: "text-white", badge: "bg-white/20 text-white" },
+  recurring:{ bg: "bg-violet-500",  bar: "bg-violet-700",  text: "text-white", badge: "bg-white/20 text-white" },
+  hi:       { bg: "bg-indigo-600",  bar: "bg-indigo-900",  text: "text-white", badge: "bg-white/20 text-white" },
+};
 
-function ScheduleRow({ schedule, onEdit, isHighlighted }: {
-  schedule: Schedule;
+function DayEventBlock({
+  s, style, onEdit, hi,
+}: {
+  s: Schedule;
+  style: React.CSSProperties;
   onEdit: (s: Schedule) => void;
-  isHighlighted: boolean;
+  hi: boolean;
 }) {
   const router = useRouter();
-  const ref = useRef<HTMLDivElement>(null);
-  const isOneTime = schedule.type === "ONE_TIME";
-  const s = schedule as OneTimeSchedule;
-  const r = schedule as RecurringSchedule;
-  const timeRange = isOneTime
-    ? `${formatTime(s.startTime)} – ${formatTime(s.endTime)}`
-    : `${formatTime(r.recurringStartTime)} – ${formatTime(r.recurringEndTime)}`;
-  const [startTime, endTime] = timeRange.split("–").map((t) => t.trim());
-
-// useEffect(() => {
-//   const dateStr = format(currentDate, "yyyy-MM-dd");
-//   dispatch(getMyScheduleAction({ startDate: dateStr, endDate: dateStr }));
-// }, [currentDate, dispatch]);
+  const c = hi ? COLORS.hi : s.type === "ONE_TIME" ? COLORS.oneTime : COLORS.recurring;
+  const start = getStart(s);
+  const end = getEnd(s);
+  const dur = end - start;
+  const compact = dur < 40;
+  const medium = dur >= 40 && dur < 75;
 
   return (
-    <div ref={ref} className={`group flex items-start gap-4 p-4 rounded-2xl border transition-all duration-150 hover:shadow-md ${
-      isHighlighted ? "ring-2 ring-blue-500 ring-offset-2 bg-blue-50 border-blue-200"
-      : isOneTime ? "bg-green-50 border-green-100" : "bg-purple-50 border-purple-100"
-    }`}>
-      <div className="flex flex-col items-center min-w-[64px]">
-        <Clock className={`w-3.5 h-3.5 mb-1 ${isHighlighted ? "text-blue-400" : isOneTime ? "text-green-400" : "text-purple-400"}`} />
-        <span className={`text-xs font-semibold text-center leading-tight ${isHighlighted ? "text-blue-600" : isOneTime ? "text-green-600" : "text-purple-600"}`}>{startTime}</span>
-        <span className="text-[10px] text-slate-400">– {endTime}</span>
-      </div>
+    <div
+      className={`absolute group rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-lg hover:brightness-95 ${c.bg} ${c.text}`}
+      style={{ ...style, zIndex: hi ? 10 : 1 }}
+      onClick={(e) => { e.stopPropagation(); onEdit(s); }}
+    >
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${c.bar}`} />
+      <div className="pl-3 pr-2 py-1.5 h-full flex flex-col gap-0.5">
 
-      <div className={`w-px self-stretch rounded-full ${isHighlighted ? "bg-blue-300" : isOneTime ? "bg-green-200" : "bg-purple-200"}`} />
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide ${
-            isHighlighted ? "bg-blue-100 text-blue-700" : isOneTime ? "bg-green-100 text-green-700" : "bg-purple-100 text-purple-700"
-          }`}>{isOneTime ? "One-time" : "Weekly"}</span>
-          {schedule.important && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-100 text-amber-700">
-              <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> Important
-            </span>
-          )}
-          {schedule.assignmentId && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-indigo-100 text-indigo-700">
-              From assignment
-            </span>
-          )}
-          {isHighlighted && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-              ← Linked here
-            </span>
-          )}
+        {/* Title row */}
+        <div className="flex items-start justify-between gap-1">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <p className={`font-bold leading-tight truncate ${compact ? "text-xs" : "text-sm"}`}>{s.title}</p>
+              {s.important && <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />}
+            </div>
+            {!compact && (
+              <p className="text-xs opacity-50 mt-0.5">{fmt(start)} – {fmt(end)}</p>
+            )}
+          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(s); }}
+            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/25 transition-all shrink-0"
+          >
+            <Pencil className="w-4 h-4" />
+          </button>
         </div>
 
-        <p className="font-semibold text-slate-800">{schedule.title}</p>
-        {schedule.description && <p className="text-sm text-slate-500 mt-0.5 leading-snug">{schedule.description}</p>}
-        {schedule.location && (
-          <p className="flex items-center gap-1 text-xs text-slate-400 mt-1.5">
-            <MapPin className="w-3 h-3" /> {schedule.location}
-          </p>
+        {/* Extra details for larger blocks */}
+        {!compact && !medium && (
+          <div className="space-y-0.5 mt-0.5">
+            {s.location && (
+              <p className="flex items-center gap-1 text-[11px] opacity-60">
+                <MapPin className="w-2.5 h-2.5 shrink-0" />{s.location}
+              </p>
+            )}
+            {s.description && (
+              <p className="text-[11px] opacity-50 line-clamp-1">{s.description}</p>
+            )}
+          </div>
         )}
-        {schedule.assignmentId && (
+
+        {/* Assignment badge */}
+        {!compact && s.assignmentId && (
           <button
-            onClick={() => router.push(`/assignment/${schedule.assignmentId}`)}
-            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline transition"
+            onClick={(e) => { e.stopPropagation(); router.push("/assignments"); }}
+            className={`mt-auto inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-md w-fit ${c.badge}`}
           >
-            <ExternalLink className="w-3 h-3" /> View assignment
+            <ExternalLink className="w-3.5 h-3.5" /> Assignment
           </button>
         )}
-      </div>
-
-      <div className="flex flex-col items-end gap-2 shrink-0">
-        <div className="hidden sm:flex flex-col items-end gap-0.5">
-          <span className="text-[10px] text-slate-400">by</span>
-          <span className="text-xs font-medium text-slate-600">{schedule.createdBy.fullname}</span>
-          <span className="text-[10px] text-slate-400">{schedule.createdBy.username}</span>
-        </div>
-        <button onClick={() => onEdit(schedule)} className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-white/60 text-slate-400 hover:text-slate-600 transition-all duration-150">
-          <Pencil className="w-3.5 h-3.5" />
-        </button>
       </div>
     </div>
   );
 }
 
+// ── Main ───────────────────────────────────────────────────────────────────────
 interface DailyViewProps {
   initialDate?: Date;
   onEditSchedule: (schedule: Schedule) => void;
+  onSlotClick?: (date: Date, startTime: string, endTime: string) => void;
   highlightId?: number | null;
 }
 
-export default function DailyView({ initialDate, onEditSchedule, highlightId }: DailyViewProps) {
+function fmtPad(mins: number) {
+  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+}
+
+function slotFromY(y: number): { startTime: string; endTime: string } {
+  const totalMins = START_HOUR * 60 + (y / HOUR_HEIGHT) * 60;
+  const rounded = Math.round(totalMins / 15) * 15;
+  const startMins = Math.max(Math.min(rounded, (END_HOUR - 1) * 60), START_HOUR * 60);
+  const endMins = Math.min(startMins + 60, END_HOUR * 60);
+  return { startTime: fmtPad(startMins), endTime: fmtPad(endMins) };
+}
+
+export default function DailyView({ initialDate, onEditSchedule, onSlotClick, highlightId }: DailyViewProps) {
   const dispatch = useAppDispatch();
   const { schedules, loading } = useAppSelector((s) => s.schedule);
   const [currentDate, setCurrentDate] = useState<Date>(initialDate ?? new Date());
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { if (initialDate) setCurrentDate(initialDate); }, [initialDate]);
+
   useEffect(() => {
-    const dateStr = format(currentDate, "yyyy-MM-dd");
-    dispatch(getMyScheduleAction({ startDate: dateStr, endDate: dateStr }));
+    const d = format(currentDate, "yyyy-MM-dd");
+    dispatch(getMyScheduleAction({ startDate: d, endDate: d }));
   }, [currentDate]);
+
+  // Scroll to current time on mount
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const now = new Date();
+    const offset = ((now.getHours() * 60 + now.getMinutes() - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+    scrollRef.current.scrollTop = Math.max(0, offset - 80);
+  }, []);
 
   const isCurrentDay = isToday(currentDate);
   const daySchedules = useMemo(
-    () => getSchedulesForDay(schedules, currentDate).sort((a, b) => getStartMinutes(a) - getStartMinutes(b)),
+    () => forDay(schedules, currentDate).sort((a, b) => getStart(a) - getStart(b)),
     [schedules, currentDate],
   );
+  const olm = useMemo(() => overlapMap(daySchedules), [daySchedules]);
+
+  const now = new Date();
+  const nowMins = now.getHours() * 60 + now.getMinutes();
+  const nowTop = ((nowMins - START_HOUR * 60) / 60) * HOUR_HEIGHT;
+  const showNow = isCurrentDay && nowMins > START_HOUR * 60 && nowMins < END_HOUR * 60;
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white border border-slate-100 rounded-2xl px-5 py-4 shadow-sm">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{format(currentDate, "EEEE")}</p>
-        <div className="flex items-baseline gap-2">
-          <span className={`text-4xl font-bold ${isCurrentDay ? "text-blue-600" : "text-slate-800"}`}>{format(currentDate, "d")}</span>
-          <span className="text-lg text-slate-500 font-medium">{format(currentDate, "MMMM yyyy")}</span>
-          {isCurrentDay && <span className="ml-1 text-xs font-bold text-white bg-blue-500 px-2 py-0.5 rounded-full">Today</span>}
+    <div className="space-y-3">
+      {/* Nav + date display */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-0.5">
+            {format(currentDate, "EEEE")}
+          </p>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-2xl font-bold ${isCurrentDay ? "text-indigo-600" : "text-stone-800"}`}>
+              {format(currentDate, "d")}
+            </span>
+            <span className="text-sm text-stone-500 font-medium">{format(currentDate, "MMMM yyyy")}</span>
+            {isCurrentDay && (
+              <span className="text-[10px] font-bold text-white bg-indigo-500 px-2 py-0.5 rounded-full">Today</span>
+            )}
+          </div>
+          <p className="text-xs text-stone-400 mt-0.5">
+            {loading ? "—" : daySchedules.length === 0 ? "Nothing scheduled" : `${daySchedules.length} event${daySchedules.length !== 1 ? "s" : ""}`}
+          </p>
         </div>
-        <p className="text-sm text-slate-400 mt-1">
-          {daySchedules.length === 0 ? "No schedules" : `${daySchedules.length} ${daySchedules.length === 1 ? "event" : "events"} scheduled`}
-        </p>
+
+        <div className="flex items-center gap-1.5">
+          {!isCurrentDay && (
+            <button onClick={() => setCurrentDate(new Date())}
+              className="text-xs font-semibold text-stone-600 px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors">
+              Today
+            </button>
+          )}
+          <button onClick={() => setCurrentDate((d) => subDays(d, 1))} className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <label className="relative cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors">
+            <CalendarDays className="w-3.5 h-3.5 text-stone-400" />
+            <span className="text-xs font-medium text-stone-600">Jump to</span>
+            <input type="date" className="absolute inset-0 opacity-0 cursor-pointer w-full"
+              value={format(currentDate, "yyyy-MM-dd")}
+              onChange={(e) => { if (!e.target.value) return; setCurrentDate(new Date(e.target.value + "T00:00:00")); }} />
+          </label>
+          <button onClick={() => setCurrentDate((d) => addDays(d, 1))} className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 transition-colors">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2">
-        {!isCurrentDay && (
-          <button onClick={() => setCurrentDate(new Date())} className="text-xs font-semibold text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">Today</button>
+      {/* Time grid card */}
+      <div className="bg-white border border-stone-300 rounded-2xl shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-stone-400 text-sm">
+            <div className="w-4 h-4 border-2 border-stone-200 border-t-indigo-400 rounded-full animate-spin mr-2" />
+            Loading…
+          </div>
+        ) : (
+          <div ref={scrollRef} className="overflow-y-auto" style={{ maxHeight: 560 }}>
+            <div className="relative" style={{ height: TOTAL_HEIGHT, display: "grid", gridTemplateColumns: "52px 1fr" }}>
+
+              {/* Time gutter */}
+              <div className="relative border-r border-stone-300 bg-white z-10">
+                {HOURS.map((h) => (
+                  <div key={h} className="absolute right-2 text-[10px] font-medium text-stone-600 -translate-y-1/2 whitespace-nowrap select-none"
+                    style={{ top: (h - START_HOUR) * HOUR_HEIGHT }}>
+                    {fmtHour(h)}
+                  </div>
+                ))}
+              </div>
+
+              {/* Single day column */}
+              <div
+                className="relative"
+                style={{ cursor: onSlotClick ? "cell" : "default" }}
+                onClick={(e) => {
+                  if (!onSlotClick) return;
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const y = e.clientY - rect.top;
+                  const { startTime, endTime } = slotFromY(y);
+                  onSlotClick(currentDate, startTime, endTime);
+                }}
+              >
+                {/* Hour lines */}
+                {HOURS.map((h) => (
+                  <div key={h} className="absolute left-0 right-0 border-t border-stone-300" style={{ top: (h - START_HOUR) * HOUR_HEIGHT }} />
+                ))}
+                {/* Half-hour lines */}
+                {HOURS.map((h) => (
+                  <div key={`${h}-h`} className="absolute left-0 right-0 border-t border-stone-200" style={{ top: (h - START_HOUR) * HOUR_HEIGHT + HOUR_HEIGHT / 2 }} />
+                ))}
+
+                {/* Empty state overlay */}
+                {daySchedules.length === 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                      <CalendarDays className="w-8 h-8 text-stone-200 mx-auto mb-2" />
+                      <p className="text-sm font-medium text-stone-300">Nothing scheduled</p>
+                      <p className="text-xs text-stone-200">Your day is all yours.</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Now line */}
+                {showNow && (
+                  <div className="absolute left-0 right-0 z-20 pointer-events-none flex items-center" style={{ top: nowTop }}>
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 -ml-1.5" />
+                    <div className="flex-1 border-t-2 border-red-500" />
+                  </div>
+                )}
+
+                {/* Events */}
+                {daySchedules.map((ev) => {
+                  const start = getStart(ev);
+                  const end = getEnd(ev);
+                  const dur = Math.max(end - start, 30);
+                  const top = ((start - START_HOUR * 60) / 60) * HOUR_HEIGHT + 1;
+                  const height = Math.max((dur / 60) * HOUR_HEIGHT - 2, 28);
+                  const { idx, total } = olm.get(ev.id) ?? { idx: 0, total: 1 };
+                  const w = 92 / total;
+                  const l = 3 + idx * w;
+                  return (
+                    <DayEventBlock key={ev.id} s={ev} onEdit={onEditSchedule}
+                      hi={highlightId != null && ev.id === highlightId}
+                      style={{ top, height, left: `${l}%`, width: `${w}%` }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         )}
-        <button onClick={() => setCurrentDate((d) => subDays(d, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronLeft className="w-4 h-4" /></button>
-        <label className="relative cursor-pointer flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-          <CalendarDays className="w-4 h-4 text-slate-400" />
-          <span className="text-sm font-medium text-slate-700">{format(currentDate, "EEEE, MMMM d yyyy")}</span>
-          <input type="date" className="absolute inset-0 opacity-0 cursor-pointer w-full" value={format(currentDate, "yyyy-MM-dd")}
-            onChange={(e) => { if (!e.target.value) return; setCurrentDate(new Date(e.target.value + "T00:00:00")); }} />
-        </label>
-        <button onClick={() => setCurrentDate((d) => addDays(d, 1))} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"><ChevronRight className="w-4 h-4" /></button>
       </div>
-
-      {loading ? (
-        <div className="flex flex-col gap-3">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-24 rounded-2xl bg-slate-100 animate-pulse" />)}</div>
-      ) : daySchedules.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4"><CalendarDays className="w-6 h-6 text-slate-300" /></div>
-          <p className="font-semibold text-slate-500">No schedules for this day</p>
-          <p className="text-sm text-slate-400 mt-1">Enjoy your free time! 🎉</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {daySchedules.map((s) => (
-            <ScheduleRow key={s.id} schedule={s} onEdit={onEditSchedule} isHighlighted={highlightId != null && s.id === highlightId} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

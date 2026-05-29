@@ -60,7 +60,7 @@ const LoginPage = () => {
     try {
       const result = await dispatch(loginAction({ email_or_username: emailOrUsername, password }));
       if (loginAction.fulfilled.match(result)) {
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       } else {
         setError((result.payload as string) || "Login failed. Please check your credentials.");
       }

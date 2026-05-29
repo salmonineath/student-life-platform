@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getMeAction } from "@/app/(auth)/core/action";
 import { toast } from "sonner";
+import { usePageTransition } from "@/app/PageTransitionProvider";
 
 export default function ClientAuthWrapper({
   children,
@@ -13,10 +14,19 @@ export default function ClientAuthWrapper({
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const loading = useAppSelector((state) => state.auth.loading);
+  const { transitionReady } = usePageTransition();
 
   useEffect(() => {
-    // Already have user in Redux (e.g. just logged in) — skip the /me call.
-    if (user) return;
+    // Double RAF: signal the page-transition overlay only after the browser has
+    // actually painted this page, not just after the JS resolved.
+    const signalReady = () =>
+      requestAnimationFrame(() => requestAnimationFrame(transitionReady));
+
+    // Already have user in Redux (e.g. just navigated from login) — skip /me.
+    if (user) {
+      signalReady();
+      return;
+    }
 
     dispatch(getMeAction())
       .unwrap()
@@ -26,7 +36,8 @@ export default function ClientAuthWrapper({
         if (err !== "Unauthorized") {
           toast.error(err || "Something went wrong");
         }
-      });
+      })
+      .finally(signalReady);
   }, []); // Intentionally no deps — run once on mount only.
 
   if (!user && loading) {

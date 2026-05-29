@@ -1,93 +1,94 @@
-const schedule = [
-  {
-    id: 1,
-    time: "10:00 AM",
-    subject: "English Literature",
-    room: "Room 204",
-    duration: "60 min",
-    accentClass: "bg-indigo-500",
-    bgClass: "bg-indigo-50",
-    status: "current" as const,
-  },
-  {
-    id: 2,
-    time: "1:30 PM",
-    subject: "Computer Science",
-    room: "Lab 3",
-    duration: "90 min",
-    accentClass: "bg-cyan-500",
-    bgClass: "bg-cyan-50",
-    status: "upcoming" as const,
-  },
-  {
-    id: 3,
-    time: "3:30 PM",
-    subject: "Math Tutorial",
-    room: "Room 101",
-    duration: "45 min",
-    accentClass: "bg-amber-500",
-    bgClass: "bg-amber-50",
-    status: "upcoming" as const,
-  },
+"use client";
+
+import { motion } from "motion/react";
+
+const current = {
+  time:     "10:00 AM",
+  endTime:  "11:00 AM",
+  subject:  "English Literature",
+  room:     "Room 204",
+  duration: "60 min",
+  progress: 67,
+};
+
+const upcoming = [
+  { id: 2, time: "1:30 PM",  subject: "Computer Science", room: "Lab 3",    dot: "bg-cyan-400"  },
+  { id: 3, time: "3:30 PM",  subject: "Math Tutorial",    room: "Room 101", dot: "bg-amber-400" },
 ];
 
 export default function TodayScheduleView() {
   return (
     <div className="p-6 h-full flex flex-col">
-      <div className="flex items-start justify-between mb-6">
+
+      {/* Header */}
+      <div className="flex items-start justify-between mb-5">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-1">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
             Today
           </p>
-          <h2 className="text-xl font-bold text-stone-900">Schedule</h2>
+          <h2 className="text-lg font-bold text-stone-900" style={{ fontFamily: "var(--font-sora)" }}>
+            Schedule
+          </h2>
         </div>
-        <a
-          href="#"
-          className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors"
-        >
+        <a href="#" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors">
           Full schedule →
         </a>
       </div>
 
-      <div className="flex flex-col gap-2 flex-1">
-        {schedule.map((item) => (
-          <div
-            key={item.id}
-            className={`group flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all ${
-              item.status === "current"
-                ? item.bgClass
-                : "hover:bg-stone-50"
-            }`}
-          >
-            <div
-              className={`w-[3px] h-10 rounded-full shrink-0 ${item.accentClass} ${
-                item.status !== "current"
-                  ? "opacity-40 group-hover:opacity-80"
-                  : ""
-              } transition-opacity`}
+      {/* Current class block */}
+      <div className="bg-indigo-50 rounded-xl p-4 mb-5">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+            In progress
+          </span>
+          <span className="text-[11px] text-indigo-400 font-medium">ends {current.endTime}</span>
+        </div>
+
+        <p className="text-[1.05rem] font-bold text-stone-900 mb-0.5" style={{ fontFamily: "var(--font-sora)" }}>
+          {current.subject}
+        </p>
+        <p className="text-xs text-stone-600 mb-3.5">
+          {current.room} &middot; {current.duration}
+        </p>
+
+        {/* Animated class progress bar */}
+        <div className="flex items-center gap-2.5">
+          <div className="flex-1 h-[5px] bg-indigo-100 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-indigo-500 rounded-full"
+              initial={{ width: "0%" }}
+              animate={{ width: `${current.progress}%` }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.35 }}
             />
-
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-stone-800">{item.subject}</p>
-              <p className="text-xs text-stone-400 mt-0.5">
-                {item.room} · {item.duration}
-              </p>
-            </div>
-
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className="text-xs font-bold text-stone-700">{item.time}</span>
-              {item.status === "current" && (
-                <span
-                  className={`flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${item.accentClass} text-white`}
-                >
-                  <span className="w-1.5 h-1.5 bg-white/70 rounded-full animate-pulse inline-block" />
-                  Now
-                </span>
-              )}
-            </div>
           </div>
+          <span className="text-[10px] font-bold text-indigo-400 shrink-0 tabular-nums">
+            {current.progress}%
+          </span>
+        </div>
+      </div>
+
+      {/* Up next */}
+      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
+        Up next
+      </p>
+      <div className="flex flex-col gap-0.5 flex-1">
+        {upcoming.map((item, i) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.45 + i * 0.09 }}
+            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
+          >
+            <div className={`w-2 h-2 rounded-full shrink-0 ${item.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
+            <span className="text-xs font-medium text-stone-600 w-14 shrink-0 tabular-nums">{item.time}</span>
+            <span className="text-sm font-medium text-stone-700 flex-1 truncate">{item.subject}</span>
+            <span className="text-xs text-stone-600 shrink-0">{item.room}</span>
+          </motion.div>
         ))}
       </div>
+
     </div>
   );
 }

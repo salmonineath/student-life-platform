@@ -23,7 +23,7 @@ export default function ClearConfirmModal({ onConfirm, onCancel }: Props) {
         <div className="flex gap-2">
           <button
             onClick={onCancel}
-            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition"
+            className="flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-100 transition"
           >
             Cancel
           </button>

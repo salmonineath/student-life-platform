@@ -34,11 +34,11 @@ export default function MessageBubble({ msg, prevMsg, currentUserId }: Props) {
         <div className={`px-4 py-2 rounded-2xl text-sm leading-relaxed break-words ${
           isMe
             ? "bg-indigo-600 text-white rounded-tr-sm"
-            : "bg-white border border-slate-100 text-slate-800 rounded-tl-sm shadow-sm"
+            : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm"
         }`}>
           {msg.content}
         </div>
-        <span className="text-[10px] text-slate-400 mt-1 px-1">
+        <span className="text-[10px] text-slate-600 mt-1 px-1">
           {formatMessageTime(msg.createdAt)}
         </span>
       </div>

@@ -59,7 +59,7 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
         style={{ animation: "slideInRight 0.25s cubic-bezier(0.16,1,0.3,1)" }}
       >
         {/* Header */}
-        <div className="px-5 pt-5 pb-4 border-b border-slate-100 shrink-0">
+        <div className="px-5 pt-5 pb-4 border-b border-slate-200 shrink-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold shrink-0 ${avatarColor(group.assignmentId)}`}>
@@ -69,12 +69,12 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
                 <h2 className="text-sm font-bold text-slate-900 leading-tight">
                   {group.assignmentTitle}
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">{group.subject}</p>
+                <p className="text-xs text-slate-600 mt-0.5">{group.subject}</p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-600 hover:text-slate-600 transition-colors shrink-0"
             >
               <X size={16} />
             </button>
@@ -82,8 +82,8 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
 
           {/* Group meta */}
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <div className="bg-slate-50 rounded-xl p-3">
-              <div className="flex items-center gap-1.5 text-slate-400 mb-1">
+            <div className="bg-slate-100 rounded-xl p-3">
+              <div className="flex items-center gap-1.5 text-slate-600 mb-1">
                 <Users size={12} />
                 <span className="text-[10px] font-medium uppercase tracking-wide">Members</span>
               </div>
@@ -99,7 +99,7 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
           </div>
 
           {/* Owner */}
-          <div className="mt-3 text-xs text-slate-400">
+          <div className="mt-3 text-xs text-slate-600">
             <span className="font-medium text-slate-500">Owner:</span> {group.ownerName}
           </div>
         </div>
@@ -137,7 +137,7 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
                 {membersWithPresence.map((member) => (
                   <div
                     key={member.id}
-                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 transition-colors"
                   >
                     {/* Avatar with online dot */}
                     <div className="relative shrink-0">
@@ -145,7 +145,7 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
                         {getInitials(member.fullname)}
                       </div>
                       <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                        member.online ? "bg-green-500" : "bg-slate-300"
+                        member.online ? "bg-green-500" : "bg-slate-500"
                       }`} />
                     </div>
 
@@ -154,12 +154,12 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
                       <p className="text-sm font-semibold text-slate-800 truncate leading-tight">
                         {member.fullname}
                       </p>
-                      <p className="text-xs text-slate-400 truncate">@{member.username}</p>
+                      <p className="text-xs text-slate-600 truncate">@{member.username}</p>
                     </div>
 
                     {/* Online label */}
                     <span className={`text-[10px] font-semibold shrink-0 ${
-                      member.online ? "text-green-500" : "text-slate-300"
+                      member.online ? "text-green-500" : "text-slate-500"
                     }`}>
                       {member.online ? "Online" : "Offline"}
                     </span>
@@ -171,10 +171,10 @@ export default function GroupPanelDrawer({ group, onlineUserIds = [], onClose, o
         </div>
 
         {/* Footer info */}
-        <div className="px-5 py-4 border-t border-slate-100 shrink-0 space-y-2">
+        <div className="px-5 py-4 border-t border-slate-200 shrink-0 space-y-2">
           {group.subject && (
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <BookOpen size={12} className="text-slate-400 shrink-0" />
+              <BookOpen size={12} className="text-slate-600 shrink-0" />
               <span>{group.subject}</span>
             </div>
           )}

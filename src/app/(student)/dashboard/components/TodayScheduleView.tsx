@@ -16,16 +16,6 @@ const upcoming = [
   { id: 3, time: "3:30 PM",  subject: "Math Tutorial",    room: "Room 101", dot: "bg-amber-400" },
 ];
 
-const upNextVariants = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.45 } },
-};
-
-const upNextItem = {
-  hidden:  { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
-};
-
 export default function TodayScheduleView() {
   return (
     <div className="p-6 h-full flex flex-col">
@@ -78,20 +68,17 @@ export default function TodayScheduleView() {
         </div>
       </div>
 
-      {/* Up next — staggered rows */}
+      {/* Up next */}
       <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
         Up next
       </p>
-      <motion.div
-        className="flex flex-col gap-0.5 flex-1"
-        variants={upNextVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {upcoming.map((item) => (
+      <div className="flex flex-col gap-0.5 flex-1">
+        {upcoming.map((item, i) => (
           <motion.div
             key={item.id}
-            variants={upNextItem}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.45 + i * 0.09 }}
             className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
           >
             <div className={`w-2 h-2 rounded-full shrink-0 ${item.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
@@ -100,7 +87,7 @@ export default function TodayScheduleView() {
             <span className="text-xs text-stone-600 shrink-0">{item.room}</span>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
 
     </div>
   );

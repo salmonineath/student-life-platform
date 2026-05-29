@@ -15,17 +15,6 @@ const recent = {
   due:     "Tomorrow",
 };
 
-const tileVariants = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.25 } },
-};
-
-const tileItem = {
-  hidden:  { opacity: 0, y: 10, scale: 0.96 },
-  visible: { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-};
-
-// Count-up number that animates from 0 to target on mount
 function CountUp({ value, className }: { value: number; className: string }) {
   const count   = useMotionValue(0);
   const rounded = useTransform(count, (v) => Math.round(v));
@@ -56,17 +45,13 @@ export default function AssignmentStatusView() {
         </a>
       </div>
 
-      {/* Stat tiles — stagger in + count-up numbers */}
-      <motion.div
-        className="flex gap-2 mb-4"
-        variants={tileVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {stats.map((s) => (
+      <div className="flex gap-2 mb-4">
+        {stats.map((s, i) => (
           <motion.div
             key={s.label}
-            variants={tileItem}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0,  scale: 1 }}
+            transition={{ duration: 0.35, delay: 0.25 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
             className={`flex-1 ${s.bg} rounded-xl p-3 flex flex-col gap-1`}
           >
             <CountUp value={s.value} className={`text-2xl font-bold leading-none ${s.color}`} />
@@ -75,9 +60,8 @@ export default function AssignmentStatusView() {
             </span>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* Recent item */}
       <div className="group flex items-center gap-2.5 p-2.5 bg-stone-100 hover:bg-stone-100 rounded-xl cursor-pointer transition-colors mt-auto">
         <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">
           ✓

@@ -32,16 +32,6 @@ const upcoming = [
   },
 ];
 
-const listVariants = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } },
-};
-
-const listItem = {
-  hidden:  { opacity: 0, x: -12 },
-  visible: { opacity: 1, x: 0,   transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-};
-
 export default function UpComingReport() {
   return (
     <div className="p-6 h-full flex flex-col">
@@ -60,16 +50,13 @@ export default function UpComingReport() {
         </a>
       </div>
 
-      <motion.ul
-        className="flex flex-col gap-1 flex-1"
-        variants={listVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {upcoming.map((item) => (
+      <ul className="flex flex-col gap-1 flex-1">
+        {upcoming.map((item, i) => (
           <motion.li
             key={item.id}
-            variants={listItem}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.35, delay: 0.35 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
             className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
           >
             <div className={`w-[3px] self-stretch rounded-full shrink-0 ${item.strip}`} />
@@ -82,7 +69,7 @@ export default function UpComingReport() {
             </span>
           </motion.li>
         ))}
-      </motion.ul>
+      </ul>
 
     </div>
   );

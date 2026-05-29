@@ -41,16 +41,6 @@ const activities = [
   },
 ];
 
-const feedVariants = {
-  hidden:  {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.4 } },
-};
-
-const feedItem = {
-  hidden:  { opacity: 0, y: 10 },
-  visible: { opacity: 1, y: 0,  transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-};
-
 export default function GroupActivitiesView() {
   return (
     <div className="p-6 h-full flex flex-col">
@@ -69,16 +59,13 @@ export default function GroupActivitiesView() {
         </span>
       </div>
 
-      <motion.ul
-        className="flex flex-col gap-1 flex-1"
-        variants={feedVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {activities.map((a) => (
+      <ul className="flex flex-col gap-1 flex-1">
+        {activities.map((a, i) => (
           <motion.li
             key={a.id}
-            variants={feedItem}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, delay: 0.4 + i * 0.09, ease: [0.22, 1, 0.36, 1] }}
             className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
           >
             <div className="relative shrink-0">
@@ -100,7 +87,7 @@ export default function GroupActivitiesView() {
             </div>
           </motion.li>
         ))}
-      </motion.ul>
+      </ul>
 
       <a href="#" className="block text-center mt-auto pt-4 text-[11px] font-semibold text-indigo-500 hover:text-indigo-600 transition-colors">
         Open study groups →

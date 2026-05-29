@@ -2,16 +2,6 @@
 
 import { motion } from "motion/react";
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.07 } },
-};
-
-const row = {
-  hidden: { opacity: 0, y: 8 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
-};
-
 function Bone({ className, style }: { className: string; style?: React.CSSProperties }) {
   return (
     <div
@@ -35,7 +25,7 @@ export default function AssignmentsLoading() {
       </div>
 
       <div className="space-y-6 mt-6">
-        {/* Stat cards — 4 col grid */}
+        {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="bg-white border border-stone-200 rounded-2xl px-5 py-4">
@@ -52,14 +42,14 @@ export default function AssignmentsLoading() {
         </div>
 
         {/* Assignment card rows */}
-        <motion.div
-          variants={stagger}
-          initial="hidden"
-          animate="show"
-          className="flex flex-col gap-3"
-        >
+        <div className="flex flex-col gap-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <motion.div key={i} variants={row}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.07 }}
+            >
               <div className="bg-white border border-stone-200 rounded-2xl p-4 flex items-center gap-4">
                 <Bone className="h-10 w-10 rounded-xl shrink-0" />
                 <div className="flex-1 min-w-0">
@@ -70,7 +60,7 @@ export default function AssignmentsLoading() {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </>
   );

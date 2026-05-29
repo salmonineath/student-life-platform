@@ -104,6 +104,11 @@ interface Props {
   scheduleToEdit: Schedule | null; // null = create mode
   onClose: () => void;
   onSuccess: () => void;
+  prefill?: {
+    date?: string;      // "YYYY-MM-DD" — pre-fills the date field
+    startTime?: string; // "HH:mm"
+    endTime?: string;   // "HH:mm"
+  };
 }
 
 // ── Modal Component ────────────────────────────────────────────────────────────
@@ -112,6 +117,7 @@ export default function ScheduleModal({
   scheduleToEdit,
   onClose,
   onSuccess,
+  prefill,
 }: Props) {
   const dispatch = useAppDispatch();
 
@@ -153,13 +159,13 @@ export default function ScheduleModal({
         isImportant: s.important,
       };
     }
-    // Create mode — empty
+    // Create mode — use prefill values if provided
     return {
       title: "",
       description: "",
-      date: "",
-      startTime: "",
-      endTime: "",
+      date: prefill?.date ?? "",
+      startTime: prefill?.startTime ?? "",
+      endTime: prefill?.endTime ?? "",
       location: "",
       isImportant: false,
     };

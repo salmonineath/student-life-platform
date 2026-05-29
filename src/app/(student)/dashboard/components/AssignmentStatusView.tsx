@@ -44,7 +44,7 @@ export default function AssignmentStatusView() {
 
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-0.5">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-0.5">
             Status
           </p>
           <h2 className="text-base font-bold text-stone-900" style={{ fontFamily: "var(--font-sora)" }}>
@@ -78,15 +78,15 @@ export default function AssignmentStatusView() {
       </motion.div>
 
       {/* Recent item */}
-      <div className="group flex items-center gap-2.5 p-2.5 bg-stone-50 hover:bg-stone-100 rounded-xl cursor-pointer transition-colors mt-auto">
+      <div className="group flex items-center gap-2.5 p-2.5 bg-stone-100 hover:bg-stone-100 rounded-xl cursor-pointer transition-colors mt-auto">
         <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">
           ✓
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold text-stone-700 truncate">{recent.title}</p>
-          <p className="text-[10px] text-stone-400 mt-0.5">{recent.subject} &middot; Due {recent.due}</p>
+          <p className="text-[10px] text-stone-600 mt-0.5">{recent.subject} &middot; Due {recent.due}</p>
         </div>
-        <span className="text-stone-300 group-hover:text-indigo-400 text-sm transition-colors shrink-0">→</span>
+        <span className="text-stone-500 group-hover:text-indigo-400 text-sm transition-colors shrink-0">→</span>
       </div>
 
     </div>

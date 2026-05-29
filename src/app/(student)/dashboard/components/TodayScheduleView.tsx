@@ -33,7 +33,7 @@ export default function TodayScheduleView() {
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-1">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
             Today
           </p>
           <h2 className="text-lg font-bold text-stone-900" style={{ fontFamily: "var(--font-sora)" }}>
@@ -58,7 +58,7 @@ export default function TodayScheduleView() {
         <p className="text-[1.05rem] font-bold text-stone-900 mb-0.5" style={{ fontFamily: "var(--font-sora)" }}>
           {current.subject}
         </p>
-        <p className="text-xs text-stone-400 mb-3.5">
+        <p className="text-xs text-stone-600 mb-3.5">
           {current.room} &middot; {current.duration}
         </p>
 
@@ -79,7 +79,7 @@ export default function TodayScheduleView() {
       </div>
 
       {/* Up next — staggered rows */}
-      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-1">
+      <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
         Up next
       </p>
       <motion.div
@@ -92,12 +92,12 @@ export default function TodayScheduleView() {
           <motion.div
             key={item.id}
             variants={upNextItem}
-            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors"
+            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
           >
             <div className={`w-2 h-2 rounded-full shrink-0 ${item.dot} opacity-70 group-hover:opacity-100 transition-opacity`} />
-            <span className="text-xs font-medium text-stone-400 w-14 shrink-0 tabular-nums">{item.time}</span>
+            <span className="text-xs font-medium text-stone-600 w-14 shrink-0 tabular-nums">{item.time}</span>
             <span className="text-sm font-medium text-stone-700 flex-1 truncate">{item.subject}</span>
-            <span className="text-xs text-stone-400 shrink-0">{item.room}</span>
+            <span className="text-xs text-stone-600 shrink-0">{item.room}</span>
           </motion.div>
         ))}
       </motion.div>

@@ -58,7 +58,7 @@ export default function AssignmentProgressView() {
     <div className="p-5 h-full flex flex-col">
 
       <div className="mb-4">
-        <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-0.5">
+        <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-0.5">
           Overview
         </p>
         <h2
@@ -77,7 +77,7 @@ export default function AssignmentProgressView() {
             <span className="text-xl font-bold text-stone-900 leading-none tabular-nums">
               {overall}%
             </span>
-            <span className="text-[9px] font-semibold uppercase tracking-wider text-stone-400 mt-0.5">
+            <span className="text-[9px] font-semibold uppercase tracking-wider text-stone-600 mt-0.5">
               done
             </span>
           </div>

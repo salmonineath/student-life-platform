@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { motion } from "motion/react";
 import { Plus, Search, Sparkles, BookOpen } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -91,29 +92,43 @@ export default function AssignmentPage() {
   return (
     <>
 
-      {/* ── Header ── */}
-      <header className="flex items-end justify-between mb-8 gap-4 flex-wrap">
+      {/* ── Sticky Header ── */}
+      <motion.header
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+        className="sticky top-16 z-10 -mx-6 -mt-6 px-6 pt-6 pb-5 bg-gray-100 flex items-start justify-between gap-4"
+      >
         <div>
-          <p className="text-sm font-semibold tracking-widest uppercase text-stone-400 mb-1">
-            Overview
+          <p className="text-xs font-medium text-stone-600 tracking-widest uppercase mb-1.5">
+            Assignments
           </p>
-          <h1 className="text-4xl font-bold tracking-tight text-stone-900 mb-1.5">
+          <h1
+            className="text-[1.9rem] font-bold text-stone-900 leading-tight tracking-tight"
+            style={{ fontFamily: "var(--font-sora)" }}
+          >
             My Assignments
           </h1>
-          <p className="text-sm text-stone-400 hidden sm:block">
-            Track assignments, beat deadlines.
+          <p className="text-sm text-stone-600 mt-1">
+            {stats.overdue > 0 ? (
+              <>You have <span className="font-semibold text-red-500">{stats.overdue} overdue</span> — don&apos;t let them slip.</>
+            ) : stats.total > 0 ? (
+              <>Looking good — <span className="font-semibold text-green-500">{stats.completed} completed</span> so far.</>
+            ) : (
+              <>Start strong — create your first assignment.</>
+            )}
           </p>
         </div>
         <button
           onClick={() => setCreateModalOpen(true)}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shrink-0"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm shadow-indigo-500/20 transition-all shrink-0"
         >
           <Plus className="w-4 h-4" />
           New Assignment
         </button>
-      </header>
+      </motion.header>
 
-      <main className="space-y-6">
+      <main className="space-y-6 mt-6">
 
         {/* ── Stat cards ── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -122,7 +137,7 @@ export default function AssignmentPage() {
               key={s.label}
               className="bg-white border border-stone-200 rounded-2xl px-5 py-4 hover:shadow-md hover:shadow-stone-100 transition-shadow"
             >
-              <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-400 mb-1">
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-600 mb-1">
                 {s.label}
               </p>
               <p className={`text-3xl font-bold ${s.valueClass}`}>{s.value}</p>
@@ -134,13 +149,13 @@ export default function AssignmentPage() {
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-600" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search assignments…"
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
             />
           </div>
 
@@ -187,7 +202,7 @@ export default function AssignmentPage() {
             <h3 className="text-base font-bold text-stone-800 mb-1">
               {assignments.length === 0 ? "Start your study journey" : "Nothing here"}
             </h3>
-            <p className="text-sm text-stone-400 max-w-sm">
+            <p className="text-sm text-stone-600 max-w-sm">
               {assignments.length === 0
                 ? "Create your first assignment, set a deadline, and track your progress."
                 : "No assignments match your current filter or search."}

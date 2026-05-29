@@ -57,7 +57,7 @@ export default function GroupActivitiesView() {
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-400 mb-1">
+          <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-stone-600 mb-1">
             Collaboration
           </p>
           <h2 className="text-lg font-bold text-stone-900" style={{ fontFamily: "var(--font-sora)" }}>
@@ -79,7 +79,7 @@ export default function GroupActivitiesView() {
           <motion.li
             key={a.id}
             variants={feedItem}
-            className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors"
+            className="group flex items-center gap-3 p-3 rounded-xl hover:bg-stone-100 cursor-pointer transition-colors"
           >
             <div className="relative shrink-0">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold ${a.avatarClass}`}>
@@ -96,7 +96,7 @@ export default function GroupActivitiesView() {
                 {a.action}{" "}
                 <span className={`font-semibold ${a.targetClass}`}>{a.target}</span>
               </p>
-              <p className="text-[11px] text-stone-400 mt-0.5">{a.time}</p>
+              <p className="text-[11px] text-stone-600 mt-0.5">{a.time}</p>
             </div>
           </motion.li>
         ))}

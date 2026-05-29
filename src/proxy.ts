@@ -44,7 +44,7 @@ export const proxy = (request: NextRequest) => {
 
   // Not authenticated + protected route → login
   if (!isLoggedIn && isProtectedRoute) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();

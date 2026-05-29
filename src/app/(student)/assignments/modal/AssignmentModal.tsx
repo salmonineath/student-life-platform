@@ -103,12 +103,12 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-stone-100">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-stone-200">
 
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
           <div>
-            <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-400 mb-0.5">
+            <p className="text-[10px] font-semibold tracking-widest uppercase text-stone-600 mb-0.5">
               {step === "form" ? "Create" : "AI Study Plan"}
             </p>
             <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-stone-100 text-stone-600 hover:text-stone-600 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -139,7 +139,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <BookOpen className="w-3.5 h-3.5 text-stone-400" />
+                  <BookOpen className="w-3.5 h-3.5 text-stone-600" />
                   Title <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -147,13 +147,13 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   value={form.title}
                   onChange={handleChange}
                   placeholder="e.g. Research JWT authentication"
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Tag className="w-3.5 h-3.5 text-stone-400" />
+                  <Tag className="w-3.5 h-3.5 text-stone-600" />
                   Subject <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -161,14 +161,14 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   value={form.subject}
                   onChange={handleChange}
                   placeholder="e.g. IT, Math, Science"
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
 
               {/* Start date — defaults to today */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                  <Calendar className="w-3.5 h-3.5 text-stone-600" />
                   Start Date <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -176,15 +176,15 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   name="startDate"
                   value={form.startDate}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
-                <p className="text-[11px] text-stone-400">Defaults to today — change if needed.</p>
+                <p className="text-[11px] text-stone-600">Defaults to today — change if needed.</p>
               </div>
 
               {/* Due date */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                  <Calendar className="w-3.5 h-3.5 text-stone-600" />
                   Due Date <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -192,15 +192,15 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   name="dueDate"
                   value={form.dueDate}
                   onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-200 rounded-xl text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-stone-600 flex items-center gap-1.5 uppercase tracking-wider">
-                  <AlignLeft className="w-3.5 h-3.5 text-stone-400" />
+                  <AlignLeft className="w-3.5 h-3.5 text-stone-600" />
                   Description{" "}
-                  <span className="text-stone-300 font-normal normal-case tracking-normal">optional</span>
+                  <span className="text-stone-500 font-normal normal-case tracking-normal">optional</span>
                 </label>
                 <textarea
                   name="description"
@@ -208,15 +208,15 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   onChange={handleChange}
                   placeholder="Add any details about this assignment…"
                   rows={3}
-                  className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
+                  className="w-full px-3.5 py-2.5 bg-stone-100 border border-stone-200 rounded-xl text-sm text-stone-800 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 px-6 py-4 border-t border-stone-100">
+            <div className="flex gap-3 px-6 py-4 border-t border-stone-200">
               <button
                 onClick={onClose}
-                className="flex-1 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-sm font-semibold text-stone-600 transition-colors"
+                className="flex-1 py-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-100 text-sm font-semibold text-stone-600 transition-colors"
               >
                 Cancel
               </button>
@@ -275,7 +275,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
                   <button
                     onClick={handleGeneratePlan}
                     disabled={planLoading}
-                    className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-stone-600 hover:text-stone-600 transition-colors"
                   >
                     <RefreshCw className="w-3 h-3" /> Regenerate
                   </button>
@@ -283,7 +283,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-stone-100 space-y-2">
+            <div className="px-6 py-4 border-t border-stone-200 space-y-2">
               {plan && (
                 <div className="flex gap-2">
                   <button
@@ -302,7 +302,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
               )}
               <button
                 onClick={handleSkip}
-                className="w-full py-2 rounded-xl text-xs font-medium text-stone-400 hover:text-stone-600 flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full py-2 rounded-xl text-xs font-medium text-stone-600 hover:text-stone-600 flex items-center justify-center gap-1.5 transition-colors"
               >
                 <SkipForward className="w-3.5 h-3.5" /> Skip for now
               </button>

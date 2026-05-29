@@ -14,7 +14,7 @@ export default function GroupItem({ group, isActive, onClick }: Props) {
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left ${
-        isActive ? "bg-indigo-50" : "hover:bg-slate-50"
+        isActive ? "bg-indigo-50" : "hover:bg-slate-100"
       }`}
     >
       {/* Avatar */}
@@ -35,12 +35,12 @@ export default function GroupItem({ group, isActive, onClick }: Props) {
             {group.assignmentTitle}
           </span>
           {group.lastMessageTime && (
-            <span className={`text-[10px] shrink-0 ${unread > 0 && !isActive ? "text-indigo-500 font-semibold" : "text-slate-400"}`}>
+            <span className={`text-[10px] shrink-0 ${unread > 0 && !isActive ? "text-indigo-500 font-semibold" : "text-slate-600"}`}>
               {formatSidebarTime(group.lastMessageTime)}
             </span>
           )}
         </div>
-        <p className={`text-xs truncate mt-0.5 ${unread > 0 && !isActive ? "text-slate-700 font-medium" : "text-slate-400"}`}>
+        <p className={`text-xs truncate mt-0.5 ${unread > 0 && !isActive ? "text-slate-700 font-medium" : "text-slate-600"}`}>
           {group.lastMessage
             ? `${group.lastMessageSender}: ${group.lastMessage}`
             : `${group.memberCount} members · ${group.subject}`}

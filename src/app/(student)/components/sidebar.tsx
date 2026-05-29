@@ -89,11 +89,11 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
         width:      collapsed ? COLLAPSED_W : EXPANDED_W,
         transition: `width ${DUR} ${EASE}`,
       }}
-      className="fixed top-0 left-0 h-screen bg-white border-r border-stone-100 flex flex-col z-40 overflow-hidden"
+      className="fixed top-0 left-0 h-screen bg-white border-r border-stone-200 flex flex-col z-40 overflow-hidden"
     >
       {/* ── Header ─────────────────────────────────────────────── */}
       {/* Two completely separate layouts to avoid any overlap issue. */}
-      <div className="h-16 border-b border-stone-100 shrink-0">
+      <div className="h-16 border-b border-stone-200 shrink-0">
         <AnimatePresence mode="wait" initial={false}>
           {collapsed ? (
             // Collapsed: the whole header IS the expand button — no overlap possible
@@ -135,7 +135,7 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
               <button
                 onClick={onToggle}
                 title="Collapse sidebar"
-                className="shrink-0 p-1.5 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+                className="shrink-0 p-1.5 rounded-lg text-stone-600 hover:text-stone-600 hover:bg-stone-100 transition-colors"
               >
                 <X size={15} />
               </button>
@@ -162,7 +162,7 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
               className={`w-full flex items-center rounded-xl ${
                 active
                   ? "bg-indigo-50 text-indigo-600"
-                  : "text-stone-500 hover:bg-stone-50 hover:text-stone-800"
+                  : "text-stone-500 hover:bg-stone-100 hover:text-stone-800"
               }`}
             >
               {/* Icon / spinner */}
@@ -201,13 +201,13 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
       </nav>
 
       {/* ── Log out ────────────────────────────────────────────── */}
-      <div className="px-2 py-3 border-t border-stone-100 shrink-0">
+      <div className="px-2 py-3 border-t border-stone-200 shrink-0">
         <button
           onClick={handleLogout}
           disabled={loggingOut}
           title={collapsed ? "Log out" : undefined}
           style={rowStyle}
-          className="w-full flex items-center rounded-xl text-stone-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+          className="w-full flex items-center rounded-xl text-stone-600 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
         >
           {loggingOut ? (
             <svg

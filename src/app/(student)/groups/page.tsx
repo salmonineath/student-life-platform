@@ -158,7 +158,7 @@ function GroupsContent() {
 
       {/* Study groups sidebar */}
       <div
-        className="flex flex-col bg-white border-r border-slate-100 shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
+        className="flex flex-col bg-white border-r border-slate-200 shrink-0 h-full overflow-hidden transition-[width] duration-300 ease-in-out"
         style={{ width: groupSidebarCollapsed ? 64 : 280 }}
       >
         <GroupList

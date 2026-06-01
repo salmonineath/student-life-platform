@@ -29,7 +29,8 @@ export const registerAction = createAsyncThunk(
   async (payload: RegisterPayload, { rejectWithValue }) => {
     try {
       const res = await registerRequest(payload);
-      return { user: res.data.user };
+      await setSessionCookie();
+      return { user: res.data.user, accessToken: res.data.accessToken };
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message || "Register failed.",

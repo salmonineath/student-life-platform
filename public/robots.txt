@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Block private/app routes from indexing
+Disallow: /dashboard
+Disallow: /assignments
+Disallow: /schedules
+Disallow: /groups
+Disallow: /profile
+Disallow: /invite/
+Disallow: /api/
+
+Sitemap: https://student-life.app/sitemap.xml

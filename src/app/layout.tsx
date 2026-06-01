@@ -9,29 +9,48 @@ const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora", weight: ["700", "800"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://student-life.app"),
   title: {
-    default: "Student Life — Organize Your University Life",
+    default: "Student Life — Organize Your University Life in Cambodia",
     template: "%s | Student Life",
   },
   description:
-    "Free all-in-one academic platform for Cambodian university students. Manage your schedule, track assignments, join study groups, and get AI-powered study help.",
-  keywords: ["student platform", "Cambodia university", "CADT", "academic planner", "study groups", "assignment tracker"],
+    "Student Life is a free all-in-one platform for Cambodian university students. Manage your schedule, track assignments, join study groups, and get AI-powered study help. Used by students at CADT, EHT, IMSE and more.",
+  keywords: [
+    "student life",
+    "student life cambodia",
+    "cambodia university app",
+    "student platform cambodia",
+    "CADT student",
+    "EHT student",
+    "academic planner cambodia",
+    "study groups cambodia",
+    "assignment tracker",
+    "university schedule cambodia",
+    "khmer student app",
+    "cambodian student tools",
+  ],
   authors: [{ name: "Student Life" }],
   openGraph: {
     type: "website",
     siteName: "Student Life",
-    title: "Student Life — Organize Your University Life",
+    url: "https://student-life.app",
+    title: "Student Life — Organize Your University Life in Cambodia",
     description:
-      "Free academic platform for Cambodian university students. Schedule, assignments, study groups & AI tools — all in one place.",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Student Life Platform" }],
+      "Free academic platform for Cambodian university students. Schedule, assignments, study groups & AI tools — all in one place. 100% free forever.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Student Life — Academic Platform for Cambodian Students" }],
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Student Life — Organize Your University Life",
-    description: "Free academic platform for Cambodian university students.",
+    title: "Student Life — Organize Your University Life in Cambodia",
+    description: "Free academic platform for Cambodian university students. Schedule, assignments, study groups & AI tools.",
     images: ["/og-image.png"],
   },
-  robots: { index: true, follow: true },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true } },
+  alternates: {
+    canonical: "https://student-life.app/student-life",
+  },
 };
 
 export default function RootLayout({

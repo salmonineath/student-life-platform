@@ -54,10 +54,3 @@ export interface GroupChatState {
   historyLoading:   boolean;
   error:            string | null;
 }
-
-export interface ApiResponse<T> {
-  status: number;
-  success: boolean;
-  message: string;
-  data: T;
-}

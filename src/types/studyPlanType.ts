@@ -3,20 +3,6 @@ export interface StudyPlanData {
   plan: string;
 }
 
-export interface StudyPlanResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: StudyPlanData;
-}
-
-export interface StudyPlanByIdResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: StudyPlanData;
-}
-
 export interface PlanTask {
   day: string;
   detail: string;

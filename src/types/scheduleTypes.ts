@@ -79,13 +79,6 @@ export interface ScheduleParams {
   endDate?: string; // "YYYY-MM-DD"
 }
 
-export interface ScheduleResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: Schedule[];
-}
-
 // Single schedule returned by create / update endpoints
 // Mirrors backend ScheduleResponse.java exactly
 export interface SingleScheduleResponse {
@@ -109,12 +102,12 @@ export interface SingleScheduleResponse {
 }
 
 // List endpoint wrapper  e.g. GET /schedule/my-schedule
-export interface ScheduleListResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: Schedule[];
-}
+// export interface ScheduleListResponse {
+//   status: number;
+//   success: boolean;
+//   message: string;
+//   data: Schedule[];
+// }
 
 export interface ScheduleState {
   schedules: Schedule[];

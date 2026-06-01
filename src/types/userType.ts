@@ -22,10 +22,3 @@ export interface UserProfile {
   createdAt: string;
   updatedAt: string;
 }
- 
-export interface GetProfileResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: UserProfile;
-}

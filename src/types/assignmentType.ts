@@ -18,13 +18,6 @@ export interface Assignments {
   updatedAt: string;
 }
 
-export interface AssignmentResponse {
-  status: number;
-  success: boolean;
-  message: string;
-  data: Assignments[];
-}
-
 export interface AssignmentByIdResponse {
   status: number;
   success: boolean;

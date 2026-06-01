@@ -6,6 +6,8 @@ import {
   AssignmentResponse,
   UpdateProgressPayload,
 } from "@/types/assignmentType";
+import { ApiResponse } from "@/types/apiResponseType";
+
 
 export const getMyAssignmentRequest = async (): Promise<AssignmentResponse> => {
   const res = await axiosInstance.get<AssignmentResponse>(

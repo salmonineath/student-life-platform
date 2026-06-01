@@ -53,9 +53,10 @@ const authSlice = createSlice({
       })
       .addCase(
         registerAction.fulfilled,
-        (state, action: PayloadAction<{ user: AuthUser }>) => {
+        (state, action: PayloadAction<{ user: AuthUser; accessToken: string }>) => {
           state.loading = false;
           state.user = action.payload.user;
+          state.accessToken = action.payload.accessToken;
         },
       )
       .addCase(registerAction.rejected, (state, action) => {

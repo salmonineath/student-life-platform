@@ -7,8 +7,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/redux/store";
 import { deleteAssignmentAction, getMyAssignmentAction } from "./core/action";
 import AssignmentModal from "./modal/AssignmentModal";
+import EditAssignmentModal from "./modal/EditAssignmentModal";
 import DeleteModal from "../components/DeleteModal";
 import AssignmentCard from "./components/AssignmentCard";
+import { Assignments } from "@/types/assignmentType";
 import { STATUS_MAP } from "./components/StatusMap";
 
 type Filter = "all" | "pending" | "completed" | "late";
@@ -24,6 +26,7 @@ export default function AssignmentPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [editAssignment, setEditAssignment] = useState<Assignments | null>(null);
 
   useEffect(() => {
     dispatch(getMyAssignmentAction());
@@ -223,6 +226,7 @@ export default function AssignmentPage() {
                 key={assignment.id}
                 assignment={assignment}
                 onDeleteClick={handleDeleteClick}
+                onEditClick={setEditAssignment}
               />
             ))}
           </div>
@@ -244,6 +248,13 @@ export default function AssignmentPage() {
             dispatch(getMyAssignmentAction());
             setCreateModalOpen(false);
           }}
+        />
+      )}
+      {editAssignment && (
+        <EditAssignmentModal
+          assignment={editAssignment}
+          onClose={() => setEditAssignment(null)}
+          onSuccess={() => setEditAssignment(null)}
         />
       )}
     </>

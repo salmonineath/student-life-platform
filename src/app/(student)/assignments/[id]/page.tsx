@@ -376,7 +376,7 @@ export default function AssignmentDetailPage() {
       {/* ── Schedule link ── */}
       {assignment.scheduleId && (
         <button
-          onClick={() => router.push(`/schedule?highlightId=${assignment.scheduleId}&date=${assignment.dueDate?.split("T")[0]}`)}
+          onClick={() => router.push(`/schedules?highlightId=${assignment.scheduleId}&date=${assignment.dueDate?.split("T")[0]}`)}
           className="w-full bg-white border border-stone-200 hover:border-indigo-200 hover:shadow-sm rounded-2xl px-6 py-4 flex items-center justify-between group transition-all"
         >
           <div className="flex items-center gap-3">

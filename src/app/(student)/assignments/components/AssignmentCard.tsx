@@ -28,9 +28,11 @@ function ProgressBar({ value }: { value: number }) {
 export default function AssignmentCard({
   assignment,
   onDeleteClick,
+  onEditClick,
 }: {
   assignment: Assignments;
   onDeleteClick: (id: number) => void;
+  onEditClick: (assignment: Assignments) => void;
 }) {
   const router = useRouter();
 
@@ -95,7 +97,7 @@ export default function AssignmentCard({
           <button
             onClick={() =>
               router.push(
-                `/schedule?highlightId=${assignment.scheduleId}&date=${assignment.dueDate.split("T")[0]}`,
+                `/schedules?highlightId=${assignment.scheduleId}&date=${assignment.dueDate.split("T")[0]}`,
               )
             }
             className="flex-1 flex items-center justify-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 py-2 rounded-xl text-xs font-semibold transition-colors"
@@ -113,7 +115,10 @@ export default function AssignmentCard({
           </button>
         )}
 
-        <button className="flex-1 flex items-center justify-center gap-1.5 bg-stone-100 hover:bg-stone-100 text-stone-600 py-2 rounded-xl text-xs font-semibold transition-colors">
+        <button
+          onClick={() => onEditClick(assignment)}
+          className="flex-1 flex items-center justify-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-600 py-2 rounded-xl text-xs font-semibold transition-colors"
+        >
           <Edit2 className="w-3.5 h-3.5" />
           Edit
         </button>

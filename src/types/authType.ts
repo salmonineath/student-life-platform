@@ -1,4 +1,4 @@
-import { User } from "@/types/userType";
+
 
 export interface LoginPayload {
   email_or_username: string;

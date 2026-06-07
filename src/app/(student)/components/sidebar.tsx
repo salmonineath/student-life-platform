@@ -51,6 +51,14 @@ const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
 
   const handleLogout = async () => {
     setLoggingOut(true);
+    // Unlink this browser's push subscription from the user
+    // so the next person to log in doesn't get their notifications.
+    try {
+      const OneSignal = (await import("react-onesignal")).default;
+      await OneSignal.logout();
+    } catch {
+      // OneSignal may not be initialized (e.g. unsupported browser) — ignore.
+    }
     await dispatch(logoutAction());
     window.location.href = "/student-life";
   };

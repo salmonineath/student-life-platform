@@ -38,7 +38,8 @@ export const createOneTimeScheduleAction = createAsyncThunk(
   "schedule/createOneTime",
   async (body: OneTimeScheduleRequest, { rejectWithValue }) => {
     try {
-      return await createOneTimeScheduleRequest(body); // SingleScheduleResponse directly
+      const res = await createOneTimeScheduleRequest(body);
+      return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message ?? "Failed to create schedule.",
@@ -53,7 +54,8 @@ export const createRecurringScheduleAction = createAsyncThunk(
   "schedule/createRecurring",
   async (body: RecurringScheduleRequest, { rejectWithValue }) => {
     try {
-      return await createRecurringScheduleRequest(body); // SingleScheduleResponse directly
+      const res = await createRecurringScheduleRequest(body);
+      return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message ?? "Failed to create schedule.",
@@ -71,7 +73,8 @@ export const updateScheduleAction = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      return await updateScheduleRequest(id, body); // SingleScheduleResponse directly
+      const res = await updateScheduleRequest(id, body);
+      return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message ?? "Failed to update schedule.",

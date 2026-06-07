@@ -8,13 +8,18 @@ function DeclineInviteContent() {
   const router = useRouter();
   const token = searchParams.get("token");
 
+  // Backend invite endpoints live at the server root (no /api/v1 prefix)
+  const API_URL = (
+    process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api/v1"
+  ).replace(/\/api\/v1\/?$/, "");
+
   useEffect(() => {
     if (!token) {
       router.replace("/invite/result?status=invalid");
       return;
     }
 
-    window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/invite/decline?token=${token}`;
+    window.location.href = `${API_URL}/invite/decline?token=${token}`;
   }, [token]);
 
   return (

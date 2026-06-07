@@ -22,10 +22,18 @@ export interface UserProfile {
   createdAt: string;
   updatedAt: string;
 }
- 
+
 export interface GetProfileResponse {
   status: number;
   success: boolean;
   message: string;
   data: UserProfile;
+}
+
+export interface UpdateProfilePayload {
+  fullname?: string;
+  phone?: string;
+  university?: string;
+  major?: string;
+  academic_year?: string;
 }

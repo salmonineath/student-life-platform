@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./components/sidebar";
 import TopNav from "./components/topnav";
 import ClientAuthWrapper from "@/app/ClientAuthWrapper";
+import OneSignalInit from "@/app/components/OneSignalInit";
 
 const EXPANDED_W  = 256;
 const COLLAPSED_W = 64;
@@ -25,6 +26,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
   return (
     <ClientAuthWrapper>
+      <OneSignalInit />
       <div className="h-screen bg-gray-100 flex">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
 

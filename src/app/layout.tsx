@@ -64,10 +64,20 @@ export default function RootLayout({
       className={cn("scroll-smooth font-sans", geist.variable, sora.variable)}
     >
       <body className={`${geist.variable} ${sora.variable} font-sans`}>
-        {" "}
-        <Providers>
-          {children} <Toaster position="top-right" richColors />
-        </Providers>
+        <Providers>{children}</Providers>
+        <Toaster
+          position="top-right"
+          richColors
+          closeButton
+          expand
+          visibleToasts={5}
+          duration={4000}
+          toastOptions={{
+            classNames: {
+              toast: "rounded-2xl! shadow-lg! border-slate-100!",
+            },
+          }}
+        />
       </body>
     </html>
   );

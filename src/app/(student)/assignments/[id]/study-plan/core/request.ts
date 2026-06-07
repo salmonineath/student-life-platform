@@ -1,5 +1,5 @@
 import axiosInstance from "@/lib/axios";
-import { StudyPlanResponse, StudyPlanByIdResponse } from "@/types/studyPlanType";
+import { StudyPlanResponse } from "@/types/studyPlanType";
 
 export const generateStudyPlanRequest = async (
   assignmentId: number,

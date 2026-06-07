@@ -1,5 +1,6 @@
 import axiosInstance from "@/lib/axios";
-import {ApiResponse, GroupSummary, ChatMessage} from "@/types/groupMessageType";
+import { GroupSummary, ChatMessage } from "@/types/groupMessageType";
+import { ApiResponse } from "@/types/apiResponseType";
 
 export const getAllGroupsRequest = async (): Promise<ApiResponse<GroupSummary[]>> => {
     const res = await axiosInstance.get<ApiResponse<GroupSummary[]>>("/chat/groups")

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
+import { useAppSelector } from "@/redux/hook";
 
 const PAGE_NAMES: Record<string, string> = {
   "/dashboard":   "Dashboard",
@@ -21,6 +22,14 @@ function getPageName(pathname: string): string {
 const TopNav = () => {
   const pathname = usePathname();
   const pageName = getPageName(pathname);
+  const user = useAppSelector((state) => state.auth.user);
+
+  const initials = (user?.fullname ?? "")
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <header className="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-6 sticky top-0 z-30 shrink-0">
@@ -46,19 +55,17 @@ const TopNav = () => {
 
         {/* Profile */}
         <button className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-stone-100 transition-colors">
-          <div className="w-8 h-8 rounded-full bg-indigo-100 overflow-hidden shrink-0">
-            <img
-              src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
-              alt="Avatar"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+            <span className="text-xs font-semibold text-indigo-600">
+              {initials || "?"}
+            </span>
           </div>
           <div className="text-left hidden sm:block">
             <p className="text-sm font-semibold text-stone-800 leading-tight">
-              Sal Monineath
+              {user?.fullname ?? ""}
             </p>
             <p className="text-[11px] text-stone-600 leading-tight mt-0.5">
-              Year 3 · Student
+              {user?.academicYear ? `${user.academicYear} · Student` : "Student"}
             </p>
           </div>
         </button>

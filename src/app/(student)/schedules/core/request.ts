@@ -27,8 +27,8 @@ export const getMyScheduleRequest = async (
 /** POST /schedule/one-time — create a single-occurrence schedule. */
 export const createOneTimeScheduleRequest = async (
   body: OneTimeScheduleRequest,
-): Promise<SingleScheduleResponse> => {
-  const res = await axiosInstance.post<SingleScheduleResponse>(
+): Promise<ApiResponse<SingleScheduleResponse>> => {
+  const res = await axiosInstance.post<ApiResponse<SingleScheduleResponse>>(
     "/schedule/one-time",
     body,
   );

@@ -12,12 +12,9 @@ const publicRoutes = [
 const protectedRoutes = [
   "/dashboard",
   "/profile",
-  "/schedule",
-  "/assignment",
-  "/notes",
-  "/study-group",
-  "/ai-chat",
-  "/settings",
+  "/schedules",
+  "/assignments",
+  "/groups",
 ];
 
 export const proxy = (request: NextRequest) => {

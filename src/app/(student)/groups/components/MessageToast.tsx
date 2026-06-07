@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { X, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
+import { motion } from "motion/react";
 import { getInitials, avatarColor } from "@/utils/GroupUtil";
 
 export interface ToastMessage {
@@ -12,84 +13,73 @@ export interface ToastMessage {
   content:        string;
 }
 
-interface Props {
-  toasts:   ToastMessage[];
-  onDismiss: (id: string) => void;
+interface ToastContentProps {
+  msg:        ToastMessage;
+  toastId:    string | number;
   onNavigate: (assignmentId: number) => void;
 }
 
-export default function MessageToast({ toasts, onDismiss, onNavigate }: Props) {
+function MessageToastContent({ msg, toastId, onNavigate }: ToastContentProps) {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
-      {toasts.map((toast) => (
-        <ToastItem
-          key={toast.id}
-          toast={toast}
-          onDismiss={onDismiss}
-          onNavigate={onNavigate}
-        />
-      ))}
+    <div
+      className="relative flex items-start gap-3 bg-white border border-slate-100 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] px-4 py-3 w-[320px] cursor-pointer overflow-hidden group"
+      onClick={() => {
+        onNavigate(msg.assignmentId);
+        toast.dismiss(toastId);
+      }}
+    >
+      {/* Animated progress bar */}
+      <motion.div
+        initial={{ scaleX: 1 }}
+        animate={{ scaleX: 0 }}
+        transition={{ duration: 4.8, ease: "linear" }}
+        className="absolute bottom-0 left-0 right-0 h-[2px] bg-indigo-400 origin-left"
+      />
+
+      {/* Avatar */}
+      <div
+        className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarColor(msg.assignmentId)}`}
+      >
+        {getInitials(msg.groupTitle)}
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <MessageSquare size={10} className="text-indigo-500 shrink-0" />
+          <span className="text-[10px] font-bold text-indigo-600 truncate">
+            {msg.groupTitle}
+          </span>
+          <span className="text-[10px] text-slate-400 shrink-0 ml-auto">now</span>
+        </div>
+        <p className="text-xs font-semibold text-slate-800 truncate">{msg.senderFullname}</p>
+        <p className="text-xs text-slate-500 truncate mt-0.5">{msg.content}</p>
+      </div>
+
+      {/* Dismiss */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          toast.dismiss(toastId);
+        }}
+        className="shrink-0 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all"
+      >
+        <X size={11} />
+      </button>
     </div>
   );
 }
 
-function ToastItem({
-  toast,
-  onDismiss,
-  onNavigate,
-}: {
-  toast:      ToastMessage;
-  onDismiss:  (id: string) => void;
-  onNavigate: (id: number) => void;
-}) {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    // Animate in
-    requestAnimationFrame(() => setVisible(true));
-    // Auto-dismiss after 5s
-    const t = setTimeout(() => {
-      setVisible(false);
-      setTimeout(() => onDismiss(toast.id), 300);
-    }, 5000);
-    return () => clearTimeout(t);
-  }, []);
-
-  return (
-    <div
-      className="pointer-events-auto"
-      style={{
-        transform: visible ? "translateX(0)" : "translateX(120%)",
-        opacity:   visible ? 1 : 0,
-        transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease",
-      }}
-    >
-      <div
-        className="flex items-start gap-3 bg-white border border-slate-200 rounded-2xl shadow-lg px-4 py-3 w-72 cursor-pointer hover:shadow-xl transition-shadow"
-        onClick={() => { onNavigate(toast.assignmentId); onDismiss(toast.id); }}
-      >
-        {/* Avatar */}
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarColor(toast.assignmentId)}`}>
-          {getInitials(toast.groupTitle)}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1 mb-0.5">
-            <span className="text-[10px] font-bold text-indigo-600 truncate">{toast.groupTitle}</span>
-          </div>
-          <p className="text-xs font-semibold text-slate-700 truncate">{toast.senderFullname}</p>
-          <p className="text-xs text-slate-500 truncate mt-0.5">{toast.content}</p>
-        </div>
-
-        {/* Dismiss */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onDismiss(toast.id); }}
-          className="p-1 rounded-lg hover:bg-slate-100 text-slate-600 shrink-0 transition-colors"
-        >
-          <X size={12} />
-        </button>
-      </div>
-    </div>
+export function showMessageToast(
+  msg: ToastMessage,
+  onNavigate: (assignmentId: number) => void,
+) {
+  toast.custom(
+    (t) => <MessageToastContent msg={msg} toastId={t} onNavigate={onNavigate} />,
+    {
+      id:       msg.id,
+      duration: 5000,
+      unstyled: true,
+    },
   );
 }

@@ -6,6 +6,7 @@ import {
   CalendarDays,
   ClipboardList,
   Users,
+  Bell,
   User,
   LogOut,
   GraduationCap,
@@ -31,8 +32,9 @@ const navItems = [
   { name: "Dashboard",    icon: LayoutDashboard, href: "/dashboard"   },
   { name: "Schedule",     icon: CalendarDays,    href: "/schedules"   },
   { name: "Assignments",  icon: ClipboardList,   href: "/assignments" },
-  { name: "Study Groups", icon: Users,           href: "/groups"      },
-  { name: "Profile",      icon: User,            href: "/profile"     },
+  { name: "Study Groups",  icon: Users,           href: "/groups"        },
+  { name: "Notifications", icon: Bell,            href: "/notifications" },
+  { name: "Profile",       icon: User,            href: "/profile"       },
 ];
 
 interface SidebarProps {

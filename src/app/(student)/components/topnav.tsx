@@ -1,15 +1,20 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { Bell } from "lucide-react";
+import { useDispatch } from "react-redux";
 import { useAppSelector } from "@/redux/hook";
+import type { AppDispatch } from "@/redux/store";
+import { getUnreadCountAction } from "@/app/(student)/notifications/core/action";
 
 const PAGE_NAMES: Record<string, string> = {
-  "/dashboard":   "Dashboard",
-  "/schedules":   "Schedule",
-  "/assignments": "Assignments",
-  "/groups":      "Study Groups",
-  "/profile":     "Profile",
+  "/dashboard":     "Dashboard",
+  "/schedules":     "Schedule",
+  "/assignments":   "Assignments",
+  "/groups":        "Study Groups",
+  "/profile":       "Profile",
+  "/notifications": "Notifications",
 };
 
 function getPageName(pathname: string): string {
@@ -21,8 +26,18 @@ function getPageName(pathname: string): string {
 
 const TopNav = () => {
   const pathname = usePathname();
+  const router   = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const pageName = getPageName(pathname);
   const user = useAppSelector((state) => state.auth.user);
+  const unreadCount = useAppSelector((state) => state.notification.unreadCount);
+
+  // Keep the bell badge fresh: fetch on mount, then poll every 60s.
+  useEffect(() => {
+    dispatch(getUnreadCountAction());
+    const interval = setInterval(() => dispatch(getUnreadCountAction()), 60_000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
 
   const initials = (user?.fullname ?? "")
     .split(" ")
@@ -46,9 +61,21 @@ const TopNav = () => {
       <div className="flex items-center gap-2">
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-xl text-stone-600 hover:text-stone-600 hover:bg-stone-100 transition-colors">
+        <button
+          onClick={() => router.push("/notifications")}
+          title="Notifications"
+          className={`relative p-2 rounded-xl transition-colors ${
+            pathname.startsWith("/notifications")
+              ? "text-indigo-600 bg-indigo-50"
+              : "text-stone-600 hover:text-stone-800 hover:bg-stone-100"
+          }`}
+        >
           <Bell className="w-[18px] h-[18px]" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </button>
 
         <div className="w-px h-5 bg-stone-200 mx-1" />

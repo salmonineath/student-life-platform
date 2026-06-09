@@ -15,4 +15,13 @@ export interface Notification {
   type: NotificationType;
   read: boolean; // backend `isRead` serializes as `read`
   createdAt: string;
+
+  // ── Deep-link target (optional until the backend ships it) ──
+  // The id of the entity this notification refers to, e.g. the assignment id
+  // for an ASSIGNMENT notification or the group id for a CHAT/INVITE.
+  referenceId?: number | string | null;
+  // Optional explicit override. If the backend sends a ready-made relative
+  // path (e.g. "/assignments/42"), the frontend uses it as-is and ignores
+  // the type→route mapping. Must be a relative in-app path, not an absolute URL.
+  link?: string | null;
 }

@@ -1,10 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import type { RootState } from "@/redux/store";
 import {
   getNotificationsRequest,
   getUnreadCountRequest,
   markAsReadRequest,
   markAllAsReadRequest,
   deleteNotificationRequest,
+  clearReadNotificationsRequest,
 } from "./request";
 
 export const getNotificationsAction = createAsyncThunk(
@@ -58,6 +60,30 @@ export const markAllAsReadAction = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(
         error?.response?.data?.message ?? "Failed to mark all as read",
+      );
+    }
+  },
+);
+
+export const clearReadNotificationsAction = createAsyncThunk(
+  "notification/clearRead",
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const readIds = (getState() as RootState).notification.notifications
+        .filter((n) => n.read)
+        .map((n) => n.id);
+      if (readIds.length === 0) return [];
+      const deletedIds = await clearReadNotificationsRequest(readIds);
+      // If the server kept every one of them, the delete endpoint isn't working.
+      if (deletedIds.length === 0) {
+        return rejectWithValue(
+          "Couldn't clear notifications — the server didn't delete them.",
+        );
+      }
+      return deletedIds;
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data?.message ?? "Failed to clear notifications",
       );
     }
   },

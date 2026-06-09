@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AnimatePresence, motion } from "motion/react";
 import { AppDispatch, RootState } from "@/redux/store";
@@ -9,7 +10,9 @@ import {
   markAsReadAction,
   markAllAsReadAction,
   deleteNotificationAction,
+  clearReadNotificationsAction,
 } from "./core/action";
+import { dismissClearError } from "./core/reducer";
 import { Notification, NotificationType } from "@/types/notificationType";
 import {
   Bell,
@@ -26,6 +29,7 @@ import {
   Clock,
   CalendarDays,
   Info,
+  X,
 } from "lucide-react";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -42,6 +46,35 @@ const TYPE_META: Record<
   SCHEDULE:     { icon: <CalendarDays  className="w-4 h-4" />, accent: "bg-emerald-50 text-emerald-500", label: "Schedule"     },
   SYSTEM:       { icon: <Info          className="w-4 h-4" />, accent: "bg-stone-100 text-stone-500",    label: "System"       },
 };
+
+// Where each notification type takes the user when clicked. Used as the base
+// path; when the backend supplies a `referenceId` we deep-link to the item.
+const TYPE_ROUTE: Record<NotificationType, string> = {
+  CHAT:         "/groups",
+  ASSIGNMENT:   "/assignments",
+  INVITE:       "/groups",
+  ANNOUNCEMENT: "/dashboard",
+  REMINDER:     "/schedules",
+  SCHEDULE:     "/schedules",
+  SYSTEM:       "/notifications",
+};
+
+// Types that have a dedicated detail page we can deep-link into via /<base>/<id>.
+const DEEP_LINKABLE = new Set<NotificationType>(["ASSIGNMENT"]);
+
+// Resolve the in-app destination for a notification.
+//   1. Explicit `link` from the backend wins (used as-is).
+//   2. Otherwise, if there's a `referenceId` and the type has a detail page,
+//      deep-link to /<base>/<referenceId>.
+//   3. Otherwise fall back to the section page for that type.
+function resolveDestination(n: Notification): string {
+  if (n.link) return n.link;
+  const base = TYPE_ROUTE[n.type] ?? "/dashboard";
+  if (n.referenceId != null && DEEP_LINKABLE.has(n.type)) {
+    return `${base}/${n.referenceId}`;
+  }
+  return base;
+}
 
 function timeAgo(iso: string): string {
   const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -84,11 +117,13 @@ function NotificationSkeleton() {
 function NotificationCard({
   notification,
   index,
+  onOpen,
   onMarkRead,
   onDelete,
 }: {
   notification: Notification;
   index: number;
+  onOpen: (n: Notification) => void;
   onMarkRead: (id: number) => void;
   onDelete: (id: number) => void;
 }) {
@@ -101,7 +136,16 @@ function NotificationCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24, transition: { duration: 0.2 } }}
       transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.3), ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative bg-white border rounded-2xl p-4 flex items-start gap-3.5 transition-colors
+      onClick={() => onOpen(notification)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(notification);
+        }
+      }}
+      className={`group relative bg-white border rounded-2xl p-4 flex items-start gap-3.5 transition-colors cursor-pointer hover:border-indigo-200 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300
         ${notification.read
           ? "border-stone-200/80"
           : "border-indigo-100 bg-indigo-50/30"
@@ -139,7 +183,10 @@ function NotificationCard({
       <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {!notification.read && (
           <button
-            onClick={() => onMarkRead(notification.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMarkRead(notification.id);
+            }}
             title="Mark as read"
             className="p-2 rounded-xl text-stone-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
           >
@@ -147,7 +194,10 @@ function NotificationCard({
           </button>
         )}
         <button
-          onClick={() => onDelete(notification.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(notification.id);
+          }}
           title="Delete"
           className="p-2 rounded-xl text-stone-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
         >
@@ -164,14 +214,29 @@ type Filter = "all" | "unread";
 
 export default function NotificationsPage() {
   const dispatch = useDispatch<AppDispatch>();
-  const { notifications, unreadCount, loading, error, markingAll } =
-    useSelector((state: RootState) => state.notification);
+  const router = useRouter();
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    error,
+    markingAll,
+    clearingRead,
+    clearError,
+  } = useSelector((state: RootState) => state.notification);
 
   const [filter, setFilter] = useState<Filter>("all");
+  const readCount = notifications.length - unreadCount;
 
   useEffect(() => {
     dispatch(getNotificationsAction());
   }, [dispatch]);
+
+  // Clicking a notification marks it read and jumps straight to the relevant page.
+  const handleOpen = (n: Notification) => {
+    if (!n.read) dispatch(markAsReadAction(n.id));
+    router.push(resolveDestination(n));
+  };
 
   const visible =
     filter === "unread" ? notifications.filter((n) => !n.read) : notifications;
@@ -223,19 +288,36 @@ export default function NotificationsPage() {
           </h1>
         </div>
 
-        {/* Mark all as read */}
-        <button
-          onClick={() => dispatch(markAllAsReadAction())}
-          disabled={markingAll || unreadCount === 0 || loading}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm"
-        >
-          {markingAll ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <CheckCheck className="w-3.5 h-3.5" />
-          )}
-          Mark all as read
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Clear all read */}
+          <button
+            onClick={() => dispatch(clearReadNotificationsAction())}
+            disabled={clearingRead || readCount === 0 || loading}
+            title="Delete all notifications you've already read"
+            className="flex items-center gap-2 bg-white border border-stone-200 hover:bg-stone-50 hover:border-stone-300 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-stone-600 text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
+          >
+            {clearingRead ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+            Clear read
+          </button>
+
+          {/* Mark all as read */}
+          <button
+            onClick={() => dispatch(markAllAsReadAction())}
+            disabled={markingAll || unreadCount === 0 || loading}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm"
+          >
+            {markingAll ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <CheckCheck className="w-3.5 h-3.5" />
+            )}
+            Mark all as read
+          </button>
+        </div>
       </motion.div>
 
       {/* ── Filter tabs ── */}
@@ -270,6 +352,34 @@ export default function NotificationsPage() {
           </button>
         ))}
       </motion.div>
+
+      {/* ── Clear-read failure notice (inline, dismissible) ── */}
+      <AnimatePresence>
+        {clearError && (
+          <motion.div
+            key="clear-error"
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-start gap-3 bg-rose-50 border border-rose-100 rounded-2xl px-4 py-3">
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+              <p className="flex-1 text-xs text-rose-700 leading-relaxed">
+                {clearError}
+              </p>
+              <button
+                onClick={() => dispatch(dismissClearError())}
+                title="Dismiss"
+                className="p-1 -m-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-colors shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── List ── */}
       {loading ? (
@@ -307,6 +417,7 @@ export default function NotificationsPage() {
                 key={n.id}
                 notification={n}
                 index={i}
+                onOpen={handleOpen}
                 onMarkRead={(id) => dispatch(markAsReadAction(id))}
                 onDelete={(id) => dispatch(deleteNotificationAction(id))}
               />

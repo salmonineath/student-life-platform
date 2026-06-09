@@ -6,6 +6,7 @@ import {
   markAsReadAction,
   markAllAsReadAction,
   deleteNotificationAction,
+  clearReadNotificationsAction,
 } from "./action";
 
 interface NotificationState {
@@ -14,6 +15,8 @@ interface NotificationState {
   loading: boolean;
   error: string | null;
   markingAll: boolean;
+  clearingRead: boolean;
+  clearError: string | null; // shown inline, not as the full-page error
 }
 
 const initialState: NotificationState = {
@@ -22,12 +25,18 @@ const initialState: NotificationState = {
   loading: false,
   error: null,
   markingAll: false,
+  clearingRead: false,
+  clearError: null,
 };
 
 const notificationSlice = createSlice({
   name: "notification",
   initialState,
-  reducers: {},
+  reducers: {
+    dismissClearError: (state) => {
+      state.clearError = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // ── Fetch all ──
@@ -72,6 +81,24 @@ const notificationSlice = createSlice({
         state.markingAll = false;
       })
 
+      // ── Clear all read ──
+      .addCase(clearReadNotificationsAction.pending, (state) => {
+        state.clearingRead = true;
+        state.clearError = null;
+      })
+      .addCase(clearReadNotificationsAction.fulfilled, (state, action) => {
+        state.clearingRead = false;
+        // Only drop the ids the server actually deleted — never lie to the user.
+        const deleted = new Set(action.payload);
+        state.notifications = state.notifications.filter(
+          (n) => !deleted.has(n.id),
+        );
+      })
+      .addCase(clearReadNotificationsAction.rejected, (state, action) => {
+        state.clearingRead = false;
+        state.clearError = action.payload as string;
+      })
+
       // ── Delete ──
       .addCase(deleteNotificationAction.fulfilled, (state, action) => {
         const item = state.notifications.find((n) => n.id === action.payload);
@@ -85,4 +112,5 @@ const notificationSlice = createSlice({
   },
 });
 
+export const { dismissClearError } = notificationSlice.actions;
 export default notificationSlice.reducer;

@@ -26,3 +26,16 @@ export const deleteNotificationRequest = async (id: number): Promise<ApiResponse
   const res = await axiosInstance.delete<ApiResponse<unknown>>(`/notification/${id}`);
   return res.data;
 };
+
+// No bulk endpoint yet — clears read notifications by deleting them one by one.
+// Returns only the ids that were actually deleted server-side, so the UI never
+// removes anything the backend kept. See docs/notification-deep-link-request.md
+// (and the clear-read request) for the bulk endpoint we've asked the backend for.
+export const clearReadNotificationsRequest = async (
+  ids: number[],
+): Promise<number[]> => {
+  const results = await Promise.allSettled(
+    ids.map((id) => deleteNotificationRequest(id)),
+  );
+  return ids.filter((_, i) => results[i].status === "fulfilled");
+};

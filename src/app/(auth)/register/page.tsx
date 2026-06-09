@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { registerAction } from "../core/action";
+import { markWelcomePending } from "@/lib/welcome";
 import {
   GraduationCap,
   Mail,
@@ -55,7 +56,7 @@ const RegisterPage = () => {
   const handleRegister = async () => {
     const { fullname, username, email, password } = formData;
     if (!fullname.trim() || !username.trim() || !email.trim() || !password.trim()) {
-      setError("Please fill in all fields.");
+      setError("Please complete every field to create your account.");
       return;
     }
     setError("");
@@ -63,12 +64,17 @@ const RegisterPage = () => {
     try {
       const result = await dispatch(registerAction(formData));
       if (registerAction.fulfilled.match(result)) {
+        // Arm the one-time welcome toast shown on first dashboard load.
+        markWelcomePending();
         window.location.href = "/dashboard";
       } else {
-        setError((result.payload as string) || "Registration failed. Please try again.");
+        setError(
+          (result.payload as string) ||
+            "We couldn't create your account. Please try again.",
+        );
       }
     } catch {
-      setError("Registration failed. Please try again.");
+      setError("Something interrupted sign-up. Please try again.");
     } finally {
       setLoading(false);
     }

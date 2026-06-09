@@ -93,7 +93,7 @@ export default function AssignmentProgressView({ assignments, loading }: Props) 
       {total === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 gap-2">
           <DonutRing pct={0} />
-          <p className="text-xs text-stone-500 -mt-1">No assignments yet</p>
+          <p className="text-xs text-stone-500 -mt-1">No assignments to track yet</p>
         </div>
       ) : (
         <div className="flex items-center gap-4 flex-1">

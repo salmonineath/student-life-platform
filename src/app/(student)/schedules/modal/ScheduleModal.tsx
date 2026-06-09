@@ -275,11 +275,11 @@ export default function ScheduleModal({
 
       onSuccess();
       handleClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(
         typeof err === "string"
           ? err
-          : "Something went wrong. Please try again.",
+          : "We couldn't save your schedule. Please try again.",
       );
     } finally {
       setSubmitting(false);

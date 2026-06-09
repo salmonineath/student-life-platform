@@ -1,14 +1,29 @@
 import axiosInstance from "@/lib/axios";
 import { ApiResponse } from "@/types/apiResponseType";
-import { Notification } from "@/types/notificationType";
+import {
+  Notification,
+  PaginatedNotifications,
+  UnreadCountPayload,
+} from "@/types/notificationType";
 
-export const getNotificationsRequest = async (): Promise<ApiResponse<Notification[]>> => {
-  const res = await axiosInstance.get<ApiResponse<Notification[]>>("/notification");
+// `data` is a paginated envelope ({ items, pagination }); the union tolerates a
+// bare array too so a backend shape change never crashes the page.
+export const getNotificationsRequest = async (): Promise<
+  ApiResponse<PaginatedNotifications | Notification[]>
+> => {
+  const res = await axiosInstance.get<
+    ApiResponse<PaginatedNotifications | Notification[]>
+  >("/notification");
   return res.data;
 };
 
-export const getUnreadCountRequest = async (): Promise<ApiResponse<number>> => {
-  const res = await axiosInstance.get<ApiResponse<number>>("/notification/unread/count");
+// Tolerates either a bare number or an envelope ({ count } / { unreadCount }).
+export const getUnreadCountRequest = async (): Promise<
+  ApiResponse<UnreadCountPayload>
+> => {
+  const res = await axiosInstance.get<ApiResponse<UnreadCountPayload>>(
+    "/notification/unread/count",
+  );
   return res.data;
 };
 

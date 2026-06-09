@@ -25,3 +25,25 @@ export interface Notification {
   // the type→route mapping. Must be a relative in-app path, not an absolute URL.
   link?: string | null;
 }
+
+// The /notification endpoint returns a paginated envelope: the list lives under
+// `items`, with `pagination` metadata alongside it.
+export interface Pagination {
+  currentPage: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface PaginatedNotifications {
+  items: Notification[];
+  pagination: Pagination;
+}
+
+// The unread-count endpoint returns a bare number today, but we accept a small
+// envelope too so a backend change can't break the bell badge.
+export type UnreadCountPayload =
+  | number
+  | { count?: number; unreadCount?: number };

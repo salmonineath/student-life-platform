@@ -243,7 +243,7 @@ export default function ProfilePage() {
           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-rose-400" />
           </div>
-          <p className="text-sm font-bold text-stone-800">Failed to load profile</p>
+          <p className="text-sm font-bold text-stone-800">We couldn't load your profile</p>
           <p className="text-xs text-stone-500">{error}</p>
           <button
             onClick={() => dispatch(getProfileAction())}
@@ -269,7 +269,7 @@ export default function ProfilePage() {
     <>
       {/* ── Toast ── */}
       <AnimatePresence>
-        {updateSuccess && <Toast key="ok"  message="Profile updated successfully." type="success" />}
+        {updateSuccess && <Toast key="ok"  message="Your changes have been saved." type="success" />}
         {updateError   && <Toast key="err" message={updateError}                    type="error"   />}
       </AnimatePresence>
 

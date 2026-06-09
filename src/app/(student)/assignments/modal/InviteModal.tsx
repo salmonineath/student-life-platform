@@ -35,7 +35,7 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
     const val = inputValue.trim();
     if (!val) return;
     if (!isValidEmail(val)) { setInputError("Invalid email address"); return; }
-    if (emails.includes(val)) { setInputError("Already added"); return; }
+    if (emails.includes(val)) { setInputError("That email's already on the list."); return; }
     setEmails((prev) => [...prev, val]);
     setInputValue("");
     setInputError(null);
@@ -66,7 +66,7 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
       setInputValue("");
       setInputError(null);
     }
-    if (finalEmails.length === 0) { setInputError("Add at least one email"); return; }
+    if (finalEmails.length === 0) { setInputError("Add at least one email to send an invite."); return; }
 
     setSending(true);
 
@@ -82,7 +82,7 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
         return { email: finalEmails[i], status: "success", message: "Invitation sent" };
       } else {
         const msg =
-          (result.reason as any)?.response?.data?.message ?? "Failed to send invite";
+          (result.reason as any)?.response?.data?.message ?? "We couldn't send this invite.";
         return { email: finalEmails[i], status: "error", message: msg };
       }
     });

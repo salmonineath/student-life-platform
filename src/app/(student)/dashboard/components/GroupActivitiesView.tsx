@@ -74,7 +74,7 @@ function EmptyState() {
           <path d="M1 17c0-3 2.7-5 6-5M11 12c3.3 0 6 2 6 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
-      <p className="text-xs font-medium text-stone-500">No group activity yet</p>
+      <p className="text-xs font-medium text-stone-500">Your study groups are quiet for now</p>
     </div>
   );
 }

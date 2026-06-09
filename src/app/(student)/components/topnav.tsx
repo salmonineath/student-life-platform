@@ -64,6 +64,11 @@ const TopNav = () => {
         <button
           onClick={() => router.push("/notifications")}
           title="Notifications"
+          aria-label={
+            unreadCount > 0
+              ? `Notifications, ${unreadCount} unread`
+              : "Notifications"
+          }
           className={`relative p-2 rounded-xl transition-colors ${
             pathname.startsWith("/notifications")
               ? "text-indigo-600 bg-indigo-50"
@@ -72,7 +77,10 @@ const TopNav = () => {
         >
           <Bell className="w-[18px] h-[18px]" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none">
+            <span
+              aria-hidden="true"
+              className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center leading-none"
+            >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

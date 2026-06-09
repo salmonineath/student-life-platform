@@ -12,6 +12,7 @@ import {
   RecurringScheduleRequest,
   ScheduleUpdateRequest,
 } from "@/types/scheduleTypes";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 // ── GET ────────────────────────────────────────────────────────────────────────
 
@@ -24,9 +25,9 @@ export const getMyScheduleAction = createAsyncThunk(
     try {
       const res = await getMyScheduleRequest(params);
       return res.data; // ScheduleListResponse → .data is Schedule[]
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message ?? "Failed to fetch schedules.",
+        getApiErrorMessage(error, "We couldn't load your schedule right now."),
       );
     }
   },
@@ -40,9 +41,12 @@ export const createOneTimeScheduleAction = createAsyncThunk(
     try {
       const res = await createOneTimeScheduleRequest(body);
       return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message ?? "Failed to create schedule.",
+        getApiErrorMessage(
+          error,
+          "We couldn't create your schedule. Please try again.",
+        ),
       );
     }
   },
@@ -56,9 +60,12 @@ export const createRecurringScheduleAction = createAsyncThunk(
     try {
       const res = await createRecurringScheduleRequest(body);
       return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message ?? "Failed to create schedule.",
+        getApiErrorMessage(
+          error,
+          "We couldn't create your schedule. Please try again.",
+        ),
       );
     }
   },
@@ -75,9 +82,12 @@ export const updateScheduleAction = createAsyncThunk(
     try {
       const res = await updateScheduleRequest(id, body);
       return res.data; // ApiResponse<SingleScheduleResponse> → unwrap to the schedule
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message ?? "Failed to update schedule.",
+        getApiErrorMessage(
+          error,
+          "We couldn't update your schedule. Please try again.",
+        ),
       );
     }
   },
@@ -91,9 +101,12 @@ export const deleteScheduleAction = createAsyncThunk(
     try {
       await deleteScheduleRequest(id);
       return id;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message ?? "Failed to delete schedule.",
+        getApiErrorMessage(
+          error,
+          "We couldn't delete this schedule. Please try again.",
+        ),
       );
     }
   },

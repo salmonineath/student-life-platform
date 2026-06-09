@@ -287,12 +287,12 @@ export default function AssignmentPage() {
             </div>
 
             <h3 className="text-base font-bold text-stone-800 mb-1.5" style={{ fontFamily: "var(--font-sora)" }}>
-              {assignments.length === 0 ? "Start your study journey" : "Nothing matches"}
+              {assignments.length === 0 ? "Start your study journey" : "No matches here"}
             </h3>
             <p className="text-sm text-stone-500 max-w-xs leading-relaxed">
               {assignments.length === 0
-                ? "Create your first assignment, set a deadline, and track your progress toward completion."
-                : "No assignments match your current filter or search query."}
+                ? "Add your first assignment, set a due date, and watch your progress grow."
+                : "Nothing fits your current filters. Try clearing the search or switching tabs."}
             </p>
 
             {assignments.length === 0 && (

@@ -311,7 +311,7 @@ Decide which case applies and respond accordingly.
             </div>
           ) : tasks.length === 0 ? (
             <div className="px-5 py-8 text-center">
-              <p className="text-sm text-stone-400">No plan yet.</p>
+              <p className="text-sm text-stone-400">No study plan yet — let AI map out your steps.</p>
               <button
                 onClick={handleRegenerate}
                 className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"

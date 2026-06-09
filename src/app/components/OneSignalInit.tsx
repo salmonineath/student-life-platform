@@ -1,46 +1,34 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import OneSignal from "react-onesignal";
 import { useAppSelector } from "@/redux/hook";
+import { initOneSignal, loginOneSignal } from "@/lib/onesignal";
 
-// Module-level flag — OneSignal.init() must only ever run once per page load
-// (React Strict Mode double-invokes effects in dev).
-let initialized = false;
-
+/**
+ * Mounts the OneSignal web-push integration for authenticated areas.
+ *
+ * Initialization and user-linking are intentionally driven through the shared
+ * service in `@/lib/onesignal`, which guarantees `login()` only runs after
+ * `init()` has successfully completed (otherwise the SDK throws). Both effects
+ * are safe no-ops when push is disabled, unsupported, or misconfigured.
+ */
 export default function OneSignalInit() {
-  const user = useAppSelector((state) => state.auth.user);
-  const loggedInId = useRef<string | null>(null);
+  const userId = useAppSelector((state) => state.auth.user?.id ?? null);
+  const linkedId = useRef<string | null>(null);
 
+  // Kick off init once on mount. The service is idempotent.
   useEffect(() => {
-    const appId = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
-    if (!appId || initialized) return;
-    initialized = true;
-
-    OneSignal.init({
-      appId,
-      // Lets push work on http://localhost during development
-      allowLocalhostAsSecureOrigin: true,
-    })
-      .then(() => {
-        // Ask for permission via the non-blocking slidedown prompt
-        OneSignal.Slidedown.promptPush();
-      })
-      .catch((e) => console.error("OneSignal init failed:", e));
+    void initOneSignal();
   }, []);
 
-  // Link the browser subscription to the logged-in user so the backend
-  // can target notifications by external id (user.id).
+  // Link the subscription to the logged-in user whenever that user changes.
   useEffect(() => {
-    if (!user) return;
-    const externalId = String(user.id);
-    if (loggedInId.current === externalId) return;
-    loggedInId.current = externalId;
-
-    OneSignal.login(externalId).catch((e) =>
-      console.error("OneSignal login failed:", e),
-    );
-  }, [user]);
+    if (userId == null) return;
+    const externalId = String(userId);
+    if (linkedId.current === externalId) return;
+    linkedId.current = externalId;
+    void loginOneSignal(externalId);
+  }, [userId]);
 
   return null;
 }

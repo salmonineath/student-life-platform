@@ -91,7 +91,7 @@ function EmptyState() {
           <path d="M7 2v4M13 2v4M3 9h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
-      <p className="text-xs font-medium text-stone-500">No classes scheduled today</p>
+      <p className="text-xs font-medium text-stone-500">No classes today — enjoy the free time</p>
     </div>
   );
 }

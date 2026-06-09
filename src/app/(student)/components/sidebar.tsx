@@ -12,10 +12,11 @@ import {
   GraduationCap,
   X,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useDispatch } from "react-redux";
 import { logoutAction } from "@/app/(auth)/core/action";
+import { logoutOneSignal } from "@/lib/onesignal";
 import type { AppDispatch } from "@/redux/store";
 
 export const EXPANDED_W  = 256;
@@ -45,22 +46,26 @@ interface SidebarProps {
 const Sidebar = ({ collapsed, onToggle }: SidebarProps) => {
   const [loggingOut,  setLoggingOut]  = useState(false);
   const [loadingHref, setLoadingHref] = useState<string | null>(null);
+  const [lastPathname, setLastPathname] = useState<string | null>(null);
   const pathname = usePathname();
   const router   = useRouter();
   const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => { setLoadingHref(null); }, [pathname]);
+  // Clear the nav spinner the moment the route actually changes. This is React's
+  // "adjust state during render" pattern — preferred over an effect for syncing
+  // state to a changing value, and it also covers navigations triggered outside
+  // the sidebar (in-page links, browser back/forward).
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setLoadingHref(null);
+  }
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    // Unlink this browser's push subscription from the user
-    // so the next person to log in doesn't get their notifications.
-    try {
-      const OneSignal = (await import("react-onesignal")).default;
-      await OneSignal.logout();
-    } catch {
-      // OneSignal may not be initialized (e.g. unsupported browser) — ignore.
-    }
+    // Unlink this browser's push subscription from the user so the next person
+    // to log in on this device doesn't receive their notifications. Guarded and
+    // safe even when push never initialized.
+    await logoutOneSignal();
     await dispatch(logoutAction());
     window.location.href = "/student-life";
   };

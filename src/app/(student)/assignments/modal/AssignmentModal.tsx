@@ -81,7 +81,7 @@ export default function AssignmentModal({ onClose, onSuccess }: AssignmentModalP
         }),
       );
     } catch (err) {
-      setPlanError("Failed to generate plan. Please try again.");
+      setPlanError("We couldn't generate a study plan. Please try again.");
     } finally {
       setPlanLoading(false);
     }

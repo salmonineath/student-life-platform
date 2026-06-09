@@ -1,8 +1,10 @@
 "use client";
 
-import { useReducer, useEffect } from "react";
+import { useReducer, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { motion } from "motion/react";
+import { consumeWelcomePending } from "@/lib/welcome";
 import UpComingReport from "./components/UpComingReport";
 import TodayScheduleView from "./components/TodayScheduleView";
 import AssignmentStatusView from "./components/AssignmentStatusView";
@@ -100,42 +102,71 @@ export default function DashboardPage() {
   const [state, dispatch] = useReducer(dashboardReducer, initialDashboardState);
 
   const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
 
-  async function fetchAll() {
-    dispatch({ type: "FETCH_START" });
-    try {
-      const [userRes, assignmentsRes, schedulesRes, groupsRes] = await Promise.all([
-        getMeRequest(),
-        getMyAssignmentsRequest(),
-        getTodaySchedulesRequest(todayStr, todayStr),
-        getMyGroupsRequest(),
-      ]);
-      dispatch({
-        type: "FETCH_SUCCESS",
-        payload: {
-          user: userRes.data,
-          assignments: assignmentsRes.data ?? [],
-          schedules: schedulesRes.data ?? [],
-          groups: groupsRes.data ?? [],
-        },
-      });
-    } catch {
-      dispatch({ type: "FETCH_ERROR", payload: "Failed to load dashboard. Please try again." });
-    }
-  }
+  // Bumping this re-runs the fetch effect (used by the error-state "Retry").
+  const [reloadKey, setReloadKey] = useState(0);
+  const reload = () => setReloadKey((k) => k + 1);
 
   useEffect(() => {
-    fetchAll();
-  }, []);
+    let cancelled = false;
+    (async () => {
+      dispatch({ type: "FETCH_START" });
+      try {
+        const todayStr = new Date().toISOString().split("T")[0];
+        const [userRes, assignmentsRes, schedulesRes, groupsRes] =
+          await Promise.all([
+            getMeRequest(),
+            getMyAssignmentsRequest(),
+            getTodaySchedulesRequest(todayStr, todayStr),
+            getMyGroupsRequest(),
+          ]);
+        if (cancelled) return;
+        dispatch({
+          type: "FETCH_SUCCESS",
+          payload: {
+            user: userRes.data,
+            assignments: assignmentsRes.data ?? [],
+            schedules: schedulesRes.data ?? [],
+            groups: groupsRes.data ?? [],
+          },
+        });
+      } catch {
+        if (!cancelled) {
+          dispatch({
+            type: "FETCH_ERROR",
+            payload: "We couldn't load your dashboard. Please try again.",
+          });
+        }
+      }
+    })();
+    // Avoid setting state after the page unmounts mid-request.
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const { user, assignments, schedules, groups, loading, error } = state;
+
+  // Greet newly-registered users exactly once. `consumeWelcomePending` clears
+  // the flag on first read, so this never repeats on refresh or navigation and
+  // never fires for returning users. The ref guards Strict Mode re-runs.
+  const welcomedRef = useRef(false);
+  useEffect(() => {
+    if (!user || welcomedRef.current) return;
+    if (!consumeWelcomePending()) return;
+    welcomedRef.current = true;
+    toast(`👋 Welcome, ${user.fullname}!`, {
+      description:
+        "You're all set. Plan your schedule, stay on top of assignments, and team up with your study groups — all in one place.",
+      duration: 6000,
+    });
+  }, [user]);
 
   const firstName = user?.fullname?.split(" ")[0] ?? "—";
 
   const dueThisWeek = assignments.filter((a) => {
     if (a.status === "COMPLETED") return false;
-    const diff = (new Date(a.dueDate).getTime() - Date.now()) / 86_400_000;
+    const diff = (new Date(a.dueDate).getTime() - today.getTime()) / 86_400_000;
     return diff >= 0 && diff <= 7;
   }).length;
 
@@ -242,7 +273,7 @@ export default function DashboardPage() {
 
       {error && (
         <div className="mt-4">
-          <ErrorBanner message={error} onRetry={fetchAll} />
+          <ErrorBanner message={error} onRetry={reload} />
         </div>
       )}
 

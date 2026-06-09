@@ -7,6 +7,7 @@ import {
 } from "./request";
 import { LoginPayload, RegisterPayload } from "@/types/authType";
 import { setSessionCookie, clearSessionCookie } from "@/lib/session";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 export const loginAction = createAsyncThunk(
   "/auth/login",
@@ -18,8 +19,13 @@ export const loginAction = createAsyncThunk(
         user: res.data.user,
         accessToken: res.data.accessToken,
       };
-    } catch (error: any) {
-      return rejectWithValue(error?.response?.data?.message || "Login failed.");
+    } catch (error) {
+      return rejectWithValue(
+        getApiErrorMessage(
+          error,
+          "We couldn't sign you in. Please check your details and try again.",
+        ),
+      );
     }
   },
 );
@@ -31,9 +37,12 @@ export const registerAction = createAsyncThunk(
       const res = await registerRequest(payload);
       await setSessionCookie();
       return { user: res.data.user, accessToken: res.data.accessToken };
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message || "Register failed.",
+        getApiErrorMessage(
+          error,
+          "We couldn't create your account. Please try again.",
+        ),
       );
     }
   },
@@ -45,9 +54,9 @@ export const getMeAction = createAsyncThunk(
     try {
       const res = await getMeRequest();
       return res.data;
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message || "Failed to get profile.",
+        getApiErrorMessage(error, "We couldn't load your account right now."),
       );
     }
   },
@@ -59,9 +68,9 @@ export const logoutAction = createAsyncThunk(
     try {
       await requestLogout();
       await clearSessionCookie();
-    } catch (error: any) {
+    } catch (error) {
       return rejectWithValue(
-        error?.response?.data?.message || "Logout failed.",
+        getApiErrorMessage(error, "We couldn't sign you out. Please try again."),
       );
     }
   },

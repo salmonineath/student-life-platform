@@ -24,12 +24,13 @@ axiosInstance.interceptors.response.use(
     const is401 = error.response?.status === 401;
     const isRefreshUrl = originalRequest?.url?.includes("/auth/refresh-token");
 
-    // Refresh token itself expired → clear session and go to login
+    // Refresh token itself expired/failed → clear session and go back to the
+    // landing (home) page.
     if (isRefreshUrl && is401) {
       isRefreshing = false;
       processQueue(error);
       await clearSessionCookie().catch(() => {});
-      if (typeof window !== "undefined") window.location.href = "/login";
+      if (typeof window !== "undefined") window.location.href = "/student-life";
       return Promise.reject(error);
     }
 
@@ -51,9 +52,11 @@ axiosInstance.interceptors.response.use(
         processQueue(null);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        // Refresh request failed (token invalid/expired) → clear session and
+        // send the user back to the landing (home) page.
         processQueue(refreshError);
         await clearSessionCookie().catch(() => {});
-        if (typeof window !== "undefined") window.location.href = "/login";
+        if (typeof window !== "undefined") window.location.href = "/student-life";
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

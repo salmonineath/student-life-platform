@@ -60,7 +60,7 @@ function EmptyState() {
           <rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" strokeWidth="1.5" />
         </svg>
       </div>
-      <p className="text-xs font-medium text-stone-500">No assignments yet</p>
+      <p className="text-xs font-medium text-stone-500">Nothing on your plate yet</p>
     </div>
   );
 }

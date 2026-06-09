@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 import { AnimatePresence, motion } from "motion/react";
 import { AppDispatch, RootState } from "@/redux/store";
 import {
@@ -15,7 +16,6 @@ import {
 import { dismissClearError } from "./core/reducer";
 import { Notification, NotificationType } from "@/types/notificationType";
 import {
-  Bell,
   BellOff,
   Check,
   CheckCheck,
@@ -232,6 +232,20 @@ export default function NotificationsPage() {
     dispatch(getNotificationsAction());
   }, [dispatch]);
 
+  // When a fetch finishes with an empty list, let the user know with a toast.
+  // Tracks the loading→idle transition so it fires once per fetch, not on
+  // every render (or after the list is emptied by clearing/deleting).
+  const wasLoading = useRef(false);
+  useEffect(() => {
+    if (wasLoading.current && !loading && !error && notifications.length === 0) {
+      toast("✨ You're all caught up", {
+        description:
+          "No notifications right now — we'll give you a nudge when something comes up.",
+      });
+    }
+    wasLoading.current = loading;
+  }, [loading, error, notifications.length]);
+
   // Clicking a notification marks it read and jumps straight to the relevant page.
   const handleOpen = (n: Notification) => {
     if (!n.read) dispatch(markAsReadAction(n.id));
@@ -249,7 +263,7 @@ export default function NotificationsPage() {
           <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center">
             <AlertCircle className="w-6 h-6 text-rose-400" />
           </div>
-          <p className="text-sm font-bold text-stone-800">Failed to load notifications</p>
+          <p className="text-sm font-bold text-stone-800">{"We couldn't load your notifications"}</p>
           <p className="text-xs text-stone-500">{error}</p>
           <button
             onClick={() => dispatch(getNotificationsAction())}
@@ -400,12 +414,12 @@ export default function NotificationsPage() {
           </div>
           <div>
             <p className="text-sm font-bold text-stone-700">
-              {filter === "unread" ? "All caught up!" : "No notifications yet"}
+              {filter === "unread" ? "📭 Nothing new right now" : "✨ You're all caught up"}
             </p>
             <p className="text-xs text-stone-400 mt-1 max-w-xs">
               {filter === "unread"
-                ? "You've read everything. New alerts will show up here."
-                : "Deadline alerts, schedule reminders, and group updates will appear here."}
+                ? "You've read everything. New updates will land here as they arrive."
+                : "When there's a new assignment, schedule change, study group invite, or campus announcement, you'll find it right here."}
             </p>
           </div>
         </motion.div>

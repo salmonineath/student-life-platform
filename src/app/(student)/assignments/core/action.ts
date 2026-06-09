@@ -15,6 +15,7 @@ import {
   Assignments,
   UpdateProgressPayload,
 } from "@/types/assignmentType";
+import { getApiErrorMessage } from "@/lib/apiError";
 
 export const getMyAssignmentAction = createAsyncThunk<
   Assignments[],
@@ -24,9 +25,9 @@ export const getMyAssignmentAction = createAsyncThunk<
   try {
     const res: AssignmentResponse = await getMyAssignmentRequest();
     return res.data;
-  } catch (error: any) {
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to fetch assignments",
+      getApiErrorMessage(error, "We couldn't load your assignments right now."),
     );
   }
 });
@@ -39,9 +40,9 @@ export const getAssignmentByIdAction = createAsyncThunk<
   try {
     const res: AssignmentByIdResponse = await getAssignmentByIdRequest(id);
     return res.data;
-  } catch (error: any) {
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to fetch assignment",
+      getApiErrorMessage(error, "We couldn't open this assignment right now."),
     );
   }
 });
@@ -54,10 +55,12 @@ export const createAssignmentAction = createAsyncThunk<
   try {
     const res: AssignmentByIdResponse = await createAssignmentRequest(payload);
     return res.data;
-  } catch (error: any) {
-    console.log(error);
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to create assignment",
+      getApiErrorMessage(
+        error,
+        "We couldn't create your assignment. Please try again.",
+      ),
     );
   }
 });
@@ -73,9 +76,12 @@ export const updateAssignmentAction = createAsyncThunk<
       payload,
     );
     return res.data;
-  } catch (error: any) {
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to update assignment",
+      getApiErrorMessage(
+        error,
+        "We couldn't update your assignment. Please try again.",
+      ),
     );
   }
 });
@@ -91,9 +97,12 @@ export const updateProgressAction = createAsyncThunk<
       payload,
     );
     return res.data;
-  } catch (error: any) {
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to update progress",
+      getApiErrorMessage(
+        error,
+        "We couldn't update your progress. Please try again.",
+      ),
     );
   }
 });
@@ -106,9 +115,12 @@ export const deleteAssignmentAction = createAsyncThunk<
   try {
     await deleteAssignmentRequest(id);
     return id;
-  } catch (error: any) {
+  } catch (error) {
     return rejectWithValue(
-      error?.response?.data?.message ?? "Failed to delete assignment",
+      getApiErrorMessage(
+        error,
+        "We couldn't delete this assignment. Please try again.",
+      ),
     );
   }
 });

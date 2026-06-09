@@ -97,8 +97,8 @@ export default function GroupList({
                   <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mb-3">
                     <Users className="w-5 h-5 text-slate-400" />
                   </div>
-                  <p className="text-sm font-semibold text-slate-500">No groups found</p>
-                  <p className="text-xs text-slate-400 mt-1">Try a different search term</p>
+                  <p className="text-sm font-semibold text-slate-500">No groups match that search</p>
+                  <p className="text-xs text-slate-400 mt-1">Try a different name or keyword.</p>
                 </motion.div>
               ) : (
                 filtered.map((group) => (

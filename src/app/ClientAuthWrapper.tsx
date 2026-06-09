@@ -34,7 +34,7 @@ export default function ClientAuthWrapper({
         // Cookie expired or not present — silently ignore Unauthorized.
         // Only surface unexpected errors to the user.
         if (err !== "Unauthorized") {
-          toast.error(err || "Something went wrong");
+          toast.error(err || "We hit a snag loading your account. Please refresh.");
         }
       })
       .finally(signalReady);

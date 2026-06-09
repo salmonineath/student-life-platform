@@ -52,7 +52,7 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     if (!emailOrUsername || !password) {
-      setError("Please fill in all fields.");
+      setError("Enter your email or username and password to continue.");
       return;
     }
     setError("");
@@ -62,10 +62,13 @@ const LoginPage = () => {
       if (loginAction.fulfilled.match(result)) {
         navigate("/dashboard");
       } else {
-        setError((result.payload as string) || "Login failed. Please check your credentials.");
+        setError(
+          (result.payload as string) ||
+            "Those details don't match our records. Please try again.",
+        );
       }
     } catch {
-      setError("Login failed. Please check your credentials.");
+      setError("Something interrupted sign-in. Please try again.");
     } finally {
       setLoading(false);
     }

@@ -60,7 +60,7 @@ function EmptyState() {
           <path d="M10 6v4.5l3 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
-      <p className="text-xs font-medium text-stone-500">No upcoming deadlines</p>
+      <p className="text-xs font-medium text-stone-500">No deadlines on the horizon</p>
     </div>
   );
 }

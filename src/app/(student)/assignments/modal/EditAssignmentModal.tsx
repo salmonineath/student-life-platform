@@ -69,7 +69,7 @@ export default function EditAssignmentModal({ assignment, onClose, onSuccess }: 
       onSuccess();
       onClose();
     } else {
-      setError((result.payload as string) ?? "Failed to update assignment.");
+      setError((result.payload as string) ?? "We couldn't update this assignment. Please try again.");
     }
   };
 

@@ -3,12 +3,13 @@
 import { useState, useRef, KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/lib/axios";
-import { X, UserPlus, Send, Loader2, CheckCircle, AlertCircle, Users } from "lucide-react";
+import { X, UserPlus, Send, Loader2, CheckCircle, AlertCircle, Users, Link2, Check } from "lucide-react";
 
 interface InviteResult {
   email: string;
   status: "success" | "error";
   message: string;
+  link?: string;
 }
 
 interface InviteModalProps {
@@ -26,6 +27,50 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
   const [inputError, setInputError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [results, setResults] = useState<InviteResult[] | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
+
+  // Generic, Trello-style shareable link (works for anyone who opens it).
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [linkError, setLinkError] = useState<string | null>(null);
+
+  async function copyToClipboard(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for browsers/contexts where the Clipboard API is unavailable
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+  }
+
+  async function handleCopyShareLink() {
+    setLinkError(null);
+    try {
+      let link = shareLink;
+      if (!link) {
+        setLinkLoading(true);
+        const res = await axiosInstance.get(`/assignments/${assignmentId}/invite-link`);
+        link = (res.data?.data?.inviteLink as string | undefined) ?? null;
+        setShareLink(link);
+      }
+      if (!link) { setLinkError("Couldn't generate a link. Please try again."); return; }
+      await copyToClipboard(link);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      setLinkError("Couldn't generate a link. Please try again.");
+    } finally {
+      setLinkLoading(false);
+    }
+  }
 
   function isValidEmail(email: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -79,7 +124,8 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
 
     const results: InviteResult[] = settled.map((result, i) => {
       if (result.status === "fulfilled") {
-        return { email: finalEmails[i], status: "success", message: "Invitation sent" };
+        const link = (result.value as any)?.data?.data?.inviteLink as string | undefined;
+        return { email: finalEmails[i], status: "success", message: "Invitation sent", link };
       } else {
         const msg =
           (result.reason as any)?.response?.data?.message ?? "We couldn't send this invite.";
@@ -90,6 +136,12 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
     setSending(false);
     setResults(results);
     setEmails([]);
+  }
+
+  async function handleCopyLink(email: string, link: string) {
+    await copyToClipboard(link);
+    setCopiedEmail(email);
+    setTimeout(() => setCopiedEmail((cur) => (cur === email ? null : cur)), 2000);
   }
 
   function handleGoToChat() {
@@ -156,6 +208,23 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
                           {r.message}
                         </p>
                       </div>
+                      {r.status === "success" && r.link && (
+                        <button
+                          onClick={() => handleCopyLink(r.email, r.link!)}
+                          title="Copy invite link"
+                          className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
+                            copiedEmail === r.email
+                              ? "bg-green-100 text-green-700"
+                              : "bg-white border border-green-200 text-green-700 hover:bg-green-100"
+                          }`}
+                        >
+                          {copiedEmail === r.email ? (
+                            <><Check className="w-3 h-3" /> Copied</>
+                          ) : (
+                            <><Link2 className="w-3 h-3" /> Copy link</>
+                          )}
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -180,6 +249,44 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
               </div>
             ) : (
               <>
+                {/* Shareable link — anyone who opens it can join after signing in */}
+                <div>
+                  <p className="text-xs font-semibold text-stone-500 mb-2">
+                    Share a link
+                  </p>
+                  <button
+                    onClick={handleCopyShareLink}
+                    disabled={linkLoading}
+                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
+                      linkCopied
+                        ? "bg-purple-50 border-purple-200 text-purple-700"
+                        : "bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                    }`}
+                  >
+                    {linkLoading ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Preparing link…</>
+                    ) : linkCopied ? (
+                      <><Check className="w-4 h-4" /> Link copied</>
+                    ) : (
+                      <><Link2 className="w-4 h-4" /> Copy invite link</>
+                    )}
+                  </button>
+                  {linkError ? (
+                    <p className="text-xs text-red-500 mt-1.5 font-medium">{linkError}</p>
+                  ) : (
+                    <p className="text-[11px] text-stone-400 mt-1.5">
+                      Anyone with this link can join — they'll sign in or create an account first.
+                    </p>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-stone-100" />
+                  <span className="text-[11px] font-semibold text-stone-300 uppercase tracking-wide">or invite by email</span>
+                  <div className="flex-1 h-px bg-stone-100" />
+                </div>
+
                 {/* Email input area */}
                 <div>
                   <p className="text-xs font-semibold text-stone-500 mb-2">
@@ -221,7 +328,7 @@ export default function InviteModal({ assignmentId, assignmentTitle, onClose }: 
                     <p className="text-xs text-red-500 mt-1.5 font-medium">{inputError}</p>
                   )}
                   <p className="text-[11px] text-stone-400 mt-1.5">
-                    Press Enter, comma, or space after each email. They'll receive an invite link by email.
+                    Press Enter, comma, or space after each email. They'll receive an invite link by email — and you can copy a shareable link after sending.
                   </p>
                 </div>
 

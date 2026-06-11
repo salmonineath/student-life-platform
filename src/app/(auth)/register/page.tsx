@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/redux/store";
 import { registerAction } from "../core/action";
@@ -45,8 +45,16 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Optional post-register destination (e.g. resuming an invite link).
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+
   const dispatch = useDispatch<AppDispatch>();
   const { navigate } = usePageTransition();
+
+  useEffect(() => {
+    const n = new URLSearchParams(window.location.search).get("next");
+    if (n && n.startsWith("/")) setNextUrl(n); // internal paths only
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
@@ -66,7 +74,7 @@ const RegisterPage = () => {
       if (registerAction.fulfilled.match(result)) {
         // Arm the one-time welcome toast shown on first dashboard load.
         markWelcomePending();
-        window.location.href = "/dashboard";
+        window.location.href = nextUrl || "/dashboard";
       } else {
         setError(
           (result.payload as string) ||
@@ -266,7 +274,7 @@ const RegisterPage = () => {
           <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{" "}
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate(`/login${nextUrl ? `?next=${encodeURIComponent(nextUrl)}` : ""}`)}
               className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
             >
               Sign in

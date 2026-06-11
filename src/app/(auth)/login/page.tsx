@@ -45,10 +45,19 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Optional post-login destination (e.g. resuming an invite link). Read from
+  // window so we don't need a Suspense boundary around useSearchParams.
+  const [nextUrl, setNextUrl] = useState<string | null>(null);
+
   const dispatch = useDispatch<AppDispatch>();
   const { navigate, transitionReady } = usePageTransition();
 
   useEffect(() => { transitionReady(); }, [transitionReady]);
+
+  useEffect(() => {
+    const n = new URLSearchParams(window.location.search).get("next");
+    if (n && n.startsWith("/")) setNextUrl(n); // internal paths only
+  }, []);
 
   const handleLogin = async () => {
     if (!emailOrUsername || !password) {
@@ -60,7 +69,7 @@ const LoginPage = () => {
     try {
       const result = await dispatch(loginAction({ email_or_username: emailOrUsername, password }));
       if (loginAction.fulfilled.match(result)) {
-        navigate("/dashboard");
+        navigate(nextUrl || "/dashboard");
       } else {
         setError(
           (result.payload as string) ||
@@ -232,7 +241,7 @@ const LoginPage = () => {
           <p className="text-center text-xs text-slate-400 mt-6">
             Don&apos;t have an account?{" "}
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate(`/register${nextUrl ? `?next=${encodeURIComponent(nextUrl)}` : ""}`)}
               className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
             >
               Create one free

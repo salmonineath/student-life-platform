@@ -47,13 +47,16 @@ const RegisterPage = () => {
 
   // Optional post-register destination (e.g. resuming an invite link).
   const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [invitePrompt, setInvitePrompt] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { navigate } = usePageTransition();
 
   useEffect(() => {
-    const n = new URLSearchParams(window.location.search).get("next");
+    const params = new URLSearchParams(window.location.search);
+    const n = params.get("next");
     if (n && n.startsWith("/")) setNextUrl(n); // internal paths only
+    if (params.get("reason") === "invite") setInvitePrompt(true);
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -157,6 +160,13 @@ const RegisterPage = () => {
             <h2 className="text-2xl font-bold text-slate-900">Create your account</h2>
             <p className="text-sm text-slate-500 mt-1">Start organizing your student life today</p>
           </div>
+
+          {invitePrompt && (
+            <div className="flex items-start gap-2.5 bg-sky-50 border border-sky-200 rounded-lg px-3.5 py-3 mb-5 text-sky-700 text-sm">
+              <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-sky-500 flex items-center justify-center text-white text-[10px] font-bold">i</span>
+              <span>You need an account to join this assignment. Create one below — it&apos;s free!</span>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Full Name + Username side by side */}
@@ -274,7 +284,13 @@ const RegisterPage = () => {
           <p className="text-center text-xs text-slate-400 mt-6">
             Already have an account?{" "}
             <button
-              onClick={() => navigate(`/login${nextUrl ? `?next=${encodeURIComponent(nextUrl)}` : ""}`)}
+              onClick={() => {
+                const qs = new URLSearchParams();
+                if (nextUrl) qs.set("next", nextUrl);
+                if (invitePrompt) qs.set("reason", "invite");
+                const q = qs.toString();
+                navigate(`/login${q ? `?${q}` : ""}`);
+              }}
               className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
             >
               Sign in

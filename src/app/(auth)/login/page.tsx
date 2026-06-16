@@ -48,6 +48,7 @@ const LoginPage = () => {
   // Optional post-login destination (e.g. resuming an invite link). Read from
   // window so we don't need a Suspense boundary around useSearchParams.
   const [nextUrl, setNextUrl] = useState<string | null>(null);
+  const [invitePrompt, setInvitePrompt] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { navigate, transitionReady } = usePageTransition();
@@ -55,8 +56,10 @@ const LoginPage = () => {
   useEffect(() => { transitionReady(); }, [transitionReady]);
 
   useEffect(() => {
-    const n = new URLSearchParams(window.location.search).get("next");
+    const params = new URLSearchParams(window.location.search);
+    const n = params.get("next");
     if (n && n.startsWith("/")) setNextUrl(n); // internal paths only
+    if (params.get("reason") === "invite") setInvitePrompt(true);
   }, []);
 
   const handleLogin = async () => {
@@ -151,6 +154,13 @@ const LoginPage = () => {
             <p className="text-sm text-slate-500 mt-1">Continue your academic journey</p>
           </div>
 
+          {invitePrompt && (
+            <div className="flex items-start gap-2.5 bg-sky-50 border border-sky-200 rounded-lg px-3.5 py-3 mb-5 text-sky-700 text-sm">
+              <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full bg-sky-500 flex items-center justify-center text-white text-[10px] font-bold">i</span>
+              <span>Sign in to join this assignment. Don&apos;t have an account? <button onClick={() => { const qs = new URLSearchParams(); if (nextUrl) qs.set("next", nextUrl); qs.set("reason", "invite"); navigate(`/register?${qs.toString()}`); }} className="font-semibold underline underline-offset-2 hover:text-sky-900 transition-colors">Register here</button>.</span>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">
@@ -241,7 +251,13 @@ const LoginPage = () => {
           <p className="text-center text-xs text-slate-400 mt-6">
             Don&apos;t have an account?{" "}
             <button
-              onClick={() => navigate(`/register${nextUrl ? `?next=${encodeURIComponent(nextUrl)}` : ""}`)}
+              onClick={() => {
+                const qs = new URLSearchParams();
+                if (nextUrl) qs.set("next", nextUrl);
+                if (invitePrompt) qs.set("reason", "invite");
+                const q = qs.toString();
+                navigate(`/register${q ? `?${q}` : ""}`);
+              }}
               className="text-sky-500 font-semibold hover:text-sky-600 transition-colors"
             >
               Create one free

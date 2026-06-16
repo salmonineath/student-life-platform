@@ -49,7 +49,7 @@ function JoinInviteContent() {
             } catch {
               // Not signed in → send them to create an account, then come back here.
               const next = `/invite/join?token=${encodeURIComponent(token)}`;
-              router.replace(`/register?next=${encodeURIComponent(next)}`);
+              router.replace(`/register?next=${encodeURIComponent(next)}&reason=invite`);
               return;
             }
           } else {
